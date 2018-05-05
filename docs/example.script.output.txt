@@ -1,0 +1,266 @@
+2018/08/23 21:25:08 Creating HTTP-01 challenge server on :5002
+2018/08/23 21:25:08 Creating TCP and UDP DNS-01 challenge server on :5252
+2018/08/23 21:25:08 Creating TLS-ALPN-01 challenge server on :5001
+2018/08/23 21:25:08 Starting challenge servers
+Welcome to ACME Shell
+# 
+# Get the ACME server directory
+# 
+# 
+# See the JWK for the autoregistered account
+# 
+JWK:
+{"kty":"EC","crv":"P-256","alg":"ECDSA","x":"DFUaO7mjMZzXovskRhvpgBAWUFjyaEt_anpX_oI2f3Y","y":"IWS-6aARQhb2oFZzez_A_3XAZUakh1QFWcUr8gosD5Y"}
+Thumbprint:
+0x1781c8a3500d90701a7ba4d8748214a99d92d7b68670ab081ce3affa0e9645ba
+# 
+# Add a new key we can use for order CSR's
+# 
+JWK:
+{"kty":"EC","crv":"P-256","alg":"ECDSA","x":"rqwIbII7wCG4IjcAC5sGLnG_V2IF2PZv9_TF9h4tl9M","y":"cYBTZWFDfs2v-xm53eMlvVK94vu-x6fKE0xuIUgD7FM"}
+# 
+# View the server key's PEM
+# 
+PEM:
+-----BEGIN EC PRIVATE KEY-----
+MHcCAQEEIMnY6o5JyknXXRCg4Bf7DeJ8X4lvDa+HLuRg5iXzPSRToAoGCCqGSM49
+AwEHoUQDQgAErqwIbII7wCG4IjcAC5sGLnG/V2IF2PZv9/TF9h4tl9NxgFNlYUN+
+za/7Gbnd4yW9Ur3i+77Hp8oTTG4hSAPsUw==
+-----END EC PRIVATE KEY-----
+
+# 
+# Create a new key to use as an updated ACME account key
+# 
+JWK:
+{"kty":"EC","crv":"P-256","alg":"ECDSA","x":"pu6GP2eVPCikMxM-nmlwLgYEt03olDgOOtwLoQr_daI","y":"BpRMZFpKKx-pltrWt2H0Z5gmZ7EyywnnxDGzcXrwLwA"}
+# 
+# Rollover to the new ACME account key
+# 
+keyRollover completed
+# 
+# Check the JWK for the autoregistered account was updated
+# 
+JWK:
+{"kty":"EC","crv":"P-256","alg":"ECDSA","x":"pu6GP2eVPCikMxM-nmlwLgYEt03olDgOOtwLoQr_daI","y":"BpRMZFpKKx-pltrWt2H0Z5gmZ7EyywnnxDGzcXrwLwA"}
+Thumbprint:
+0x00b2f406a8a944dc33cc7dd334ab15df552cb213da76edf41885489d6eaca5ac
+# 
+# Check the server account was updated
+# 
+# 
+# Update the auto-registered account to use the specified contact addresses
+# 
+POSTing: 
+{"contact":["mailto:test@example.com","mailto:another-test@example.com"]}
+# 
+# Create two new orders
+# 
+# 
+# Get the authz details for both identifiers in the first order. The easy way, and the hard way
+# 
+# 
+# Get the TLS-ALPN-01 challenge of the first order's 'example.com' authz to see the token
+# 
+# 
+# Post the TLS-ALPN-01 challenge of the first order's 'example.com' authz. This will of course fail since we don't have a challenge response setup!
+# 
+POSTing: 
+{}
+# 
+# Poll the authz until it is invalid from the failed tls-alpn-01 attempt
+# 
+poll: try 0. "https://localhost:14000/authZ/FeqTfKf5dL9VOd-dSJCk2ux_XoDpJUCD0ekDxpX_9hE" is status "pending"
+poll: polling done. "https://localhost:14000/authZ/FeqTfKf5dL9VOd-dSJCk2ux_XoDpJUCD0ekDxpX_9hE" is status "invalid"
+# 
+# Get the failed order to see that the error is properly reported
+# 
+# 
+# Get the failed authz to see full details
+# 
+# 
+# Solve the HTTP-01 challenge of the second order's 'http01.example.com' authz
+# 
+Challenge response ready
+solve: "http-01" challenge for identifier "http01.example.com" ("https://localhost:14000/chalZ/ueClamLi8E9OAdPtgJdZ7QoDWqgfFLxqE5e4wyVVz3I") started
+# 
+# Poll the second order waiting for the status to be ready
+2018/08/23 21:25:09 Query -- [http01.example.com.] AAAA
+# 
+2018/08/23 21:25:09 Query -- [http01.example.com.] A
+2018/08/23 21:25:09 Query -- [http01.example.com.] AAAA
+poll: try 0. "https://localhost:14000/my-order/js9-vL6j_RAM5UccaievpDuzhBqysRBajaCdUWJBkII" is status "pending"
+poll: try 1. "https://localhost:14000/my-order/js9-vL6j_RAM5UccaievpDuzhBqysRBajaCdUWJBkII" is status "pending"
+poll: try 2. "https://localhost:14000/my-order/js9-vL6j_RAM5UccaievpDuzhBqysRBajaCdUWJBkII" is status "pending"
+poll: try 3. "https://localhost:14000/my-order/js9-vL6j_RAM5UccaievpDuzhBqysRBajaCdUWJBkII" is status "pending"
+poll: try 4. "https://localhost:14000/my-order/js9-vL6j_RAM5UccaievpDuzhBqysRBajaCdUWJBkII" is status "pending"
+poll: try 5. "https://localhost:14000/my-order/js9-vL6j_RAM5UccaievpDuzhBqysRBajaCdUWJBkII" is status "pending"
+poll: try 6. "https://localhost:14000/my-order/js9-vL6j_RAM5UccaievpDuzhBqysRBajaCdUWJBkII" is status "pending"
+2018/08/23 21:25:16 Query -- [http01.example.com.] A
+2018/08/23 21:25:16 Query -- [http01.example.com.] AAAA
+2018/08/23 21:25:16 Query -- [http01.example.com.] AAAA
+poll: polling done. "https://localhost:14000/my-order/js9-vL6j_RAM5UccaievpDuzhBqysRBajaCdUWJBkII" is status "ready"
+# 
+# Post the finalization endpoint of the second order with a CSR using example.server.key It would be easier to do this with the finalize command :-)
+# 
+POSTing: 
+{"csr":"MIHrMIGSAgEAMAAwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASurAhsgjvAIbgiNwALmwYucb9XYgXY9m_39MX2Hi2X03GAU2VhQ37Nr_sZud3jJb1SveL7vsenyhNMbiFIA-xToDAwLgYJKoZIhvcNAQkOMSEwHzAdBgNVHREEFjAUghJodHRwMDEuZXhhbXBsZS5jb20wCgYIKoZIzj0EAwIDSAAwRQIgCC0Hlb6V4TW0e1A-WPo7QlXaC1KD2u-MLzcrrM0ir84CIQDA_ncHZYQPFh2_7-npOn2VMG4LLSF4XREZA221ksX6bQ"}
+# 
+# Poll the second order waiting for the status to be valid
+# 
+poll: try 0. "https://localhost:14000/my-order/js9-vL6j_RAM5UccaievpDuzhBqysRBajaCdUWJBkII" is status "processing"
+poll: polling done. "https://localhost:14000/my-order/js9-vL6j_RAM5UccaievpDuzhBqysRBajaCdUWJBkII" is status "valid"
+# 
+# Get the second order's certificate, save a copy in /tmp/example.com.pem
+# 
+-----BEGIN CERTIFICATE-----
+MIICWjCCAUKgAwIBAgIIOPx4S0cE/uYwDQYJKoZIhvcNAQELBQAwKDEmMCQGA1UE
+AxMdUGViYmxlIEludGVybWVkaWF0ZSBDQSA3YjliY2YwHhcNMTgwODI0MDEyNTE2
+WhcNMjMwODI0MDEyNTE2WjAdMRswGQYDVQQDExJodHRwMDEuZXhhbXBsZS5jb20w
+WTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASurAhsgjvAIbgiNwALmwYucb9XYgXY
+9m/39MX2Hi2X03GAU2VhQ37Nr/sZud3jJb1SveL7vsenyhNMbiFIA+xTo14wXDAO
+BgNVHQ8BAf8EBAMCBaAwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMAwG
+A1UdEwEB/wQCMAAwHQYDVR0RBBYwFIISaHR0cDAxLmV4YW1wbGUuY29tMA0GCSqG
+SIb3DQEBCwUAA4IBAQC1gDkTAaX3OdCMjYKXDURus3YLoAvWKXzf1VCLjSsTiwlx
+JP5+WfSULYmWxRUoDurYtqSfwOEpqGpJUQitwB1UkXBgwXbUE9r9ndXlFQ+N2lg+
+Ppkiuw78kC4D8bgCYX5aVuBwnMAfrZEHApJBH9PtC59At3ZgR0SUcBE91atC7EWu
+tO13GSDQUsjw6Z9Y8Bbtrxphvx0yp7635qWLK2x9d1gWag82czzb8fuwQl4Vshu7
+DzSF2LkNLEgyYD9QkqjNpvUDxxrNp0sLqM+4A4l95M29GCbM7LfG4f3VmF7FxcxQ
+32KrzOn06NQc761lgx9t72IgDiombA40p/8Z4hmq
+-----END CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
+MIIDDDCCAfSgAwIBAgIIe5vPX0Jrh6QwDQYJKoZIhvcNAQELBQAwIDEeMBwGA1UE
+AxMVUGViYmxlIFJvb3QgQ0EgNDI2M2FlMB4XDTE4MDgyMzIxNDYxNFoXDTQ4MDgy
+MzIyNDYxNFowKDEmMCQGA1UEAxMdUGViYmxlIEludGVybWVkaWF0ZSBDQSA3Yjli
+Y2YwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDdtyrAmhGefx2wF5nZ
+hSLMpY3EEpFAc/ywBfP34GsShoq/jPeQGYdSqEgs1D3DKHjnlFyCrwCwJUZIECWL
+8QG1TZb0Pphcgr+TIgQZV+mZQS5UdgMgE6etZm9JVo3GcVrN23rfQoV4asH5Sysp
+sdiYaKSkrAZB4K6liXaQsjO6ysfzJjDZlwRJJKsn/qxFEj7B3vJuWmkWNnHC3faP
+a/YZz869RwDQkyIyGvDI6enXjeLJ73/TFQaTUmbi+x6lz5o4Q3pvCYd2sWxyVw7J
+rg/i5WFduM3k4Cjasn75U07hRoGPbBER2YV2We1P1cAa7zdYwwsH/As0InuKnles
+IBxNAgMBAAGjQjBAMA4GA1UdDwEB/wQEAwIChDAdBgNVHSUEFjAUBggrBgEFBQcD
+AQYIKwYBBQUHAwIwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAAOCAQEA
+mmgc3SYK2KViJacXYJpFAlkd0fipac/eQ0HHNn3xeH0IM1m+1XJPXAAPUt3SmjGl
+LV8NkZxQPDTVYSlsK7BQ+e+PVTMsQ0qi2MjyUVS0d12MH8k5Dpy57HvPXQe29BNJ
+/8H9U3ueaMvHAnJ8A0rJsy+X3jTucp21Cr+TpxwHcQpbdw/HhWtJvfRMq3/37+ba
+Gt8uvOkaYCKXcKljEpPzbVLdKzEmnaI7wOy36CKPyCQNZvdn8QtjLzkp4qA8SNlP
+c2DMbM3yk7vE4ywVezQxcVsBVZM30H1XBGUZl2VSl8NqRKGNl5AdHcW3rc3GlVwV
+VMpYh1SHsXLHAi/sXpSNzg==
+-----END CERTIFICATE-----
+getCert: cert chain saved to "/tmp/example.com.pem"
+# 
+# Save the certificate's key to /tmp/example.com.key.pem
+# 
+PEM encoded private key saved to "/tmp/example.com.key.pem"
+# 
+# Create another key
+# 
+JWK:
+{"kty":"EC","crv":"P-256","alg":"ECDSA","x":"kG0609oBPKj2anpcO-nOLazYywy1U7TQ0mLIwssK5Ug","y":"JVo4QcURkhTIQyY0p1f4SYIXlsZnkCy5LDd05DQv73M"}
+# 
+# Create another order
+# 
+# 
+# Solve the order's TLS-ALPN-01 challenge
+# 
+Challenge response ready
+solve: "tls-alpn-01" challenge for identifier "tlsalpn01.example.com" ("https://localhost:14000/chalZ/h6btuMXFYThOS_GYmv-BCb0k4naSwCRi1S1nxTS5V04") started
+# 
+# Wait for the order to be ready
+2018/08/23 21:25:17 Query -- [tlsalpn01.example.com.] AAAA
+# 
+2018/08/23 21:25:17 Query -- [tlsalpn01.example.com.] A
+2018/08/23 21:25:17 Query -- [tlsalpn01.example.com.] AAAA
+poll: try 0. "https://localhost:14000/my-order/3A2BA-p7z7wSkuPbBCQ4bCW_B2BZ52B9bZL9qS5s0Xk" is status "pending"
+poll: try 1. "https://localhost:14000/my-order/3A2BA-p7z7wSkuPbBCQ4bCW_B2BZ52B9bZL9qS5s0Xk" is status "pending"
+poll: try 2. "https://localhost:14000/my-order/3A2BA-p7z7wSkuPbBCQ4bCW_B2BZ52B9bZL9qS5s0Xk" is status "pending"
+poll: try 3. "https://localhost:14000/my-order/3A2BA-p7z7wSkuPbBCQ4bCW_B2BZ52B9bZL9qS5s0Xk" is status "pending"
+poll: try 4. "https://localhost:14000/my-order/3A2BA-p7z7wSkuPbBCQ4bCW_B2BZ52B9bZL9qS5s0Xk" is status "pending"
+poll: try 5. "https://localhost:14000/my-order/3A2BA-p7z7wSkuPbBCQ4bCW_B2BZ52B9bZL9qS5s0Xk" is status "pending"
+poll: try 6. "https://localhost:14000/my-order/3A2BA-p7z7wSkuPbBCQ4bCW_B2BZ52B9bZL9qS5s0Xk" is status "pending"
+2018/08/23 21:25:24 Query -- [tlsalpn01.example.com.] AAAA
+2018/08/23 21:25:24 Query -- [tlsalpn01.example.com.] A
+2018/08/23 21:25:24 Query -- [tlsalpn01.example.com.] AAAA
+poll: polling done. "https://localhost:14000/my-order/3A2BA-p7z7wSkuPbBCQ4bCW_B2BZ52B9bZL9qS5s0Xk" is status "ready"
+# 
+# Finalize the order the easy way using the key we created
+# 
+order "https://localhost:14000/my-order/3A2BA-p7z7wSkuPbBCQ4bCW_B2BZ52B9bZL9qS5s0Xk" finalization requested
+# 
+# Wait for the order to have a certificate
+# 
+poll: try 0. "https://localhost:14000/my-order/3A2BA-p7z7wSkuPbBCQ4bCW_B2BZ52B9bZL9qS5s0Xk" is status "processing"
+poll: polling done. "https://localhost:14000/my-order/3A2BA-p7z7wSkuPbBCQ4bCW_B2BZ52B9bZL9qS5s0Xk" is status "valid"
+# 
+# Get the certificate. This would be easier using the getCert command :-)
+# 
+# 
+# Create an account with a random account key and switch to it
+# 
+Created private key for ID "https://localhost:14000/my-account/31"
+Created account with ID "https://localhost:14000/my-account/31" Contacts []
+Active account is now "https://localhost:14000/my-account/31"
+# 
+# Create an order
+# 
+# 
+# Solve a HTTP-01 challenge for order's 'www.whatever.dude' authorization
+# 
+Challenge response ready
+solve: "http-01" challenge for identifier "www.whatever.dude" ("https://localhost:14000/chalZ/1uaDrj7bdk8jnL8z10gLKNgDUUmtv9Vn0M5_SLLQdW8") started
+# 
+# Wait for the order to be ready
+# 
+poll: try 0. "https://localhost:14000/my-order/e-7TwmmRqzgwVkziGsG42OVkPlCgM4ySJdsIg3atEEs" is status "pending"
+poll: try 1. "https://localhost:14000/my-order/e-7TwmmRqzgwVkziGsG42OVkPlCgM4ySJdsIg3atEEs" is status "pending"
+poll: try 2. "https://localhost:14000/my-order/e-7TwmmRqzgwVkziGsG42OVkPlCgM4ySJdsIg3atEEs" is status "pending"
+poll: try 3. "https://localhost:14000/my-order/e-7TwmmRqzgwVkziGsG42OVkPlCgM4ySJdsIg3atEEs" is status "pending"
+2018/08/23 21:25:29 Query -- [www.whatever.dude.] A
+2018/08/23 21:25:29 Query -- [www.whatever.dude.] AAAA
+2018/08/23 21:25:29 Query -- [www.whatever.dude.] AAAA
+poll: try 4. "https://localhost:14000/my-order/e-7TwmmRqzgwVkziGsG42OVkPlCgM4ySJdsIg3atEEs" is status "pending"
+poll: try 5. "https://localhost:14000/my-order/e-7TwmmRqzgwVkziGsG42OVkPlCgM4ySJdsIg3atEEs" is status "pending"
+2018/08/23 21:25:31 Query -- [www.whatever.dude.] AAAA
+2018/08/23 21:25:31 Query -- [www.whatever.dude.] A
+2018/08/23 21:25:31 Query -- [www.whatever.dude.] AAAA
+poll: try 6. "https://localhost:14000/my-order/e-7TwmmRqzgwVkziGsG42OVkPlCgM4ySJdsIg3atEEs" is status "pending"
+2018/08/23 21:25:32 Query -- [www.whatever.dude.] A
+2018/08/23 21:25:32 Query -- [www.whatever.dude.] AAAA
+2018/08/23 21:25:32 Query -- [www.whatever.dude.] AAAA
+poll: polling done. "https://localhost:14000/my-order/e-7TwmmRqzgwVkziGsG42OVkPlCgM4ySJdsIg3atEEs" is status "ready"
+# 
+# Deactivate the 'www.whatever.dude' authorization
+# 
+POSTing: 
+{"status":"deactivated"}
+# 
+# Wait for the authz to be deactivated
+# 
+poll: polling done. "https://localhost:14000/authZ/q1Rw3guq_snAE8ayXhwuYgg4xaNz68Gyanpf4zbzAA0" is status "deactivated"
+# 
+# Wait for the order to be deactivated
+# 
+poll: polling done. "https://localhost:14000/my-order/e-7TwmmRqzgwVkziGsG42OVkPlCgM4ySJdsIg3atEEs" is status "deactivated"
+# 
+# Deactivate the account
+# 
+POSTing: 
+{"status":"deactivated"}
+# 
+# Switch back to the other account
+# 
+Active account is now #0 - "https://localhost:14000/my-account/30"
+# 
+# Sign a stupid message for a made-up URL with a nonce from the server
+# 
+# 
+# Deactivate the account
+# 
+POSTing: 
+{"status":"deactivated"}
+# 
+# All done!
+# 
+EOF
+Goodbye!
+2018/08/23 21:25:32 http: Server closed
+2018/08/23 21:25:32 accept tcp [::]:5252: use of closed network connection

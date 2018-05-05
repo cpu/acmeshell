@@ -1,0 +1,219 @@
+#
+# example.script.txt
+#
+# An example ACME Shell script showing some shell features.
+#
+# Pebble Setup:
+#   PEBBLE_VA_SLEEPTIME=8 \
+#   PEBBLE_WFE_NONCEREJECT=0 \
+#   pebble -dnsserver 127.0.0.1:5252
+#
+# Usage:
+#  acmeshell -pebble < docs/example.script.txt
+#
+
+echo
+echo Get the ACME server directory
+echo
+get directory
+
+echo
+echo See the JWK for the autoregistered account
+echo
+viewKey {{ account }}
+
+echo
+echo Add a new key we can use for order CSR\'s
+echo
+newKey -id=example.server.key
+
+echo
+echo View the server key\'s PEM
+echo
+viewKey -jwk=false -thumbprint=false -pem example.server.key
+
+echo
+echo Create a new key to use as an updated ACME account key
+echo
+newKey -id=replacement.account.key
+
+echo
+echo Rollover to the new ACME account key
+echo
+keyRollover -keyID=replacement.account.key
+
+echo
+echo Check the JWK for the autoregistered account was updated
+echo
+viewKey {{ account }}
+
+echo
+echo Check the server account was updated
+echo
+getAccount
+
+echo
+echo Update the auto-registered account to use the specified contact addresses
+echo
+post -body='{"contact":["mailto:test@example.com","mailto:another-test@example.com"]}' {{ account }}
+
+echo
+echo Create two new orders
+echo
+newOrder -identifiers=www.example.com,example.com
+newOrder -identifiers=http01.example.com
+
+echo
+echo Get the authz details for both identifiers in the first order. The easy way, and the hard way
+echo
+getAuthz -order 0 -identifier www.example.com
+get {{ (authz (order 0) \"example.com\") }}
+
+echo
+echo Get the TLS-ALPN-01 challenge of the first order\'s \'example.com\' authz to see the token
+echo
+getChall -order 0 -identifier example.com -type tls-alpn-01
+
+echo
+echo Post the TLS-ALPN-01 challenge of the first order\'s \'example.com\' authz. This will of course fail since we don\'t have a challenge response setup!
+echo
+post -status -body='{}' {{ chal (authz (order 0 ) \"example.com\") \"tls-alpn-01\" }}
+
+echo
+echo Poll the authz until it is invalid from the failed tls-alpn-01 attempt
+echo
+poll -sleep=1 -maxTries=10 -status=invalid -order=0 -identifier example.com
+
+echo
+echo Get the failed order to see that the error is properly reported
+echo
+getOrder -order 0
+
+echo
+echo Get the failed authz to see full details
+echo
+getAuthz -order 0 -identifier example.com
+
+echo
+echo Solve the HTTP-01 challenge of the second order\'s \'http01.example.com\' authz
+echo
+solve -challengeType=http-01 {{ (authz (order 1) \"http01.example.com\") }}
+
+echo
+echo Poll the second order waiting for the status to be ready
+echo
+poll -sleep=1 -maxTries=10 -order=1
+
+echo
+echo Post the finalization endpoint of the second order with a CSR using example.server.key It would be easier to do this with the finalize command :-)
+echo
+post -body='{"csr":"{{ (csr (order 1) (key "example.server.key")) }}"}' {{ (order 1).Finalize }}
+
+echo
+echo Poll the second order waiting for the status to be valid
+echo
+poll -sleep=1 -maxTries=10 -status=valid -order=1
+
+echo
+echo Get the second order\'s certificate, save a copy in /tmp/example.com.pem
+echo
+getCert -path=/tmp/example.com.pem -order 1
+
+echo
+echo Save the certificate\'s key to /tmp/example.com.key.pem
+echo
+viewKey -path=/tmp/example.com.key.pem -jwk=false -pem=false -thumbprint=false example.server.key
+
+echo
+echo Create another key
+echo
+newKey -id=another.key
+
+echo
+echo Create another order
+echo
+newOrder -identifiers=tlsalpn01.example.com
+
+echo
+echo Solve the order\'s TLS-ALPN-01 challenge
+echo
+solve -challengeType=tls-alpn-01 {{ (authz (order 2) \"tlsalpn01.example.com\") }}
+
+echo
+echo Wait for the order to be ready
+echo
+poll -sleep=1 -maxTries=10 -order=2
+
+echo
+echo Finalize the order the easy way using the key we created
+echo
+finalize -keyID=another.key -order=2
+
+echo
+echo Wait for the order to have a certificate
+echo
+poll -sleep=1 -maxTries=10 -status=valid -order=2
+
+echo
+echo Get the certificate. This would be easier using the getCert command :-)
+echo
+get -status {{ (order 2).Certificate }}
+
+echo
+echo Create an account with a random account key and switch to it
+echo
+newAccount -switch=true
+
+echo
+echo Create an order
+echo
+newOrder -identifiers=www.whatever.dude
+
+echo
+echo Solve a HTTP-01 challenge for order\'s \'www.whatever.dude\' authorization
+echo
+solve -challengeType=http-01 {{ (authz (order 0) \"www.whatever.dude\") }}
+
+echo
+echo Wait for the order to be ready
+echo
+poll -sleep=1 -maxTries=10 -order=0
+
+echo
+echo Deactivate the \'www.whatever.dude\' authorization
+echo
+post -body='{"status":"deactivated"}' {{ (authz (order 0) \"www.whatever.dude\") }}
+
+echo
+echo Wait for the authz to be deactivated
+echo
+poll -sleep=1 -maxTries=10 -status=deactivated -order=0 -identifier=www.whatever.dude
+
+echo
+echo Wait for the order to be deactivated
+echo
+poll -sleep=1 -maxTries=10 -status=deactivated -order=0
+
+echo
+echo Deactivate the account
+echo
+post -status -body='{"status":"deactivated"}' {{ account }}
+
+echo
+echo Switch back to the other account
+echo
+switchAccount -account 0
+
+echo
+echo Sign a stupid message for a made-up URL with a nonce from the server
+echo
+sign -data="this is my last farewell before deactivation" -embedKey=true https://some.url.for.the.header
+
+echo
+echo Deactivate the account
+echo
+post -status -body='{"status":"deactivated"}' {{ account }}
+
+echo
+echo All done!
+echo
