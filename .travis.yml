@@ -1,0 +1,24 @@
+language: go
+
+go:
+  - "1.11.x"
+
+env:
+  - GO11MODULE=on
+
+# See: https://arslan.io/2018/08/26/using-go-modules-with-vendor-support-on-travis-ci/
+# We want to disable the install phase to rely on vendored deps
+install: true
+
+before_script:
+  # Fetch the latest Pebble - we don't vendor it
+  - go get -u github.com/letsencrypt/pebble/...
+  # Start Pebble with the correct env & arguments for our tests
+  - PEBBLE_WFE_NONCEREJECT=0 pebble -dnsserver 127.0.0.1:5252 &
+  # Wait for Pebble to become available before proceeding
+  - until </dev/tcp/localhost/14000 ; do sleep 0.1 ; done
+
+script:
+  - go vet -v ./...
+  - go test -v -mod=vendor ./...
+  - acmeshell -pebble < test/script.txt
