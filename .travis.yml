@@ -1,36 +1,22 @@
 language: go
+
 go:
   - "1.11.x"
 
-env:
-  # NOTE(@cpu): This doesn't seem to be working... See the `script` stage
-  # comments for more. Leaving this here for future debugging.
-  - GO111MODULE=on
-
 # See: https://arslan.io/2018/08/26/using-go-modules-with-vendor-support-on-travis-ci/
-# We want to disable the install phase to rely on vendored deps.
+# We want to disable the install phase to rely on vendored deps
 install: true
 
 before_script:
-  # Fetch the latest Pebble - we don't vendor it.
+  # Fetch the latest Pebble - we don't vendor it
   - go get -u github.com/letsencrypt/pebble/...
-  # Start Pebble with the correct env & arguments for our tests.
+  # Start Pebble with the correct env & arguments for our tests
   - PEBBLE_WFE_NONCEREJECT=0 pebble -dnsserver 127.0.0.1:5252 &
-  # Wait for Pebble to become available before proceeding.
+  # Wait for Pebble to become available before proceeding
   - until </dev/tcp/localhost/14000 ; do sleep 0.1 ; done
 
 script:
-  # Move the sourcecode out of the $GOPATH - You shouldn't _need_ to do this
-  # when using `GO11MODULE=on` but this doesn't seem to be working presently in
-  # Travis and results in `GO11MODULE=auto` being set, which fails for us
-  # because the source is in the GOPATH.
-  # TODO(@cpu): Remove this hack and get GO11MODULE working properly.
-  - cp -r "${TRAVIS_BUILD_DIR}" "${TRAVIS_HOME}/acmeshell"
-  # Change to the module directory.
-  - cd "${TRAVIS_HOME}/acmeshell"
-  # Test, using the vendored module deps.
-  - go test -v -mod=vendor ./...
-  # Install the project binaries, again using the vendored module deps.
-  - go install -v -mod=vendor ./...
-  # Run the acmeshell binary non-interactively with a test script.
+  - go vet -v ./...
+  - env GO11MODULE=on go test -v -mod=vendor ./...
+  - env GO11MODULE=on go install -v -mod=vendor ./...
   - acmeshell -pebble < test/script.txt
