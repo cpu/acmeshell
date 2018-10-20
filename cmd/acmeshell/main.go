@@ -9,9 +9,9 @@ import (
 	"github.com/abiosoft/ishell"
 	"github.com/abiosoft/readline"
 	"github.com/cpu/acmeshell/acme"
+	"github.com/cpu/acmeshell/challtestsrv"
 	"github.com/cpu/acmeshell/cmd"
 	acmeshell "github.com/cpu/acmeshell/shell"
-	"github.com/letsencrypt/boulder/test/challtestsrv"
 )
 
 const (

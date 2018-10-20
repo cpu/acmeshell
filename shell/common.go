@@ -6,7 +6,7 @@ import (
 
 	"github.com/abiosoft/ishell"
 	"github.com/cpu/acmeshell/acme"
-	"github.com/letsencrypt/boulder/test/challtestsrv"
+	"github.com/cpu/acmeshell/challtestsrv"
 )
 
 const (
