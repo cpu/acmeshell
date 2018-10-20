@@ -15,12 +15,11 @@ type pollCmd struct {
 }
 
 type pollOptions struct {
-	maxTries        int
-	sleepSeconds    int
-	status          string
-	orderIndex      int
-	authzIdentifier string
-	identifier      string
+	maxTries     int
+	sleepSeconds int
+	status       string
+	orderIndex   int
+	identifier   string
 }
 
 var poll pollCmd = pollCmd{
