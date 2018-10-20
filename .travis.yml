@@ -3,9 +3,6 @@ language: go
 go:
   - "1.11.x"
 
-env:
-  - GO11MODULE=on
-
 # See: https://arslan.io/2018/08/26/using-go-modules-with-vendor-support-on-travis-ci/
 # We want to disable the install phase to rely on vendored deps
 install: true
@@ -20,6 +17,6 @@ before_script:
 
 script:
   - go vet -v ./...
-  - go test -v -mod=vendor ./...
-  - go install -v -mod=vendor ./...
+  - env GO11MODULE=on go test -v -mod=vendor ./...
+  - env GO11MODULE=on go install -v -mod=vendor ./...
   - acmeshell -pebble < test/script.txt
