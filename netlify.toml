@@ -1,0 +1,3 @@
+[build]
+  base = "website"
+  publish = "website/public/"
