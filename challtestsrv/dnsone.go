@@ -148,7 +148,7 @@ func (s *ChallSrv) dnsHandler(w dns.ResponseWriter, r *dns.Msg) {
 	auth.Minttl = 1
 	m.Ns = append(m.Ns, auth)
 
-	w.WriteMsg(m)
+	_ = w.WriteMsg(m)
 	return
 }
 
