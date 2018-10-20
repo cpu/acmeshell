@@ -5,6 +5,7 @@ env:
   - GO111MODULE=on
 
 install:
+  - GO111MODULE=off go get -v github.com/letsencrypt/pebble
   - GO111MODULE=off go install -v github.com/letsencrypt/pebble
   - go install -v -mod=vendor ./...
 
