@@ -43,7 +43,8 @@ func createOrder(fqdns []string, c *ishell.Context, opts *acme.HTTPPostOptions) 
 	order := &acme.Order{
 		Identifiers: idents,
 	}
-	order, err := client.CreateOrder(order, opts)
+	var err error
+	order, err = client.CreateOrder(order, opts)
 	if err != nil {
 		c.Printf("newOrder: error creating new order with ACME server: %s\n", err)
 		return

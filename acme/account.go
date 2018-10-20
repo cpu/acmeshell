@@ -168,7 +168,11 @@ func sign(signer jose.Signer, data []byte, opts SignOptions) ([]byte, error) {
 	postBody := []byte(signed.FullSerialize())
 
 	// Reparse the serialized body to get a fully populated JWS object to log
-	parsedJWS, err := jose.ParseSigned(string(postBody))
+	var parsedJWS *jose.JSONWebSignature
+	parsedJWS, err = jose.ParseSigned(string(postBody))
+	if err != nil {
+		return nil, err
+	}
 
 	// TODO(@cpu): Figure out a way to log to the client Printf
 	if opts.PrintJWSObject {
