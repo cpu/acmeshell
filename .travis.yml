@@ -9,8 +9,8 @@ env:
 install: true
 
 before_script:
-  # Fetch the latest Pebble into the GOPATH (disabling module support)
-  - env GO11MODULE=off go get -u github.com/letsencrypt/pebble/...
+  # Fetch Pebble
+  - go get -u github.com/letsencrypt/pebble
   # Start Pebble with the correct env & arguments for our tests
   - PEBBLE_WFE_NONCEREJECT=0 pebble -dnsserver 127.0.0.1:5252 &
   # Wait for Pebble to become available before proceeding
