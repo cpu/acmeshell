@@ -1,4 +1,4 @@
-baseURL = "http://www.acmeshell.com/"
+baseURL = "/"
 languageCode = "en-us"
 title = "ACME Shell"
 theme = "github-project-landing-page"
