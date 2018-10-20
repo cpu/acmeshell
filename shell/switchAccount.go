@@ -73,5 +73,4 @@ func switchAccountHandler(c *ishell.Context) {
 
 	client.ActiveAccount = client.Accounts[choice]
 	c.Printf("Active account is now #%d - %q\n", choice, client.ActiveAccount.ID)
-	return
 }

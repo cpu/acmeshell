@@ -14,7 +14,6 @@ type loadAccountCmd struct {
 
 type loadAccountOptions struct {
 	switchTo bool
-	jsonPath string
 }
 
 var LoadAccount loadAccountCmd = loadAccountCmd{
