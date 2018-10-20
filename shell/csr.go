@@ -22,11 +22,10 @@ type csrCmd struct {
 }
 
 type csrOptions struct {
-	commonName  string
-	identifiers []string
-	keyID       string
-	pem         bool
-	b64url      bool
+	commonName string
+	keyID      string
+	pem        bool
+	b64url     bool
 }
 
 var CSR csrCmd = csrCmd{

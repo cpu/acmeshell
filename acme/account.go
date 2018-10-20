@@ -65,7 +65,7 @@ func (opts *SignOptions) validate() error {
 	if opts.KeyID != "" && opts.EmbedKey {
 		return fmt.Errorf("SignOptions validate: cannot specify both KeyID and EmbedKey")
 	}
-	if opts.KeyID == "" && opts.EmbedKey == false {
+	if opts.KeyID == "" && !opts.EmbedKey {
 		return fmt.Errorf("SignOptions validate: you must specify a KeyID or EmbedKey")
 	}
 	if opts.NonceSource == nil {
@@ -168,7 +168,11 @@ func sign(signer jose.Signer, data []byte, opts SignOptions) ([]byte, error) {
 	postBody := []byte(signed.FullSerialize())
 
 	// Reparse the serialized body to get a fully populated JWS object to log
-	parsedJWS, err := jose.ParseSigned(string(postBody))
+	var parsedJWS *jose.JSONWebSignature
+	parsedJWS, err = jose.ParseSigned(string(postBody))
+	if err != nil {
+		return nil, err
+	}
 
 	// TODO(@cpu): Figure out a way to log to the client Printf
 	if opts.PrintJWSObject {
