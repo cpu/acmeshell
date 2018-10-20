@@ -5,12 +5,10 @@ env:
   - GO111MODULE=on
 
 install:
-  - GO111MODULE=off go install -v github.com/letsencrypt/pebble/...
+  - GO111MODULE=off go install -v github.com/letsencrypt/pebble
   - go install -v -mod=vendor ./...
 
 before_script:
-  # Fetch Pebble
-  - go install github.com/letsencrypt/pebble
   # Start Pebble with the correct env & arguments for our tests
   - PEBBLE_WFE_NONCEREJECT=0 pebble -dnsserver 127.0.0.1:5252 &
   # Wait for Pebble to become available before proceeding
