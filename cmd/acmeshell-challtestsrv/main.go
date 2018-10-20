@@ -20,8 +20,6 @@ type managementServer struct {
 	log *log.Logger
 	// The challenge server that is under control by the management server
 	challSrv *challtestsrv.ChallSrv
-	// Shutdown is a channel used to request the management server cleanly shut down
-	shutdown chan bool
 }
 
 func (srv *managementServer) Run() {
