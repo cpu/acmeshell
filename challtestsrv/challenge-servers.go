@@ -1,3 +1,5 @@
+// Package challtestsrv provides an acme challenge response server for HTTP-01,
+// DNS-01 and TLS-ALPN-01 challenge types.
 package challtestsrv
 
 import (

@@ -1,3 +1,5 @@
+// Package shell provides an interactive command shell and the associated
+// acmeshell commands.
 package shell
 
 import (

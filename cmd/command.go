@@ -1,3 +1,4 @@
+// Package cmd provides common command line tools for the acmeshell binaries.
 package cmd
 
 import (

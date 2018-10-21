@@ -1,3 +1,5 @@
+// acmeshell provides a developer-oriented command-line shell interface for
+// interacting with an ACME server.
 package main
 
 import (
