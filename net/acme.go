@@ -1,3 +1,4 @@
+// Package net provides common HTTP utilities.
 package net
 
 import (

@@ -1,3 +1,6 @@
+// acmeshell-challtestsrv exposes the
+// github.com/cpu/acmeshell/challtestsrv package as
+// a stand-alone binary.
 package main
 
 import (

@@ -30,5 +30,7 @@ golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f h1:wMNYb4v58l5UBM7MYRLPG6Zh
 golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sys v0.0.0-20181019160139-8e24a49d80f8 h1:R91KX5nmbbvEd7w370cbVzKC+EzCTGqZq63Zad5IcLM=
 golang.org/x/sys v0.0.0-20181019160139-8e24a49d80f8/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
+golang.org/x/tools v0.0.0-20181019201213-3e7aa9e59977 h1:gyGiDZZwunzILdKyr2iu0bvDC9KvK4wItjj+aV+sBro=
+golang.org/x/tools v0.0.0-20181019201213-3e7aa9e59977/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=
 gopkg.in/square/go-jose.v2 v2.1.9 h1:YCFbL5T2gbmC2sMG12s1x2PAlTK5TZNte3hjZEIcCAg=
 gopkg.in/square/go-jose.v2 v2.1.9/go.mod h1:M9dMgbHiYLoDGQrXy7OpJDJWiKiU//h+vD76mk0e1AI=

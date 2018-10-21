@@ -17,5 +17,6 @@ require (
 	golang.org/x/net v0.0.0-20181017193950-04a2e542c03f // indirect
 	golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f // indirect
 	golang.org/x/sys v0.0.0-20181019160139-8e24a49d80f8 // indirect
+	golang.org/x/tools v0.0.0-20181019201213-3e7aa9e59977 // indirect
 	gopkg.in/square/go-jose.v2 v2.1.9
 )
