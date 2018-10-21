@@ -1,5 +1,5 @@
-// acmeshell provides a developer-oriented command-line shell interface for
-// interacting with an ACME server.
+// The acmeshell command line tool provides a developer-oriented command-line
+// shell interface for interacting with an ACME server.
 package main
 
 import (

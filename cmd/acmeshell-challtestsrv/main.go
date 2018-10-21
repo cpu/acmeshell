@@ -1,4 +1,4 @@
-// acmeshell-challtestsrv exposes the
+// The acmeshell-challtestsrv command line tool exposes the
 // github.com/cpu/acmeshell/challtestsrv package as
 // a stand-alone binary.
 package main

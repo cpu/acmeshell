@@ -121,7 +121,8 @@ func NewACMEShell(opts *ACMEShellOptions) *ACMEShell {
 
 // Run starts the ACMEShell, dropping into an interactive session that blocks
 // on user input until it is time to exit. The ACMEShell's challenge server will
-// be started before starting the shell.
+// be started before starting the shell, and shut down after the shell session
+// ends.
 func (shell *ACMEShell) Run() {
 	// Start the challenge server
 	challSrv := getChallSrv(shell)
