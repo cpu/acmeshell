@@ -10,7 +10,7 @@ import (
 
 	"github.com/abiosoft/ishell"
 	"github.com/abiosoft/readline"
-	"github.com/cpu/acmeshell/acme"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
 	"github.com/cpu/acmeshell/challtestsrv"
 	"github.com/cpu/acmeshell/cmd"
 	acmeshell "github.com/cpu/acmeshell/shell"
@@ -103,7 +103,7 @@ func main() {
 	go challSrv.Run()
 
 	// Create an ACME client
-	client, err := acme.NewClient(acme.ClientConfig{
+	client, err := acmeclient.NewClient(acmeclient.ClientConfig{
 		DirectoryURL: *directory,
 		CACert:       *caCert,
 		AutoRegister: *autoRegister,

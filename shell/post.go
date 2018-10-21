@@ -7,7 +7,8 @@ import (
 	"sync"
 
 	"github.com/abiosoft/ishell"
-	"github.com/cpu/acmeshell/acme"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
+	"github.com/cpu/acmeshell/acme/resources"
 	"github.com/cpu/acmeshell/cmd"
 )
 
@@ -17,8 +18,8 @@ type postCmd struct {
 }
 
 type postOptions struct {
-	acme.HTTPOptions
-	acme.SignOptions
+	acmeclient.HTTPOptions
+	resources.SignOptions
 	postBody     string
 	templateBody bool
 	sign         bool
@@ -56,7 +57,7 @@ var Post postCmd = postCmd{
 	},
 }
 
-func (g postCmd) New(client *acme.Client) *ishell.Cmd {
+func (g postCmd) New(client *acmeclient.Client) *ishell.Cmd {
 	// Get the directory from the client to use when constructing shell commands
 	dirMap, err := client.Directory()
 	cmd.FailOnError(err, "Unable to get ACME server directory")
@@ -84,7 +85,7 @@ func postURL(opts postOptions, targetURL string, c *ishell.Context) {
 
 	postBody := []byte(opts.postBody)
 	if opts.sign {
-		signedBody, err := account.Sign(targetURL, postBody, acme.SignOptions{
+		signedBody, err := account.Sign(targetURL, postBody, resources.SignOptions{
 			NonceSource:    client,
 			PrintJWS:       opts.PrintJWS,
 			PrintJWSObject: opts.PrintJWSObject,

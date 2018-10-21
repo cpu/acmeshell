@@ -10,11 +10,12 @@ import (
 	jose "gopkg.in/square/go-jose.v2"
 
 	"github.com/abiosoft/ishell"
-	"github.com/cpu/acmeshell/acme"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
+	"github.com/cpu/acmeshell/acme/resources"
 )
 
 type keyRolloverOptions struct {
-	acme.HTTPPostOptions
+	acmeclient.HTTPPostOptions
 	printInnerJWS     bool
 	printInnerJWSBody bool
 	keyID             string
@@ -34,7 +35,7 @@ var keyRollover keyRolloverCmd = keyRolloverCmd{
 	},
 }
 
-func (kr keyRolloverCmd) New(client *acme.Client) *ishell.Cmd {
+func (kr keyRolloverCmd) New(client *acmeclient.Client) *ishell.Cmd {
 	return keyRollover.cmd
 }
 
@@ -120,7 +121,7 @@ func rolloverHandler(c *ishell.Context) {
 		return
 	}
 
-	innerSignOpts := acme.SignOptions{
+	innerSignOpts := resources.SignOptions{
 		NonceSource:    client,
 		Key:            newKey,
 		EmbedKey:       true,
@@ -139,7 +140,7 @@ func rolloverHandler(c *ishell.Context) {
 		c.Printf("inner JWS:\n%s\n", string(innerJWS))
 	}
 
-	outerJWS, err := account.Sign(targetURL, innerJWS, acme.SignOptions{
+	outerJWS, err := account.Sign(targetURL, innerJWS, resources.SignOptions{
 		NonceSource:    client,
 		PrintJWS:       false,
 		PrintJWSObject: false,

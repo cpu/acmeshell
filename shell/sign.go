@@ -5,7 +5,8 @@ import (
 	"strings"
 
 	"github.com/abiosoft/ishell"
-	"github.com/cpu/acmeshell/acme"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
+	"github.com/cpu/acmeshell/acme/resources"
 )
 
 type signCmd struct {
@@ -13,7 +14,7 @@ type signCmd struct {
 }
 
 type signCmdOptions struct {
-	acme.SignOptions
+	resources.SignOptions
 	embedKey bool
 	data     []byte
 	keyID    string
@@ -28,7 +29,7 @@ var sign signCmd = signCmd{
 	},
 }
 
-func (s signCmd) New(client *acme.Client) *ishell.Cmd {
+func (s signCmd) New(client *acmeclient.Client) *ishell.Cmd {
 	return s.cmd
 }
 
@@ -41,7 +42,7 @@ func signData(opts signCmdOptions, targetURL string, c *ishell.Context) {
 		return
 	}
 
-	signOpts := acme.SignOptions{
+	signOpts := resources.SignOptions{
 		NonceSource:    client,
 		EmbedKey:       opts.embedKey,
 		PrintJWS:       opts.PrintJWS,

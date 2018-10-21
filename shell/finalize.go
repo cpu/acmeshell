@@ -8,7 +8,8 @@ import (
 	"strings"
 
 	"github.com/abiosoft/ishell"
-	"github.com/cpu/acmeshell/acme"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
+	"github.com/cpu/acmeshell/acme/resources"
 )
 
 type finalizeOptions struct {
@@ -32,7 +33,7 @@ var finalize finalizeCmd = finalizeCmd{
 	},
 }
 
-func (fc finalizeCmd) New(client *acme.Client) *ishell.Cmd {
+func (fc finalizeCmd) New(client *acmeclient.Client) *ishell.Cmd {
 	return finalize.cmd
 }
 
@@ -66,7 +67,7 @@ func finalizeHandler(c *ishell.Context) {
 
 	var orderURL string
 	if len(finalizeFlags.Args()) == 0 {
-		var order *acme.Order
+		var order *resources.Order
 		if opts.orderIndex >= 0 && opts.orderIndex < len(client.ActiveAccount.Orders) {
 			orderURL := client.ActiveAccount.Orders[opts.orderIndex]
 			order, err = getOrderObject(client, orderURL, nil)
@@ -127,7 +128,7 @@ func finalizeHandler(c *ishell.Context) {
 	}
 	finalizeRequestJSON, _ := json.Marshal(&finalizeRequest)
 
-	signedBody, err := client.ActiveAccount.Sign(order.Finalize, finalizeRequestJSON, acme.SignOptions{
+	signedBody, err := client.ActiveAccount.Sign(order.Finalize, finalizeRequestJSON, resources.SignOptions{
 		NonceSource:    client,
 		PrintJWS:       false,
 		PrintJWSObject: false,
@@ -138,7 +139,7 @@ func finalizeHandler(c *ishell.Context) {
 		return
 	}
 
-	postOpts := &acme.HTTPOptions{
+	postOpts := &acmeclient.HTTPOptions{
 		PrintHeaders:  false,
 		PrintStatus:   false,
 		PrintResponse: false,
@@ -157,7 +158,7 @@ func finalizeHandler(c *ishell.Context) {
 	c.Printf("order %q finalization requested\n", order.ID)
 }
 
-func pickOrder(c *ishell.Context) (*acme.Order, error) {
+func pickOrder(c *ishell.Context) (*resources.Order, error) {
 	client := getClient(c)
 	if len(client.ActiveAccount.Orders) == 0 {
 		return nil, fmt.Errorf("active account has no orders")

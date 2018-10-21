@@ -8,7 +8,8 @@ import (
 	"strings"
 
 	"github.com/abiosoft/ishell"
-	"github.com/cpu/acmeshell/acme"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
+	"github.com/cpu/acmeshell/acme/resources"
 )
 
 type getCertOptions struct {
@@ -31,7 +32,7 @@ var getCert getCertCmd = getCertCmd{
 	},
 }
 
-func (gc getCertCmd) New(client *acme.Client) *ishell.Cmd {
+func (gc getCertCmd) New(client *acmeclient.Client) *ishell.Cmd {
 	return getCert.cmd
 }
 
@@ -59,7 +60,7 @@ func getCertHandler(c *ishell.Context) {
 
 	var orderURL string
 	if len(getCertFlags.Args()) == 0 {
-		var order *acme.Order
+		var order *resources.Order
 		if opts.orderIndex >= 0 && opts.orderIndex < len(client.ActiveAccount.Orders) {
 			orderURL := client.ActiveAccount.Orders[opts.orderIndex]
 			order, err = getOrderObject(client, orderURL, nil)
@@ -104,7 +105,7 @@ func getCertHandler(c *ishell.Context) {
 		return
 	}
 
-	httpOpts := &acme.HTTPOptions{
+	httpOpts := &acmeclient.HTTPOptions{
 		PrintHeaders:  false,
 		PrintStatus:   false,
 		PrintResponse: false,

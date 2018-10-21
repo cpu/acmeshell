@@ -11,15 +11,16 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/cpu/acmeshell/acme"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
+	"github.com/cpu/acmeshell/acme/resources"
 )
 
 type tplCtx struct {
-	acct   *acme.Account
-	client *acme.Client
+	acct   *resources.Account
+	client *acmeclient.Client
 }
 
-func (ctx tplCtx) order(index int) (*acme.Order, error) {
+func (ctx tplCtx) order(index int) (*resources.Order, error) {
 	if ctx.acct == nil {
 		return nil, fmt.Errorf("no active account")
 	}
@@ -35,7 +36,7 @@ func (ctx tplCtx) order(index int) (*acme.Order, error) {
 	return getOrderObject(ctx.client, ctx.acct.Orders[index], nil)
 }
 
-func (ctx tplCtx) authz(order *acme.Order, identifier string) (*acme.Authorization, error) {
+func (ctx tplCtx) authz(order *resources.Order, identifier string) (*resources.Authorization, error) {
 	if order == nil {
 		return nil, fmt.Errorf("nil order argument")
 	}
@@ -46,14 +47,14 @@ func (ctx tplCtx) authz(order *acme.Order, identifier string) (*acme.Authorizati
 		return nil, fmt.Errorf("nil client in context")
 	}
 
-	var match *acme.Authorization
+	var match *resources.Authorization
 	for _, authzURL := range order.Authorizations {
 		respCtx := ctx.client.GetURL(authzURL, nil)
 		if respCtx.Err != nil {
 			return nil, respCtx.Err
 		}
 
-		var authz acme.Authorization
+		var authz resources.Authorization
 		err := json.Unmarshal(respCtx.Body, &authz)
 		if err != nil {
 			return nil, err
@@ -73,7 +74,7 @@ func (ctx tplCtx) authz(order *acme.Order, identifier string) (*acme.Authorizati
 	return match, nil
 }
 
-func (ctx tplCtx) challenge(authz *acme.Authorization, challType string) (*acme.Challenge, error) {
+func (ctx tplCtx) challenge(authz *resources.Authorization, challType string) (*resources.Challenge, error) {
 	if authz == nil {
 		return nil, fmt.Errorf("nil authz argument")
 	}
@@ -84,7 +85,7 @@ func (ctx tplCtx) challenge(authz *acme.Authorization, challType string) (*acme.
 		challType = "http-01"
 	}
 
-	var match *acme.Challenge
+	var match *resources.Challenge
 	for _, chall := range authz.Challenges {
 		if chall.Type == challType {
 			match = &chall
@@ -99,7 +100,7 @@ func (ctx tplCtx) challenge(authz *acme.Authorization, challType string) (*acme.
 	return match, nil
 }
 
-func (ctx tplCtx) csr(order *acme.Order, privateKey *ecdsa.PrivateKey) (string, error) {
+func (ctx tplCtx) csr(order *resources.Order, privateKey *ecdsa.PrivateKey) (string, error) {
 	if order == nil {
 		return "", fmt.Errorf("nil order argument")
 	}
@@ -128,7 +129,7 @@ func (ctx tplCtx) csr(order *acme.Order, privateKey *ecdsa.PrivateKey) (string, 
 	return base64.RawURLEncoding.EncodeToString(csrBytes), nil
 }
 
-func (ctx tplCtx) account() (*acme.Account, error) {
+func (ctx tplCtx) account() (*resources.Account, error) {
 	if ctx.acct == nil {
 		return nil, fmt.Errorf("no active account")
 	}

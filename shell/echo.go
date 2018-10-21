@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/abiosoft/ishell"
-	"github.com/cpu/acmeshell/acme"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
 )
 
 type echoCmd struct {
@@ -20,7 +20,7 @@ var echo echoCmd = echoCmd{
 	},
 }
 
-func (e echoCmd) New(client *acme.Client) *ishell.Cmd {
+func (e echoCmd) New(client *acmeclient.Client) *ishell.Cmd {
 	return echo.cmd
 }
 

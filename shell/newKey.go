@@ -15,7 +15,7 @@ import (
 	"crypto/x509"
 
 	"github.com/abiosoft/ishell"
-	"github.com/cpu/acmeshell/acme"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
 )
 
 type newKeyCmd struct {
@@ -39,7 +39,7 @@ var newKey newKeyCmd = newKeyCmd{
 	},
 }
 
-func (nk newKeyCmd) New(client *acme.Client) *ishell.Cmd {
+func (nk newKeyCmd) New(client *acmeclient.Client) *ishell.Cmd {
 	return newKey.cmd
 }
 

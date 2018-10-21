@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/abiosoft/ishell"
-	"github.com/cpu/acmeshell/acme"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
 	"github.com/cpu/acmeshell/cmd"
 )
 
@@ -16,7 +16,7 @@ type getCmd struct {
 }
 
 type getOptions struct {
-	acme.HTTPOptions
+	acmeclient.HTTPOptions
 }
 
 var get getCmd = getCmd{
@@ -49,7 +49,7 @@ var get getCmd = getCmd{
 	},
 }
 
-func (g getCmd) New(client *acme.Client) *ishell.Cmd {
+func (g getCmd) New(client *acmeclient.Client) *ishell.Cmd {
 	// Get the directory from the client to use when constructing shell commands
 	dirMap, err := client.Directory()
 	cmd.FailOnError(err, "Unable to get ACME server directory")

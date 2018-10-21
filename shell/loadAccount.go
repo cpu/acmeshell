@@ -5,7 +5,8 @@ import (
 	"strings"
 
 	"github.com/abiosoft/ishell"
-	"github.com/cpu/acmeshell/acme"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
+	"github.com/cpu/acmeshell/acme/resources"
 )
 
 type loadAccountCmd struct {
@@ -26,7 +27,7 @@ var LoadAccount loadAccountCmd = loadAccountCmd{
 	},
 }
 
-func (a loadAccountCmd) New(client *acme.Client) *ishell.Cmd {
+func (a loadAccountCmd) New(client *acmeclient.Client) *ishell.Cmd {
 	return LoadAccount.cmd
 }
 
@@ -51,7 +52,7 @@ func loadAccountHandler(c *ishell.Context) {
 	argument := strings.TrimSpace(loadAccountFlags.Arg(0))
 	client := getClient(c)
 
-	acct, err := acme.RestoreAccount(argument)
+	acct, err := resources.RestoreAccount(argument)
 	if err != nil {
 		c.Printf("loadAccount: error restoring account from %q : %s\n",
 			argument, err)

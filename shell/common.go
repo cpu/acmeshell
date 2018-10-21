@@ -7,7 +7,7 @@ import (
 	"net/url"
 
 	"github.com/abiosoft/ishell"
-	"github.com/cpu/acmeshell/acme"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
 	"github.com/cpu/acmeshell/challtestsrv"
 )
 
@@ -18,7 +18,7 @@ const (
 )
 
 type AcmeCmd interface {
-	New(client *acme.Client) *ishell.Cmd
+	New(client *acmeclient.Client) *ishell.Cmd
 }
 
 var Commands []AcmeCmd = []AcmeCmd{
@@ -49,18 +49,18 @@ var Commands []AcmeCmd = []AcmeCmd{
 	challSrv,
 }
 
-func getClient(c *ishell.Context) *acme.Client {
+func getClient(c *ishell.Context) *acmeclient.Client {
 	if c.Get(ClientKey) == nil {
 		panic(fmt.Sprintf("nil %q value in ishell.Context", ClientKey))
 	}
 
 	rawClient := c.Get(ClientKey)
 	switch c := rawClient.(type) {
-	case *acme.Client:
+	case *acmeclient.Client:
 		return c
 	}
 
-	panic(fmt.Sprintf("%q value in ishell.Context was not an *acme.Client", ClientKey))
+	panic(fmt.Sprintf("%q value in ishell.Context was not an *acmeclient.Client", ClientKey))
 }
 
 func getChallSrv(c *ishell.Context) *challtestsrv.ChallSrv {

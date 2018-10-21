@@ -14,7 +14,8 @@ import (
 	"strings"
 
 	"github.com/abiosoft/ishell"
-	"github.com/cpu/acmeshell/acme"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
+	"github.com/cpu/acmeshell/acme/resources"
 )
 
 type csrCmd struct {
@@ -37,7 +38,7 @@ var CSR csrCmd = csrCmd{
 	},
 }
 
-func (c csrCmd) New(client *acme.Client) *ishell.Cmd {
+func (c csrCmd) New(client *acmeclient.Client) *ishell.Cmd {
 	return CSR.cmd
 }
 
@@ -65,7 +66,7 @@ func csrHandler(c *ishell.Context) {
 
 	client := getClient(c)
 
-	var order *acme.Order
+	var order *resources.Order
 	if len(csrFlags.Args()) == 0 && *identifiersArg == "" {
 		orders := client.ActiveAccount.Orders
 		if len(orders) == 0 {
@@ -149,7 +150,7 @@ func csrHandler(c *ishell.Context) {
 	}
 }
 
-func csr(client *acme.Client, opts csrOptions, names []string) (string, string, error) {
+func csr(client *acmeclient.Client, opts csrOptions, names []string) (string, string, error) {
 	if len(names) == 0 {
 		return "", "", fmt.Errorf("no names specified")
 	}
@@ -190,10 +191,10 @@ func csr(client *acme.Client, opts csrOptions, names []string) (string, string, 
 	return base64.RawURLEncoding.EncodeToString(csrBytes), string(pemBytes), nil
 }
 
-func getOrderObject(client *acme.Client, orderURL string, opts *acme.HTTPOptions) (*acme.Order, error) {
-	var order acme.Order
+func getOrderObject(client *acmeclient.Client, orderURL string, opts *acmeclient.HTTPOptions) (*resources.Order, error) {
+	var order resources.Order
 	if opts == nil {
-		opts = &acme.HTTPOptions{
+		opts = &acmeclient.HTTPOptions{
 			PrintHeaders:  false,
 			PrintStatus:   false,
 			PrintResponse: false,

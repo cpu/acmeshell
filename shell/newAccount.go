@@ -6,7 +6,8 @@ import (
 
 	"crypto/ecdsa"
 	"github.com/abiosoft/ishell"
-	"github.com/cpu/acmeshell/acme"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
+	"github.com/cpu/acmeshell/acme/resources"
 )
 
 type newAccountCmd struct {
@@ -14,7 +15,7 @@ type newAccountCmd struct {
 }
 
 type newAccountOptions struct {
-	acme.HTTPPostOptions
+	acmeclient.HTTPPostOptions
 	contacts string
 	switchTo bool
 	jsonPath string
@@ -31,7 +32,7 @@ var NewAccount newAccountCmd = newAccountCmd{
 	},
 }
 
-func (a newAccountCmd) New(client *acme.Client) *ishell.Cmd {
+func (a newAccountCmd) New(client *acmeclient.Client) *ishell.Cmd {
 	return NewAccount.cmd
 }
 
@@ -82,7 +83,7 @@ func newAccountHandler(c *ishell.Context) {
 			acctKey = key
 		}
 	}
-	acct, err := acme.NewAccount(emails, acctKey)
+	acct, err := resources.NewAccount(emails, acctKey)
 	if err != nil {
 		c.Printf("newAccount: error creating new account object: %s\n", err)
 		return
@@ -94,7 +95,7 @@ func newAccountHandler(c *ishell.Context) {
 		c.Printf("newAccount: error creating new account with ACME server: %s\n", err)
 		return
 	}
-	// if opts.keyID was empty then acme.NewAccount got a nil key argument and
+	// if opts.keyID was empty then resources.NewAccount got a nil key argument and
 	// generated a new key on the fly. We need to save that key
 	if opts.keyID == "" {
 		client.Keys[acct.ID] = acct.PrivateKey
@@ -106,7 +107,7 @@ func newAccountHandler(c *ishell.Context) {
 	client.Accounts = append(client.Accounts, acct)
 
 	if opts.jsonPath != "" {
-		err := acme.SaveAccount(opts.jsonPath, acct)
+		err := resources.SaveAccount(opts.jsonPath, acct)
 		if err != nil {
 			c.Printf("error saving account to %q : %s\n", opts.jsonPath, err)
 		}

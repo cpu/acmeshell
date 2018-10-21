@@ -5,11 +5,12 @@ import (
 	"strings"
 
 	"github.com/abiosoft/ishell"
-	"github.com/cpu/acmeshell/acme"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
+	"github.com/cpu/acmeshell/acme/resources"
 )
 
 type getAuthzOptions struct {
-	acme.HTTPOptions
+	acmeclient.HTTPOptions
 	orderIndex int
 	identifier string
 }
@@ -28,7 +29,7 @@ var getAuthz getAuthzCmd = getAuthzCmd{
 	},
 }
 
-func (g getAuthzCmd) New(client *acme.Client) *ishell.Cmd {
+func (g getAuthzCmd) New(client *acmeclient.Client) *ishell.Cmd {
 	return getAuthz.cmd
 }
 
@@ -58,7 +59,7 @@ func getAuthzHandler(c *ishell.Context) {
 
 	var authzURL string
 	if len(getAuthzFlags.Args()) == 0 {
-		var order *acme.Order
+		var order *resources.Order
 		if opts.orderIndex >= 0 && opts.orderIndex < len(client.ActiveAccount.Orders) {
 			orderURL := client.ActiveAccount.Orders[opts.orderIndex]
 			order, err = getOrderObject(client, orderURL, nil)
@@ -73,7 +74,7 @@ func getAuthzHandler(c *ishell.Context) {
 				return
 			}
 		}
-		var authz *acme.Authorization
+		var authz *resources.Authorization
 		if opts.identifier != "" {
 			for _, authURL := range order.Authorizations {
 				a, err := getAuthzObject(client, authURL, nil)

@@ -4,7 +4,7 @@ import (
 	"flag"
 
 	"github.com/abiosoft/ishell"
-	"github.com/cpu/acmeshell/acme"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
 )
 
 type challSrvOptions struct {
@@ -29,7 +29,7 @@ var challSrv challSrvCmd = challSrvCmd{
 	},
 }
 
-func (c challSrvCmd) New(client *acme.Client) *ishell.Cmd {
+func (c challSrvCmd) New(client *acmeclient.Client) *ishell.Cmd {
 	return challSrv.cmd
 }
 

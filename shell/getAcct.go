@@ -7,10 +7,12 @@ import (
 
 	"github.com/abiosoft/ishell"
 	"github.com/cpu/acmeshell/acme"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
+	"github.com/cpu/acmeshell/acme/resources"
 )
 
 type getAccountOptions struct {
-	acme.HTTPOptions
+	acmeclient.HTTPOptions
 }
 
 type getAccountCmd struct {
@@ -27,7 +29,7 @@ var getAccount getAccountCmd = getAccountCmd{
 	},
 }
 
-func (g getAccountCmd) New(client *acme.Client) *ishell.Cmd {
+func (g getAccountCmd) New(client *acmeclient.Client) *ishell.Cmd {
 	return getAccount.cmd
 }
 
@@ -62,7 +64,7 @@ func getAccountHandler(c *ishell.Context) {
 		return
 	}
 
-	signedBody, err := client.ActiveAccount.Sign(newAcctURL, reqBody, acme.SignOptions{
+	signedBody, err := client.ActiveAccount.Sign(newAcctURL, reqBody, resources.SignOptions{
 		EmbedKey:    true,
 		NonceSource: client,
 	})

@@ -5,11 +5,12 @@ import (
 	"strings"
 
 	"github.com/abiosoft/ishell"
-	"github.com/cpu/acmeshell/acme"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
+	"github.com/cpu/acmeshell/acme/resources"
 )
 
 type getOrderOptions struct {
-	acme.HTTPOptions
+	acmeclient.HTTPOptions
 	orderIndex int
 }
 
@@ -27,7 +28,7 @@ var getOrder getOrderCmd = getOrderCmd{
 	},
 }
 
-func (g getOrderCmd) New(client *acme.Client) *ishell.Cmd {
+func (g getOrderCmd) New(client *acmeclient.Client) *ishell.Cmd {
 	return getOrder.cmd
 }
 
@@ -51,7 +52,7 @@ func getOrderHandler(c *ishell.Context) {
 
 	var orderURL string
 	if len(getOrderFlags.Args()) == 0 {
-		var order *acme.Order
+		var order *resources.Order
 		if opts.orderIndex >= 0 && opts.orderIndex < len(client.ActiveAccount.Orders) {
 			orderURL := client.ActiveAccount.Orders[opts.orderIndex]
 			order, err = getOrderObject(client, orderURL, nil)

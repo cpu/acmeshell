@@ -14,7 +14,7 @@ import (
 	"strings"
 
 	"github.com/abiosoft/ishell"
-	"github.com/cpu/acmeshell/acme"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
 	jose "gopkg.in/square/go-jose.v2"
 )
 
@@ -39,7 +39,7 @@ var viewKey viewKeyCmd = viewKeyCmd{
 	},
 }
 
-func (vk viewKeyCmd) New(client *acme.Client) *ishell.Cmd {
+func (vk viewKeyCmd) New(client *acmeclient.Client) *ishell.Cmd {
 	return viewKey.cmd
 }
 
