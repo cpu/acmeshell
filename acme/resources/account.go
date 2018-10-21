@@ -1,4 +1,6 @@
-package acme
+// Package resources provides types for representing and interacting with ACME
+// protocol resources.
+package resources
 
 import (
 	"crypto/ecdsa"

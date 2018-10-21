@@ -1,5 +1,5 @@
-// Package acme provides a low-level ACME v2 client and associated types.
-package acme
+// Package client provides a low-level ACME v2 client.
+package client
 
 import (
 	"crypto/ecdsa"
@@ -11,21 +11,10 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/cpu/acmeshell/acme"
+	resources "github.com/cpu/acmeshell/acme/resources"
 	"github.com/cpu/acmeshell/cmd"
 	acmenet "github.com/cpu/acmeshell/net"
-)
-
-const (
-	// See https://ietf-wg-acme.github.io/acme/draft-ietf-acme-acme.html#rfc.section.7.1.1
-	// The ACME directory key for the newNonce endpoint
-	NEW_NONCE_ENDPOINT = "newNonce"
-	// The ACME directory key for the newAccount endpoint.
-	NEW_ACCOUNT_ENDPOINT = "newAccount"
-	// The ACME directory key for the newOrder endpoint.
-	NEW_ORDER_ENDPOINT = "newOrder"
-	// The HTTP response header used by ACME to communicate a fresh nonce. See
-	// https://ietf-wg-acme.github.io/acme/draft-ietf-acme-acme.html#rfc.section.6.5.1
-	REPLAY_NONCE_HEADER = "Replay-Nonce"
 )
 
 // Client allows interaction with an ACME server. A client may have many
@@ -66,13 +55,13 @@ type Client struct {
 	DirectoryURL *url.URL
 	// A pointer to the Account object that is considered currently active for
 	// signing JWS for ACME requests.
-	ActiveAccount *Account
+	ActiveAccount *resources.Account
 	// A map of key identifiers to private keys. These keys are used for signing
 	// operations that shouldn't use an Account's associated key.
 	Keys map[string]*ecdsa.PrivateKey
 	// A slice of Account object pointers. The ActiveAccount is selected from this
 	// list of available accounts.
-	Accounts []*Account
+	Accounts []*resources.Account
 	// the net object is used to make HTTP GET/POST/HEAD requests to the ACME
 	// server.
 	net *acmenet.ACMENet
@@ -197,7 +186,7 @@ func NewClient(config ClientConfig) (*Client, error) {
 	// If requested, try to load an existing account from disk
 	if config.AccountPath != "" {
 		log.Printf("Restoring account from %q\n", config.AccountPath)
-		acct, err := RestoreAccount(config.AccountPath)
+		acct, err := resources.RestoreAccount(config.AccountPath)
 
 		// if there was an error loading the account and auto-register is not
 		// specified then return an error. We have no account to use.
@@ -223,7 +212,7 @@ func NewClient(config ClientConfig) (*Client, error) {
 		log.Printf("AutoRegister is enabled and there is no loaded account. " +
 			"Creating a new account\n")
 		// Make the account object
-		acct, err := NewAccount([]string{config.ContactEmail}, nil)
+		acct, err := resources.NewAccount([]string{config.ContactEmail}, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -243,7 +232,7 @@ func NewClient(config ClientConfig) (*Client, error) {
 		// if there is an account path configured, save the account we just made to
 		// that path
 		if config.AccountPath != "" {
-			err := SaveAccount(config.AccountPath, client.ActiveAccount)
+			err := resources.SaveAccount(config.AccountPath, client.ActiveAccount)
 			if err != nil {
 				return nil, fmt.Errorf("error saving account to %q : %s",
 					config.AccountPath, err)
@@ -384,10 +373,10 @@ func (c *Client) Nonce() (string, error) {
 // RefreshNonce fetches a new nonce from the ACME server's NewNonce endpoint and
 // stores it in the client's memory to be used in subsequent Nonce calls.
 func (c *Client) RefreshNonce() error {
-	nonceURL, ok := c.GetEndpointURL(NEW_NONCE_ENDPOINT)
+	nonceURL, ok := c.GetEndpointURL(acme.NEW_NONCE_ENDPOINT)
 	if !ok {
 		return fmt.Errorf(
-			"Missing %q entry in ACME server directory", NEW_NONCE_ENDPOINT)
+			"Missing %q entry in ACME server directory", acme.NEW_NONCE_ENDPOINT)
 	}
 
 	resp, err := c.net.HeadURL(nonceURL)
@@ -397,18 +386,18 @@ func (c *Client) RefreshNonce() error {
 
 	if resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("%q returned HTTP status %d, expected %d\n",
-			NEW_NONCE_ENDPOINT, resp.StatusCode, http.StatusOK)
+			acme.NEW_NONCE_ENDPOINT, resp.StatusCode, http.StatusOK)
 	}
 
-	nonce := resp.Header.Get(REPLAY_NONCE_HEADER)
+	nonce := resp.Header.Get(acme.REPLAY_NONCE_HEADER)
 	if nonce == "" {
 		return fmt.Errorf("%q returned no %q header value",
-			NEW_NONCE_ENDPOINT, REPLAY_NONCE_HEADER)
+			acme.NEW_NONCE_ENDPOINT, acme.REPLAY_NONCE_HEADER)
 	}
 
 	if nonce == c.nonce {
 		return fmt.Errorf("%q returned the nonce %q more than once",
-			NEW_NONCE_ENDPOINT, REPLAY_NONCE_HEADER)
+			acme.NEW_NONCE_ENDPOINT, acme.REPLAY_NONCE_HEADER)
 	}
 
 	c.nonce = nonce
@@ -416,7 +405,9 @@ func (c *Client) RefreshNonce() error {
 	return nil
 }
 
-// CreateAccount creates the given Account resource with the ACME server. A pointer to the Account is returned with a populated ID field if the NewAccount operation is successful, otherwise an error is returned.
+// CreateAccount creates the given Account resource with the ACME server.
+// A pointer to the Account is returned with a populated ID field if the
+// NewAccount operation is successful, otherwise an error is returned.
 //
 // Important: This function always unconditionally agrees to the server's terms
 // of service (e.g. it sends "termsOfServiceAgreed:"true" in all account
@@ -426,7 +417,10 @@ func (c *Client) RefreshNonce() error {
 // See
 // https://ietf-wg-acme.github.io/acme/draft-ietf-acme-acme.html#rfc.section.7.3
 // for more information on account creation.
-func (c *Client) CreateAccount(acct *Account, opts *HTTPPostOptions) (*Account, error) {
+//
+// TODO(@cpu): Since this function receives a pointer to an account it should
+// just mutate in place and only return an error.
+func (c *Client) CreateAccount(acct *resources.Account, opts *HTTPPostOptions) (*resources.Account, error) {
 	if c.nonce == "" {
 		if err := c.RefreshNonce(); err != nil {
 			return nil, err
@@ -453,26 +447,29 @@ func (c *Client) CreateAccount(acct *Account, opts *HTTPPostOptions) (*Account, 
 		return nil, err
 	}
 
-	newAcctURL, ok := c.GetEndpointURL(NEW_ACCOUNT_ENDPOINT)
+	newAcctURL, ok := c.GetEndpointURL(acme.NEW_ACCOUNT_ENDPOINT)
 	if !ok {
 		return nil, fmt.Errorf(
 			"create: ACME server missing %q endpoint in directory",
-			NEW_ACCOUNT_ENDPOINT)
+			acme.NEW_ACCOUNT_ENDPOINT)
 	}
 
-	signedBody, err := acct.Sign(newAcctURL, reqBody, SignOptions{
-		EmbedKey:       true,
-		NonceSource:    c,
-		PrintJWS:       opts.PrintJWS,
-		PrintJWSObject: opts.PrintJWSObject,
-		PrintJSON:      opts.PrintJSON,
-	})
+	signedBody, err := acct.Sign(
+		newAcctURL,
+		reqBody,
+		resources.SignOptions{
+			EmbedKey:       true,
+			NonceSource:    c,
+			PrintJWS:       opts.PrintJWS,
+			PrintJWSObject: opts.PrintJWSObject,
+			PrintJSON:      opts.PrintJSON,
+		})
 	if err != nil {
 		return nil, fmt.Errorf("create: %s\n", err)
 	}
 
 	log.Printf("Sending %q request (contact: %s) to %q",
-		NEW_ACCOUNT_ENDPOINT, acct.Contact, newAcctURL)
+		acme.NEW_ACCOUNT_ENDPOINT, acct.Contact, newAcctURL)
 	respCtx := c.PostURL(newAcctURL, signedBody, &opts.HTTPOptions)
 	if respCtx.Err != nil {
 		return nil, err
@@ -502,7 +499,10 @@ func (c *Client) CreateAccount(acct *Account, opts *HTTPPostOptions) (*Account, 
 // For more information on Order creation see "Applying for Certificate
 // Issuance" in the ACME specification:
 // https://ietf-wg-acme.github.io/acme/draft-ietf-acme-acme.html#rfc.section.7.4
-func (c *Client) CreateOrder(order *Order, opts *HTTPPostOptions) (*Order, error) {
+//
+// TODO(@cpu): Since this function receives a pointer to an order it should just
+// mutate it in place and only return an error.
+func (c *Client) CreateOrder(order *resources.Order, opts *HTTPPostOptions) (*resources.Order, error) {
 	if c.nonce == "" {
 		if err := c.RefreshNonce(); err != nil {
 			return nil, err
@@ -516,7 +516,7 @@ func (c *Client) CreateOrder(order *Order, opts *HTTPPostOptions) (*Order, error
 	}
 
 	req := struct {
-		Identifiers []Identifier
+		Identifiers []resources.Identifier
 	}{
 		Identifiers: order.Identifiers,
 	}
@@ -526,21 +526,24 @@ func (c *Client) CreateOrder(order *Order, opts *HTTPPostOptions) (*Order, error
 		return nil, err
 	}
 
-	newOrderURL, ok := c.GetEndpointURL(NEW_ORDER_ENDPOINT)
+	newOrderURL, ok := c.GetEndpointURL(acme.NEW_ORDER_ENDPOINT)
 	if !ok {
 		return nil, fmt.Errorf(
 			"createOrder: ACME server missing %q endpoint in directory",
-			NEW_ORDER_ENDPOINT)
+			acme.NEW_ORDER_ENDPOINT)
 	}
 
 	// Save the account that will create this order
 	order.Account = c.ActiveAccount
-	signedBody, err := c.ActiveAccount.Sign(newOrderURL, reqBody, SignOptions{
-		NonceSource:    c,
-		PrintJWS:       opts.PrintJWS,
-		PrintJWSObject: opts.PrintJWSObject,
-		PrintJSON:      opts.PrintJSON,
-	})
+	signedBody, err := c.ActiveAccount.Sign(
+		newOrderURL,
+		reqBody,
+		resources.SignOptions{
+			NonceSource:    c,
+			PrintJWS:       opts.PrintJWS,
+			PrintJWSObject: opts.PrintJWSObject,
+			PrintJSON:      opts.PrintJSON,
+		})
 	if err != nil {
 		return nil, fmt.Errorf("createOrder: %s\n", err)
 	}
@@ -581,7 +584,10 @@ func (c *Client) CreateOrder(order *Order, opts *HTTPPostOptions) (*Order, error
 //
 // Calling UpdateOrder is required to refresh an Order's Status field to
 // synchronize the resource with the server-side representation.
-func (c *Client) UpdateOrder(order *Order, opts *HTTPOptions) (*Order, error) {
+//
+// TODO(@cpu): Since this function receives a pointer to an Order it should just
+// mutate it in place and only return an error.
+func (c *Client) UpdateOrder(order *resources.Order, opts *HTTPOptions) (*resources.Order, error) {
 	if order == nil {
 		return nil, fmt.Errorf("updateOrder: order must not be nil")
 	}

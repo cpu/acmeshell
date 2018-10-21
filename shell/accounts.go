@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/abiosoft/ishell"
-	"github.com/cpu/acmeshell/acme"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
 )
 
 type accountsCmd struct {
@@ -35,7 +35,7 @@ var Accounts accountsCmd = accountsCmd{
 	},
 }
 
-func (a accountsCmd) New(client *acme.Client) *ishell.Cmd {
+func (a accountsCmd) New(client *acmeclient.Client) *ishell.Cmd {
 	return Accounts.cmd
 }
 

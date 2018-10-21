@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/abiosoft/ishell"
-	"github.com/cpu/acmeshell/acme"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
 )
 
 type loadKeyCmd struct {
@@ -29,7 +29,7 @@ var loadKey loadKeyCmd = loadKeyCmd{
 	},
 }
 
-func (lk loadKeyCmd) New(client *acme.Client) *ishell.Cmd {
+func (lk loadKeyCmd) New(client *acmeclient.Client) *ishell.Cmd {
 	return loadKey.cmd
 }
 

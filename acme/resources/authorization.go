@@ -1,4 +1,4 @@
-package acme
+package resources
 
 // The Identifier resource represents a subject identifier that can be included
 // in a certificate.

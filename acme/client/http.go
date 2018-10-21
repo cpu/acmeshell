@@ -1,4 +1,4 @@
-package acme
+package client
 
 import (
 	"encoding/json"

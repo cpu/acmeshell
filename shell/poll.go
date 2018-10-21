@@ -7,7 +7,8 @@ import (
 	"time"
 
 	"github.com/abiosoft/ishell"
-	"github.com/cpu/acmeshell/acme"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
+	"github.com/cpu/acmeshell/acme/resources"
 )
 
 type pollCmd struct {
@@ -31,7 +32,7 @@ var poll pollCmd = pollCmd{
 	},
 }
 
-func (a pollCmd) New(client *acme.Client) *ishell.Cmd {
+func (a pollCmd) New(client *acmeclient.Client) *ishell.Cmd {
 	return poll.cmd
 }
 
@@ -60,7 +61,7 @@ func pollHandler(c *ishell.Context) {
 			c.Printf("poll: the active account has no orders\n")
 			return
 		}
-		var order *acme.Order
+		var order *resources.Order
 		if opts.orderIndex >= 0 && opts.orderIndex < len(client.ActiveAccount.Orders) {
 			orderURL := client.ActiveAccount.Orders[opts.orderIndex]
 			order, err = getOrderObject(client, orderURL, nil)

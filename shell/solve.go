@@ -13,7 +13,8 @@ import (
 	jose "gopkg.in/square/go-jose.v2"
 
 	"github.com/abiosoft/ishell"
-	"github.com/cpu/acmeshell/acme"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
+	"github.com/cpu/acmeshell/acme/resources"
 )
 
 type solveOptions struct {
@@ -36,7 +37,7 @@ var solve solveCmd = solveCmd{
 	},
 }
 
-func (s solveCmd) New(client *acme.Client) *ishell.Cmd {
+func (s solveCmd) New(client *acmeclient.Client) *ishell.Cmd {
 	return solve.cmd
 }
 
@@ -90,7 +91,7 @@ func solveHandler(c *ishell.Context) {
 		return
 	}
 
-	var chall *acme.Challenge
+	var chall *resources.Challenge
 	if opts.challType == "" {
 		chall, err = pickChall(c, authz)
 		if err != nil {
@@ -142,7 +143,7 @@ func solveHandler(c *ishell.Context) {
 	}
 	c.Printf("Challenge response ready\n")
 
-	signedBody, err := client.ActiveAccount.Sign(chall.URL, []byte("{}"), acme.SignOptions{
+	signedBody, err := client.ActiveAccount.Sign(chall.URL, []byte("{}"), resources.SignOptions{
 		NonceSource:    client,
 		PrintJWS:       false,
 		PrintJWSObject: false,
@@ -153,7 +154,7 @@ func solveHandler(c *ishell.Context) {
 		return
 	}
 
-	postOpts := &acme.HTTPOptions{
+	postOpts := &acmeclient.HTTPOptions{
 		PrintHeaders:  false,
 		PrintStatus:   false,
 		PrintResponse: false,
@@ -172,7 +173,7 @@ func solveHandler(c *ishell.Context) {
 	c.Printf("solve: %q challenge for identifier %q (%q) started\n", chall.Type, authz.Identifier.Value, chall.URL)
 }
 
-func pickChall(c *ishell.Context, authz *acme.Authorization) (*acme.Challenge, error) {
+func pickChall(c *ishell.Context, authz *resources.Authorization) (*resources.Challenge, error) {
 	if len(authz.Challenges) == 0 {
 		return nil, fmt.Errorf("authz %q has no challenges", authz.ID)
 	}
@@ -185,10 +186,10 @@ func pickChall(c *ishell.Context, authz *acme.Authorization) (*acme.Challenge, e
 	return &authz.Challenges[choice], nil
 }
 
-func pickAuthz(c *ishell.Context, order *acme.Order) (*acme.Authorization, error) {
+func pickAuthz(c *ishell.Context, order *resources.Order) (*resources.Authorization, error) {
 	client := getClient(c)
 
-	identifiersToAuthz := make(map[string]*acme.Authorization)
+	identifiersToAuthz := make(map[string]*resources.Authorization)
 	for _, authzURL := range order.Authorizations {
 		authz, err := getAuthzObject(client, authzURL, nil)
 		if err != nil {
@@ -213,11 +214,11 @@ func pickAuthz(c *ishell.Context, order *acme.Order) (*acme.Authorization, error
 	return authz, nil
 }
 
-func getAuthzObject(client *acme.Client, authzURL string, opts *acme.HTTPOptions) (*acme.Authorization, error) {
-	var authz acme.Authorization
+func getAuthzObject(client *acmeclient.Client, authzURL string, opts *acmeclient.HTTPOptions) (*resources.Authorization, error) {
+	var authz resources.Authorization
 
 	if opts == nil {
-		opts = &acme.HTTPOptions{
+		opts = &acmeclient.HTTPOptions{
 			PrintHeaders:  false,
 			PrintStatus:   false,
 			PrintResponse: false,
@@ -237,10 +238,10 @@ func getAuthzObject(client *acme.Client, authzURL string, opts *acme.HTTPOptions
 	return &authz, nil
 }
 
-func getChallengeObject(client *acme.Client, challengeURL string, opts *acme.HTTPOptions) (*acme.Challenge, error) {
-	var chall acme.Challenge
+func getChallengeObject(client *acmeclient.Client, challengeURL string, opts *acmeclient.HTTPOptions) (*resources.Challenge, error) {
+	var chall resources.Challenge
 	if opts == nil {
-		opts = &acme.HTTPOptions{
+		opts = &acmeclient.HTTPOptions{
 			PrintHeaders:  false,
 			PrintStatus:   false,
 			PrintResponse: false,

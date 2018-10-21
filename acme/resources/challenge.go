@@ -1,4 +1,4 @@
-package acme
+package resources
 
 // The ACME Challenge resource represents an action that the client must take to
 // authorize a given account for a specific identifier in order to issue

@@ -5,11 +5,12 @@ import (
 	"strings"
 
 	"github.com/abiosoft/ishell"
-	"github.com/cpu/acmeshell/acme"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
+	"github.com/cpu/acmeshell/acme/resources"
 )
 
 type getChallOptions struct {
-	acme.HTTPOptions
+	acmeclient.HTTPOptions
 	orderIndex int
 	identifier string
 	challType  string
@@ -29,7 +30,7 @@ var getChall getChallCmd = getChallCmd{
 	},
 }
 
-func (g getChallCmd) New(client *acme.Client) *ishell.Cmd {
+func (g getChallCmd) New(client *acmeclient.Client) *ishell.Cmd {
 	return getChall.cmd
 }
 
@@ -55,7 +56,7 @@ func getChallHandler(c *ishell.Context) {
 
 	var challURL string
 	if len(getChallFlags.Args()) == 0 {
-		var order *acme.Order
+		var order *resources.Order
 		if opts.orderIndex >= 0 && opts.orderIndex < len(client.ActiveAccount.Orders) {
 			orderURL := client.ActiveAccount.Orders[opts.orderIndex]
 			order, err = getOrderObject(client, orderURL, nil)
@@ -70,7 +71,7 @@ func getChallHandler(c *ishell.Context) {
 				return
 			}
 		}
-		var authz *acme.Authorization
+		var authz *resources.Authorization
 		if opts.identifier != "" {
 			for _, authURL := range order.Authorizations {
 				a, err := getAuthzObject(client, authURL, nil)
@@ -95,7 +96,7 @@ func getChallHandler(c *ishell.Context) {
 			}
 		}
 
-		var chall *acme.Challenge
+		var chall *resources.Challenge
 		if opts.challType != "" {
 			for _, c := range authz.Challenges {
 				if c.Type == opts.challType {

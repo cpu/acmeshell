@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/abiosoft/ishell"
-	"github.com/cpu/acmeshell/acme"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
 )
 
 type switchAccountCmd struct {
@@ -23,7 +23,7 @@ var SwitchAccount switchAccountCmd = switchAccountCmd{
 	},
 }
 
-func (a switchAccountCmd) New(client *acme.Client) *ishell.Cmd {
+func (a switchAccountCmd) New(client *acmeclient.Client) *ishell.Cmd {
 	return SwitchAccount.cmd
 }
 

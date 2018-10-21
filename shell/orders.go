@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/abiosoft/ishell"
-	"github.com/cpu/acmeshell/acme"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
 )
 
 type ordersCmd struct {
@@ -27,7 +27,7 @@ var Orders ordersCmd = ordersCmd{
 	},
 }
 
-func (a ordersCmd) New(client *acme.Client) *ishell.Cmd {
+func (a ordersCmd) New(client *acmeclient.Client) *ishell.Cmd {
 	return Orders.cmd
 }
 
@@ -63,7 +63,7 @@ func ordersHandler(c *ishell.Context) {
 		for i, o := range orders {
 			// Use a hardcoded HTTPOptions because this is a background operation and
 			// we never want to print headers/status
-			_, err := client.UpdateOrder(o, &acme.HTTPOptions{
+			_, err := client.UpdateOrder(o, &acmeclient.HTTPOptions{
 				PrintHeaders: false,
 				PrintStatus:  false,
 			})

@@ -5,7 +5,8 @@ import (
 	"strings"
 
 	"github.com/abiosoft/ishell"
-	"github.com/cpu/acmeshell/acme"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
+	"github.com/cpu/acmeshell/acme/resources"
 )
 
 type newOrderCmd struct {
@@ -21,26 +22,26 @@ var NewOrder newOrderCmd = newOrderCmd{
 	},
 }
 
-func (a newOrderCmd) New(client *acme.Client) *ishell.Cmd {
+func (a newOrderCmd) New(client *acmeclient.Client) *ishell.Cmd {
 	return NewOrder.cmd
 }
 
-func createOrder(fqdns []string, c *ishell.Context, opts *acme.HTTPPostOptions) {
-	var idents []acme.Identifier
+func createOrder(fqdns []string, c *ishell.Context, opts *acmeclient.HTTPPostOptions) {
+	var idents []resources.Identifier
 	// Convert the fqdns to DNS identifiers
 	for _, ident := range fqdns {
 		val := strings.TrimSpace(ident)
 		if val == "" {
 			continue
 		}
-		idents = append(idents, acme.Identifier{
+		idents = append(idents, resources.Identifier{
 			Type:  "dns",
 			Value: val,
 		})
 	}
 
 	client := getClient(c)
-	orderRequest := &acme.Order{
+	orderRequest := &resources.Order{
 		Identifiers: idents,
 	}
 	_, err := client.CreateOrder(orderRequest, opts)
@@ -63,7 +64,7 @@ func newOrderHandler(c *ishell.Context) {
 	newOrderFlags := flag.NewFlagSet("newOrder", flag.ContinueOnError)
 	identifiersArg := newOrderFlags.String("identifiers", "", "Comma separated list of DNS identifiers")
 
-	httpOpts := &acme.HTTPPostOptions{}
+	httpOpts := &acmeclient.HTTPPostOptions{}
 
 	newOrderFlags.BoolVar(&httpOpts.PrintHeaders, "headers", false, "Print HTTP response headers")
 	newOrderFlags.BoolVar(&httpOpts.PrintStatus, "status", true, "Print HTTP response status code")

@@ -1,4 +1,4 @@
-package acme
+package resources
 
 // The Order resource represents a collection of identifiers that an account
 // wishes to create a Certificate for.
