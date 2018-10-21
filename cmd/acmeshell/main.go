@@ -83,7 +83,8 @@ func main() {
 		caCert = &pebbleCA
 	}
 
-	// TODO(@cpu): There should be an acmeshell that does this crap all at once
+	// TODO(@cpu): There should be an acmeshell function that does this crap all
+	// at once
 
 	// Create an interactive shell
 	shell := ishell.NewWithConfig(&readline.Config{
