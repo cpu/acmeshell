@@ -4,15 +4,9 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"log"
 	"os"
 
-	"github.com/abiosoft/ishell"
-	"github.com/abiosoft/readline"
 	acmeclient "github.com/cpu/acmeshell/acme/client"
-	"github.com/cpu/acmeshell/challtestsrv"
-	"github.com/cpu/acmeshell/cmd"
 	acmeshell "github.com/cpu/acmeshell/shell"
 )
 
@@ -83,46 +77,19 @@ func main() {
 		caCert = &pebbleCA
 	}
 
-	// TODO(@cpu): There should be an acmeshell function that does this crap all
-	// at once
-
-	// Create an interactive shell
-	shell := ishell.NewWithConfig(&readline.Config{
-		Prompt: acmeshell.BasePrompt,
-	})
-
-	challSrv, err := challtestsrv.New(challtestsrv.Config{
-		HTTPOneAddrs:    []string{fmt.Sprintf(":%d", *httpPort)},
-		TLSALPNOneAddrs: []string{fmt.Sprintf(":%d", *tlsPort)},
-		DNSOneAddrs:     []string{fmt.Sprintf(":%d", *dnsPort)},
-		Log:             log.New(os.Stdout, "", log.Ldate|log.Ltime),
-	})
-	cmd.FailOnError(err, "Unable to create challenge test server")
-	// Stash the challenge server in the shell for commands to access
-	shell.Set(acmeshell.ChallSrvKey, challSrv)
-
-	go challSrv.Run()
-
-	// Create an ACME client
-	client, err := acmeclient.NewClient(acmeclient.ClientConfig{
-		DirectoryURL: *directory,
-		CACert:       *caCert,
-		AutoRegister: *autoRegister,
-		AccountPath:  *acctPath,
-		ContactEmail: *email,
-	})
-	cmd.FailOnError(err, "Unable to create ACME client")
-
-	// Stash the ACME client in the shell for commands to access
-	shell.Set(acmeshell.ClientKey, client)
-
-	// Add all of the ACME shell's commands
-	for _, cmd := range acmeshell.Commands {
-		shell.AddCmd(cmd.New(client))
+	config := &acmeshell.ACMEShellOptions{
+		ClientConfig: acmeclient.ClientConfig{
+			DirectoryURL: *directory,
+			CACert:       *caCert,
+			ContactEmail: *email,
+			AccountPath:  *acctPath,
+			AutoRegister: *autoRegister,
+		},
+		HTTPPort: *httpPort,
+		TLSPort:  *tlsPort,
+		DNSPort:  *dnsPort,
 	}
 
-	shell.Println("Welcome to ACME Shell")
+	shell := acmeshell.NewACMEShell(config)
 	shell.Run()
-	shell.Println("Goodbye!")
-	challSrv.Shutdown()
 }
