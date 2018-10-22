@@ -35,11 +35,11 @@ func PickOrder(c *ishell.Context) (*resources.Order, error) {
 	var order = &resources.Order{
 		ID: orderURL,
 	}
-	updatedOrder, err := client.UpdateOrder(order, nil)
+	err := client.UpdateOrder(order, nil)
 	if err != nil {
 		return nil, err
 	}
-	return updatedOrder, nil
+	return order, nil
 }
 
 func PickAuthz(c *ishell.Context, order *resources.Order) (*resources.Authorization, error) {

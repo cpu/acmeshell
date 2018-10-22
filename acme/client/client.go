@@ -221,7 +221,7 @@ func NewClient(config ClientConfig) (*Client, error) {
 		// use the auto-registered account as the active account
 		client.ActiveAccount = acct
 		// create the account with the ACME server
-		acct, err = client.CreateAccount(acct, nil)
+		err = client.CreateAccount(acct, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -406,8 +406,9 @@ func (c *Client) RefreshNonce() error {
 }
 
 // CreateAccount creates the given Account resource with the ACME server.
-// A pointer to the Account is returned with a populated ID field if the
-// NewAccount operation is successful, otherwise an error is returned.
+// The Account is updated with the ID returned in the server's response's
+// Location header if the operation is successful, otherwise an error is
+// returned.
 //
 // Important: This function always unconditionally agrees to the server's terms
 // of service (e.g. it sends "termsOfServiceAgreed:"true" in all account
@@ -417,17 +418,14 @@ func (c *Client) RefreshNonce() error {
 // See
 // https://ietf-wg-acme.github.io/acme/draft-ietf-acme-acme.html#rfc.section.7.3
 // for more information on account creation.
-//
-// TODO(@cpu): Since this function receives a pointer to an account it should
-// just mutate in place and only return an error.
-func (c *Client) CreateAccount(acct *resources.Account, opts *HTTPPostOptions) (*resources.Account, error) {
+func (c *Client) CreateAccount(acct *resources.Account, opts *HTTPPostOptions) error {
 	if c.nonce == "" {
 		if err := c.RefreshNonce(); err != nil {
-			return nil, err
+			return err
 		}
 	}
 	if acct.ID != "" {
-		return nil, fmt.Errorf(
+		return fmt.Errorf(
 			"create: account already exists under ID %q\n", acct.ID)
 	}
 	if opts == nil {
@@ -444,12 +442,12 @@ func (c *Client) CreateAccount(acct *resources.Account, opts *HTTPPostOptions) (
 
 	reqBody, err := json.Marshal(&newAcctReq)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	newAcctURL, ok := c.GetEndpointURL(acme.NEW_ACCOUNT_ENDPOINT)
 	if !ok {
-		return nil, fmt.Errorf(
+		return fmt.Errorf(
 			"create: ACME server missing %q endpoint in directory",
 			acme.NEW_ACCOUNT_ENDPOINT)
 	}
@@ -465,51 +463,47 @@ func (c *Client) CreateAccount(acct *resources.Account, opts *HTTPPostOptions) (
 			PrintJSON:      opts.PrintJSON,
 		})
 	if err != nil {
-		return nil, fmt.Errorf("create: %s\n", err)
+		return fmt.Errorf("create: %s\n", err)
 	}
 
 	log.Printf("Sending %q request (contact: %s) to %q",
 		acme.NEW_ACCOUNT_ENDPOINT, acct.Contact, newAcctURL)
 	respCtx := c.PostURL(newAcctURL, signedBody, &opts.HTTPOptions)
 	if respCtx.Err != nil {
-		return nil, err
+		return err
 	}
 
 	if respCtx.Resp.StatusCode != http.StatusCreated {
-		c.Printf("Response: \n%s\n", respCtx.Body)
-		return nil, fmt.Errorf("create: server returned status code %d, expected %d",
+		return fmt.Errorf("create: server returned status code %d, expected %d",
 			respCtx.Resp.StatusCode, http.StatusCreated)
 	}
 
 	locHeader := respCtx.Resp.Header.Get("Location")
 	if locHeader == "" {
-		return nil, fmt.Errorf("create: server returned response with no Location header")
+		return fmt.Errorf("create: server returned response with no Location header")
 	}
 
 	// Store the Location header as the Account's ID
 	acct.ID = locHeader
 	log.Printf("Created account with ID %q\n", acct.ID)
-	return acct, nil
+	return nil
 }
 
 // CreateOrder creates the given Order resource with the ACME server. If the
-// operation is successful a pointer to the Order with a populated ID field is
-// returned. Otherwise a nil Order and a non-nil error are returned.
+// operation is successful the Order's ID field is populated with the value of
+// the server's reply's Location header. Otherwise a non-nil error is returned.
 //
 // For more information on Order creation see "Applying for Certificate
 // Issuance" in the ACME specification:
 // https://ietf-wg-acme.github.io/acme/draft-ietf-acme-acme.html#rfc.section.7.4
-//
-// TODO(@cpu): Since this function receives a pointer to an order it should just
-// mutate it in place and only return an error.
-func (c *Client) CreateOrder(order *resources.Order, opts *HTTPPostOptions) (*resources.Order, error) {
+func (c *Client) CreateOrder(order *resources.Order, opts *HTTPPostOptions) error {
 	if c.nonce == "" {
 		if err := c.RefreshNonce(); err != nil {
-			return nil, err
+			return err
 		}
 	}
 	if c.ActiveAccountID() == "" {
-		return nil, fmt.Errorf("createOrder: active account is nil or has not been created")
+		return fmt.Errorf("createOrder: active account is nil or has not been created")
 	}
 	if opts == nil {
 		opts = defaultHTTPPostOptions
@@ -523,12 +517,12 @@ func (c *Client) CreateOrder(order *resources.Order, opts *HTTPPostOptions) (*re
 
 	reqBody, err := json.Marshal(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	newOrderURL, ok := c.GetEndpointURL(acme.NEW_ORDER_ENDPOINT)
 	if !ok {
-		return nil, fmt.Errorf(
+		return fmt.Errorf(
 			"createOrder: ACME server missing %q endpoint in directory",
 			acme.NEW_ORDER_ENDPOINT)
 	}
@@ -545,29 +539,29 @@ func (c *Client) CreateOrder(order *resources.Order, opts *HTTPPostOptions) (*re
 			PrintJSON:      opts.PrintJSON,
 		})
 	if err != nil {
-		return nil, fmt.Errorf("createOrder: %s\n", err)
+		return fmt.Errorf("createOrder: %s\n", err)
 	}
 
 	respCtx := c.PostURL(newOrderURL, signedBody, &opts.HTTPOptions)
 	if respCtx.Err != nil {
-		return nil, err
+		return err
 	}
 
 	if respCtx.Resp.StatusCode != http.StatusCreated {
 		c.Printf("Response body: \n%s\n", respCtx.Body)
-		return nil, fmt.Errorf("createOrder: server returned status code %d, expected %d",
+		return fmt.Errorf("createOrder: server returned status code %d, expected %d",
 			respCtx.Resp.StatusCode, http.StatusCreated)
 	}
 
 	locHeader := respCtx.Resp.Header.Get("Location")
 	if locHeader == "" {
-		return nil, fmt.Errorf("create: server returned response with no Location header")
+		return fmt.Errorf("create: server returned response with no Location header")
 	}
 
 	// Unmarshal the updated order
 	err = json.Unmarshal(respCtx.Body, &order)
 	if err != nil {
-		return nil, fmt.Errorf("create: server returned invalid JSON: %s", err)
+		return fmt.Errorf("create: server returned invalid JSON: %s", err)
 	}
 
 	// Store the Location header as the Order's ID
@@ -575,24 +569,21 @@ func (c *Client) CreateOrder(order *resources.Order, opts *HTTPPostOptions) (*re
 	log.Printf("Created new order with ID %q\n", order.ID)
 	// Save the order for the account
 	c.ActiveAccount.Orders = append(c.ActiveAccount.Orders, order.ID)
-	return order, nil
+	return nil
 }
 
 // UpdateOrder refreshes a given Order by fetching its ID URL from the ACME
-// server. If this is successful a pointer to the updated Order is returned.
-// Otherwise a nil Order and a non-nil error are returned.
+// server. If this is successful the Order is mutated in place. Otherwise a nil
+// Order and a non-nil error are returned.
 //
 // Calling UpdateOrder is required to refresh an Order's Status field to
 // synchronize the resource with the server-side representation.
-//
-// TODO(@cpu): Since this function receives a pointer to an Order it should just
-// mutate it in place and only return an error.
-func (c *Client) UpdateOrder(order *resources.Order, opts *HTTPOptions) (*resources.Order, error) {
+func (c *Client) UpdateOrder(order *resources.Order, opts *HTTPOptions) error {
 	if order == nil {
-		return nil, fmt.Errorf("updateOrder: order must not be nil")
+		return fmt.Errorf("updateOrder: order must not be nil")
 	}
 	if order.ID == "" {
-		return nil, fmt.Errorf("updateOrder: order must have an ID")
+		return fmt.Errorf("updateOrder: order must have an ID")
 	}
 	if opts == nil {
 		opts = defaultHTTPOptions
@@ -600,15 +591,15 @@ func (c *Client) UpdateOrder(order *resources.Order, opts *HTTPOptions) (*resour
 
 	respCtx := c.GetURL(order.ID, opts)
 	if respCtx.Err != nil {
-		return nil, respCtx.Err
+		return respCtx.Err
 	}
 
 	err := json.Unmarshal(respCtx.Body, &order)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return order, nil
+	return nil
 }
 
 // UpdateAuthz refreshes a given Authz by fetching its ID URL from the ACME

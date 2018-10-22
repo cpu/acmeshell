@@ -78,7 +78,7 @@ func finalizeHandler(c *ishell.Context) {
 				PrintStatus:   false,
 				PrintResponse: false,
 			}
-			order, err = client.UpdateOrder(order, opts)
+			err = client.UpdateOrder(order, opts)
 			if err != nil {
 				c.Printf("finalize: error getting order: %s\n", err.Error())
 				return
@@ -113,7 +113,7 @@ func finalizeHandler(c *ishell.Context) {
 		PrintStatus:   false,
 		PrintResponse: false,
 	}
-	order, err = client.UpdateOrder(order, orderUpdateOpts)
+	err = client.UpdateOrder(order, orderUpdateOpts)
 	if err != nil {
 		c.Printf("finalize: error getting order: %s\n", err.Error())
 		return

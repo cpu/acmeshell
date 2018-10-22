@@ -93,7 +93,7 @@ func newAccountHandler(c *ishell.Context) {
 	}
 
 	// create the account with the ACME server
-	acct, err = client.CreateAccount(acct, &opts.HTTPPostOptions)
+	err = client.CreateAccount(acct, &opts.HTTPPostOptions)
 	if err != nil {
 		c.Printf("newAccount: error creating new account with ACME server: %s\n", err)
 		return

@@ -41,8 +41,8 @@ func (ctx TemplateCtx) order(index int) (*resources.Order, error) {
 		PrintStatus:   false,
 		PrintResponse: false,
 	}
-	fullOrder, err := ctx.Client.UpdateOrder(order, opts)
-	return fullOrder, err
+	err := ctx.Client.UpdateOrder(order, opts)
+	return order, err
 }
 
 func (ctx TemplateCtx) authz(order *resources.Order, identifier string) (*resources.Authorization, error) {

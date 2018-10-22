@@ -82,7 +82,7 @@ func ordersHandler(c *ishell.Context) {
 		order := &resources.Order{
 			ID: orderURL,
 		}
-		order, err = client.UpdateOrder(order, nil)
+		err = client.UpdateOrder(order, nil)
 		if err != nil {
 			c.Printf("orders: error getting order object: %s\n", err.Error())
 			return

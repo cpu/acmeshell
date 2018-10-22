@@ -59,7 +59,7 @@ func getOrderHandler(c *ishell.Context) {
 		if opts.orderIndex >= 0 && opts.orderIndex < len(client.ActiveAccount.Orders) {
 			orderURL := client.ActiveAccount.Orders[opts.orderIndex]
 			order.ID = orderURL
-			order, err = client.UpdateOrder(order, nil)
+			err = client.UpdateOrder(order, nil)
 			if err != nil {
 				c.Printf("getOrder: error getting order: %s\n", err.Error())
 				return
@@ -90,7 +90,7 @@ func getOrderHandler(c *ishell.Context) {
 	order := &resources.Order{
 		ID: orderURL,
 	}
-	_, err = client.UpdateOrder(order, nil)
+	err = client.UpdateOrder(order, nil)
 	if err != nil {
 		c.Printf("getOrder: error getting order: %s\n", err.Error())
 		return
