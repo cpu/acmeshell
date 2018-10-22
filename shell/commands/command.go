@@ -65,14 +65,14 @@ func OkURL(urlStr string) bool {
 	return true
 }
 
-// ShellContext is a common interface that can be used to retrieve objects from
+// shellContext is a common interface that can be used to retrieve objects from
 // a ishell.Shell or an ishell.Context.
-type ShellContext interface {
+type shellContext interface {
 	Get(string) interface{}
 }
 
 // GetClient reads a *acmeclient.Client from the shellContext or panics.
-func GetClient(c ShellContext) *acmeclient.Client {
+func GetClient(c shellContext) *acmeclient.Client {
 	if c.Get(ClientKey) == nil {
 		panic(fmt.Sprintf("nil %q value in shellContext", ClientKey))
 	}
@@ -89,7 +89,7 @@ func GetClient(c ShellContext) *acmeclient.Client {
 }
 
 // GetChallSrv reads a *challtestsrv.ChallSrv from the shellContext or panics.
-func GetChallSrv(c ShellContext) *challtestsrv.ChallSrv {
+func GetChallSrv(c shellContext) *challtestsrv.ChallSrv {
 	if c.Get(ChallSrvKey) == nil {
 		panic(fmt.Sprintf("nil %q value in shellContext", ChallSrvKey))
 	}
