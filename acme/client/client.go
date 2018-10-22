@@ -610,3 +610,60 @@ func (c *Client) UpdateOrder(order *resources.Order, opts *HTTPOptions) (*resour
 
 	return order, nil
 }
+
+// UpdateAuthz refreshes a given Authz by fetching its ID URL from the ACME
+// server. If this is successful the Authz is updated in place. Otherwise an
+// error is returned.
+//
+// Calling UpdateAuthz is required to refresh an Authz's Status field to
+// synchronize the resource with the server-side representation.
+func (c *Client) UpdateAuthz(authz *resources.Authorization, opts *HTTPOptions) error {
+	if authz == nil {
+		return fmt.Errorf("UpdateAuthz: authz must not be nil")
+	}
+	if authz.ID == "" {
+		return fmt.Errorf("UpdateAuthz: authz must have an ID")
+	}
+	if opts == nil {
+		opts = defaultHTTPOptions
+	}
+
+	respCtx := c.GetURL(authz.ID, opts)
+	if respCtx.Err != nil {
+		return respCtx.Err
+	}
+
+	err := json.Unmarshal(respCtx.Body, &authz)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// UpdateChallenge refreshes a given Challenge by fetching its URL from the ACME
+// server. If this is successful the Challenge is updated in place. Otherwise an
+// error is returned.
+func (c *Client) UpdateChallenge(chall *resources.Challenge, opts *HTTPOptions) error {
+	if chall == nil {
+		return fmt.Errorf("UpdateChallenge: chall must not be nil")
+	}
+	if chall.URL == "" {
+		return fmt.Errorf("UpdateChallenge: chall must have a URL")
+	}
+	if opts == nil {
+		opts = defaultHTTPOptions
+	}
+
+	respCtx := c.GetURL(chall.URL, opts)
+	if respCtx.Err != nil {
+		return respCtx.Err
+	}
+
+	err := json.Unmarshal(respCtx.Body, &chall)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
