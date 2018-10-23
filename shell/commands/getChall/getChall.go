@@ -40,9 +40,6 @@ func (g getChallCmd) Setup(client *acmeclient.Client) (*ishell.Cmd, error) {
 func getChallHandler(c *ishell.Context) {
 	opts := getChallOptions{}
 	getChallFlags := flag.NewFlagSet("getChall", flag.ContinueOnError)
-	getChallFlags.BoolVar(&opts.PrintHeaders, "headers", false, "Print HTTP response headers")
-	getChallFlags.BoolVar(&opts.PrintStatus, "status", true, "Print HTTP response status code")
-	getChallFlags.BoolVar(&opts.PrintResponse, "response", true, "Print HTTP response body")
 	getChallFlags.IntVar(&opts.orderIndex, "order", -1, "index of existing order")
 	getChallFlags.StringVar(&opts.identifier, "identifier", "", "identifier of authorization")
 	getChallFlags.StringVar(&opts.challType, "type", "", "challenge type to get")

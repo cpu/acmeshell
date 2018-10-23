@@ -73,12 +73,7 @@ func finalizeHandler(c *ishell.Context) {
 		if opts.orderIndex >= 0 && opts.orderIndex < len(client.ActiveAccount.Orders) {
 			orderURL := client.ActiveAccount.Orders[opts.orderIndex]
 			order.ID = orderURL
-			opts := &acmeclient.HTTPOptions{
-				PrintHeaders:  false,
-				PrintStatus:   false,
-				PrintResponse: false,
-			}
-			err = client.UpdateOrder(order, opts)
+			err = client.UpdateOrder(order, nil)
 			if err != nil {
 				c.Printf("finalize: error getting order: %s\n", err.Error())
 				return
@@ -108,12 +103,7 @@ func finalizeHandler(c *ishell.Context) {
 	var order = &resources.Order{
 		ID: orderURL,
 	}
-	orderUpdateOpts := &acmeclient.HTTPOptions{
-		PrintHeaders:  false,
-		PrintStatus:   false,
-		PrintResponse: false,
-	}
-	err = client.UpdateOrder(order, orderUpdateOpts)
+	err = client.UpdateOrder(order, nil)
 	if err != nil {
 		c.Printf("finalize: error getting order: %s\n", err.Error())
 		return
@@ -153,13 +143,7 @@ func finalizeHandler(c *ishell.Context) {
 		return
 	}
 
-	postOpts := &acmeclient.HTTPOptions{
-		PrintHeaders:  false,
-		PrintStatus:   false,
-		PrintResponse: false,
-	}
-
-	respCtx := client.PostURL(order.Finalize, signedBody, postOpts)
+	respCtx := client.PostURL(order.Finalize, signedBody, nil)
 	if respCtx.Err != nil {
 		c.Printf("finalize: failed to POST order finalization URL %q: %s\n", order.Finalize, respCtx.Err.Error())
 		return

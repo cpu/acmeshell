@@ -47,8 +47,6 @@ func newAccountHandler(c *ishell.Context) {
 	newAccountFlags.StringVar(&opts.jsonPath, "json", "", "Optional filepath to a JSON save file for the account")
 	newAccountFlags.StringVar(&opts.keyID, "keyID", "", "Key ID for existing key (empty to generate new key)")
 
-	newAccountFlags.BoolVar(&opts.PrintHeaders, "headers", false, "Print HTTP response headers")
-	newAccountFlags.BoolVar(&opts.PrintStatus, "status", true, "Print HTTP response status code")
 	newAccountFlags.BoolVar(&opts.PrintJWS, "jwsBody", false, "Print JWS body before POSTing")
 	newAccountFlags.BoolVar(&opts.PrintJWSObject, "jwsObj", false, "Print JWS object before POSTing")
 	newAccountFlags.BoolVar(&opts.PrintJSON, "jsonBody", false, "Print JSON body before signing")

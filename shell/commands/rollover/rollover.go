@@ -49,8 +49,6 @@ func rolloverHandler(c *ishell.Context) {
 	keyRolloverFlags.BoolVar(&opts.printInnerJWSBody, "innerJWSBody", false, "Print inner JWS body JSON")
 	keyRolloverFlags.StringVar(&opts.keyID, "keyID", "", "Key ID to rollover to (leave empty to select interactively)")
 
-	keyRolloverFlags.BoolVar(&opts.PrintHeaders, "headers", false, "Print HTTP response headers")
-	keyRolloverFlags.BoolVar(&opts.PrintStatus, "status", true, "Print HTTP response status code")
 	keyRolloverFlags.BoolVar(&opts.PrintJWS, "jwsBody", false, "Print JWS body before POSTing")
 	keyRolloverFlags.BoolVar(&opts.PrintJWSObject, "jwsObj", false, "Print JWS object before POSTing")
 	keyRolloverFlags.BoolVar(&opts.PrintJSON, "jsonBody", false, "Print JSON body before signing")

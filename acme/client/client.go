@@ -428,9 +428,6 @@ func (c *Client) CreateAccount(acct *resources.Account, opts *HTTPPostOptions) e
 		return fmt.Errorf(
 			"create: account already exists under ID %q\n", acct.ID)
 	}
-	if opts == nil {
-		opts = defaultHTTPPostOptions
-	}
 
 	newAcctReq := struct {
 		Contact   []string `json:",omitempty"`

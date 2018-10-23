@@ -114,12 +114,7 @@ func getCertHandler(c *ishell.Context) {
 		return
 	}
 
-	httpOpts := &acmeclient.HTTPOptions{
-		PrintHeaders:  false,
-		PrintStatus:   false,
-		PrintResponse: false,
-	}
-	respCtx := client.GetURL(order.Certificate, httpOpts)
+	respCtx := client.GetURL(order.Certificate, nil)
 	if respCtx.Err != nil {
 		c.Printf("getCert: failed to GET order certificate URL %q : %d\n", order.Certificate, respCtx.Err.Error())
 		return

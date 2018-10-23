@@ -66,33 +66,6 @@ var shellCommands = []commands.ACMEShellCmd{
 	echo.EchoCommand,
 }
 
-/*
-	// TODO: Make all of this junk unexported
-	Accounts,
-	NewAccount,
-	LoadAccount,
-	SwitchAccount,
-	NewOrder,
-	Orders,
-	sign,
-	CSR,
-	viewKey,
-	newKey,
-	loadKey,
-	keyRollover,
-	poll,
-	solve,
-	finalize,
-	getOrder,
-	getAuthz,
-	getChall,
-	getCert,
-	getAccount,
-	echo,
-	challSrv,
-}
-*/
-
 // ACMEShellOptions allows specifying options for creating an ACME shell. This includes
 // all of the acmeclient.ClientConfig options in addition challenge server
 // response ports for HTTP-01, TLS-ALPN-01 and DNS-01 challenges.
@@ -143,6 +116,9 @@ func NewACMEShell(opts *ACMEShellOptions) *ACMEShell {
 
 	// Stash the ACME client in the shell for commands to access
 	shell.Set(commands.ClientKey, client)
+
+	// Stash the default Environment in the shell for commands to access
+	shell.Set(commands.EnvKey, &commands.Environment{})
 
 	// Add all of the ACMEShell commands
 	for _, cmd := range shellCommands {

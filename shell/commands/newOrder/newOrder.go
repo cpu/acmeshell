@@ -69,8 +69,6 @@ func newOrderHandler(c *ishell.Context) {
 
 	httpOpts := &acmeclient.HTTPPostOptions{}
 
-	newOrderFlags.BoolVar(&httpOpts.PrintHeaders, "headers", false, "Print HTTP response headers")
-	newOrderFlags.BoolVar(&httpOpts.PrintStatus, "status", true, "Print HTTP response status code")
 	newOrderFlags.BoolVar(&httpOpts.PrintJWS, "jwsBody", false, "Print JWS body before POSTing")
 	newOrderFlags.BoolVar(&httpOpts.PrintJWSObject, "jwsObj", false, "Print JWS object before POSTing")
 	newOrderFlags.BoolVar(&httpOpts.PrintJSON, "jsonBody", false, "Print JSON body before signing")

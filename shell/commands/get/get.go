@@ -83,9 +83,6 @@ func getHandler(c *ishell.Context) {
 	opts := getOptions{}
 	getFlags := flag.NewFlagSet("get", flag.ContinueOnError)
 	// Set up flags for the get flagset
-	getFlags.BoolVar(&opts.PrintHeaders, "headers", false, "Print HTTP response headers")
-	getFlags.BoolVar(&opts.PrintStatus, "status", true, "Print HTTP response status code")
-	getFlags.BoolVar(&opts.PrintResponse, "response", true, "Print HTTP response body")
 
 	err := getFlags.Parse(c.Args)
 	if err != nil && err != flag.ErrHelp {

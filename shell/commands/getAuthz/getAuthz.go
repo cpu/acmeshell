@@ -39,9 +39,6 @@ func (g getAuthzCmd) Setup(client *acmeclient.Client) (*ishell.Cmd, error) {
 func getAuthzHandler(c *ishell.Context) {
 	opts := getAuthzOptions{}
 	getAuthzFlags := flag.NewFlagSet("getAuthz", flag.ContinueOnError)
-	getAuthzFlags.BoolVar(&opts.PrintHeaders, "headers", false, "Print HTTP response headers")
-	getAuthzFlags.BoolVar(&opts.PrintStatus, "status", true, "Print HTTP response status code")
-	getAuthzFlags.BoolVar(&opts.PrintResponse, "response", true, "Print HTTP response body")
 	getAuthzFlags.IntVar(&opts.orderIndex, "order", -1, "index of existing order")
 	getAuthzFlags.StringVar(&opts.identifier, "identifier", "", "identifier of authorization")
 

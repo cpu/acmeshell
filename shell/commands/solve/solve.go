@@ -160,13 +160,7 @@ func solveHandler(c *ishell.Context) {
 		return
 	}
 
-	postOpts := &acmeclient.HTTPOptions{
-		PrintHeaders:  false,
-		PrintStatus:   false,
-		PrintResponse: false,
-	}
-
-	respCtx := client.PostURL(chall.URL, signedBody, postOpts)
+	respCtx := client.PostURL(chall.URL, signedBody, nil)
 	if respCtx.Err != nil {
 		c.Printf("solve: failed to POST challenge %q: %s\n", chall.URL, respCtx.Err.Error())
 		return

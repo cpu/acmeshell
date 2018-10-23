@@ -36,12 +36,7 @@ func (ctx TemplateCtx) order(index int) (*resources.Order, error) {
 	order := &resources.Order{
 		ID: ctx.Acct.Orders[index],
 	}
-	opts := &acmeclient.HTTPOptions{
-		PrintHeaders:  false,
-		PrintStatus:   false,
-		PrintResponse: false,
-	}
-	err := ctx.Client.UpdateOrder(order, opts)
+	err := ctx.Client.UpdateOrder(order, nil)
 	return order, err
 }
 

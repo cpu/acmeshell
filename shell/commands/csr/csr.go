@@ -148,15 +148,9 @@ func csrHandler(c *ishell.Context) {
 	}
 }
 
+// TODO(@cpu): Delete this - it's redundant with client methods
 func getOrderObject(client *acmeclient.Client, orderURL string, opts *acmeclient.HTTPOptions) (*resources.Order, error) {
 	var order resources.Order
-	if opts == nil {
-		opts = &acmeclient.HTTPOptions{
-			PrintHeaders:  false,
-			PrintStatus:   false,
-			PrintResponse: false,
-		}
-	}
 	respCtx := client.GetURL(orderURL, opts)
 	if respCtx.Err != nil {
 		return nil, respCtx.Err

@@ -39,10 +39,6 @@ func (g getAccountCmd) Setup(client *acmeclient.Client) (*ishell.Cmd, error) {
 func getAccountHandler(c *ishell.Context) {
 	opts := getAccountOptions{}
 	getAccountFlags := flag.NewFlagSet("getAccount", flag.ContinueOnError)
-	getAccountFlags.BoolVar(&opts.PrintHeaders, "headers", false, "Print HTTP response headers")
-	getAccountFlags.BoolVar(&opts.PrintStatus, "status", true, "Print HTTP response status code")
-	getAccountFlags.BoolVar(&opts.PrintResponse, "response", true, "Print HTTP response body")
-
 	err := getAccountFlags.Parse(c.Args)
 	if err != nil && err != flag.ErrHelp {
 		c.Printf("getAccount: error parsing input flags: %s\n", err.Error())

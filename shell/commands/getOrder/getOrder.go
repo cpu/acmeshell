@@ -38,9 +38,6 @@ func (g getOrderCmd) Setup(client *acmeclient.Client) (*ishell.Cmd, error) {
 func getOrderHandler(c *ishell.Context) {
 	opts := getOrderOptions{}
 	getOrderFlags := flag.NewFlagSet("getOrder", flag.ContinueOnError)
-	getOrderFlags.BoolVar(&opts.PrintHeaders, "headers", false, "Print HTTP response headers")
-	getOrderFlags.BoolVar(&opts.PrintStatus, "status", true, "Print HTTP response status code")
-	getOrderFlags.BoolVar(&opts.PrintResponse, "response", true, "Print HTTP response body")
 	getOrderFlags.IntVar(&opts.orderIndex, "order", -1, "index of existing order")
 
 	err := getOrderFlags.Parse(c.Args)

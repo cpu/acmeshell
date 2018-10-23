@@ -114,9 +114,6 @@ func postHandler(c *ishell.Context) {
 	// Set up flags for the get flagset
 	opts := postOptions{}
 	postFlags := flag.NewFlagSet("post", flag.ContinueOnError)
-	postFlags.BoolVar(&opts.PrintHeaders, "headers", false, "Print HTTP response headers")
-	postFlags.BoolVar(&opts.PrintStatus, "status", true, "Print HTTP response status code")
-	postFlags.BoolVar(&opts.PrintResponse, "response", true, "Print HTTP response body")
 	postFlags.BoolVar(&opts.PrintJWS, "jwsBody", false, "Print JWS body before POSTing")
 	postFlags.BoolVar(&opts.PrintJWSObject, "jwsObj", false, "Print JWS object before POSTing")
 	postFlags.BoolVar(&opts.PrintJSON, "jsonBody", false, "Print JSON body before signing")

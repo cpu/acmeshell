@@ -1,16 +1,16 @@
 package client
 
 import (
-	"encoding/json"
 	"net/http"
+	"net/http/httputil"
 )
 
 type HTTPOptions struct {
-	PrintHeaders  bool
-	PrintStatus   bool
 	PrintResponse bool
+	PrintRequest  bool
 }
 
+// TODO(@cpu): update this
 type HTTPPostOptions struct {
 	HTTPOptions
 	PrintJWS       bool
@@ -26,8 +26,7 @@ type ResponseCtx struct {
 
 var (
 	defaultHTTPOptions = &HTTPOptions{
-		PrintHeaders:  false,
-		PrintStatus:   false,
+		PrintRequest:  false,
 		PrintResponse: false,
 	}
 	defaultHTTPPostOptions = &HTTPPostOptions{
@@ -38,37 +37,42 @@ var (
 	}
 )
 
-func (c *Client) GetURL(url string, opts *HTTPOptions) ResponseCtx {
-	respBody, resp, err := c.net.GetURL(url)
-	return c.handleResponse(ResponseCtx{respBody, resp, err}, opts)
-}
-
-func (c *Client) PostURL(url string, body []byte, opts *HTTPOptions) ResponseCtx {
-	respBody, resp, err := c.net.PostURL(url, body)
-	return c.handleResponse(ResponseCtx{respBody, resp, err}, opts)
-}
-
-func (c *Client) handleResponse(respCtx ResponseCtx, opts *HTTPOptions) ResponseCtx {
-	c.printHTTPResponse(respCtx, opts)
-	return respCtx
-}
-
-func (c *Client) printHTTPResponse(respCtx ResponseCtx, opts *HTTPOptions) {
+func (c *Client) handleRequest(req *http.Request, opts *HTTPOptions) ResponseCtx {
 	if opts == nil {
 		opts = defaultHTTPOptions
 	}
-	if opts.PrintStatus {
-		if respCtx.Resp != nil {
-			c.Printf("Response Status: %s\n", respCtx.Resp.Status)
-		} else {
-			c.Printf("Response was nil\n")
+	if opts.PrintRequest {
+		httputil.DumpRequest(req, true)
+	}
+	respBody, resp, err := c.net.Do(req)
+	if opts.PrintResponse {
+		httputil.DumpResponse(resp, true)
+	}
+	return ResponseCtx{
+		Body: respBody,
+		Resp: resp,
+		Err:  err,
+	}
+}
+
+func (c *Client) GetURL(url string, opts *HTTPOptions) ResponseCtx {
+	req, err := c.net.GetRequest(url)
+	if err != nil {
+		return ResponseCtx{
+			Err: err,
 		}
 	}
-	if opts.PrintHeaders {
-		headerBytes, _ := json.MarshalIndent(&respCtx.Resp.Header, "", "  ")
-		c.Printf("Response Headers: \n%s\n", string(headerBytes))
+	return c.handleRequest(req, opts)
+}
+
+// NOTE(@cpu): PostURL takes *HTTPOptions not HTTPPostOptions because its badly
+// named. HTTPPostOptions is a higher level JWS type thing.
+func (c *Client) PostURL(url string, body []byte, opts *HTTPOptions) ResponseCtx {
+	req, err := c.net.PostRequest(url, body)
+	if err != nil {
+		return ResponseCtx{
+			Err: err,
+		}
 	}
-	if opts.PrintResponse {
-		c.Printf("Response body:\n%s\n", string(respCtx.Body))
-	}
+	return c.handleRequest(req, opts)
 }
