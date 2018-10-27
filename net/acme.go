@@ -127,7 +127,12 @@ func (c *ACMENet) HeadURL(url string) (*http.Response, error) {
 // Convenience function to construct a POST request to the given URL with the
 // given body. Returns an HTTP request or a non-nil error.
 func (c *ACMENet) PostRequest(url string, body []byte) (*http.Request, error) {
-	return http.NewRequest("POST", url, bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/jose+json")
+	return req, nil
 }
 
 // Convenience function to POST the given URL with the given body. This is
@@ -139,7 +144,6 @@ func (c *ACMENet) PostURL(url string, body []byte) (*NetResponse, error) {
 		return nil, err
 	}
 
-	req.Header.Set("Content-Type", "application/jose+json")
 	return c.Do(req)
 }
 

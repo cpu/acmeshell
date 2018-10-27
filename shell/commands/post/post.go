@@ -14,7 +14,6 @@ import (
 )
 
 type postOptions struct {
-	acmeclient.SigningOptions
 	postBody     string
 	templateBody bool
 	sign         bool
