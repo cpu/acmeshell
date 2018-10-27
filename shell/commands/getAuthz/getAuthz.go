@@ -59,7 +59,7 @@ func getAuthzHandler(c *ishell.Context) {
 
 	var authzURL string
 	if len(getAuthzFlags.Args()) == 0 {
-		var order *resources.Order
+		order := &resources.Order{}
 		if opts.orderIndex >= 0 && opts.orderIndex < len(client.ActiveAccount.Orders) {
 			orderURL := client.ActiveAccount.Orders[opts.orderIndex]
 			order.ID = orderURL
@@ -75,8 +75,9 @@ func getAuthzHandler(c *ishell.Context) {
 				return
 			}
 		}
-		var authz *resources.Authorization
+		authz := &resources.Authorization{}
 		if opts.identifier != "" {
+			var found bool
 			for _, authURL := range order.Authorizations {
 				authz.ID = authURL
 				err := client.UpdateAuthz(authz, nil)
@@ -85,10 +86,11 @@ func getAuthzHandler(c *ishell.Context) {
 					return
 				}
 				if authz.Identifier.Value == opts.identifier {
+					found = true
 					break
 				}
 			}
-			if authz == nil {
+			if !found {
 				c.Printf("getAuthz: order %q has no authz for identifier %q\n", order.ID, opts.identifier)
 				return
 			}
@@ -118,7 +120,9 @@ func getAuthzHandler(c *ishell.Context) {
 	var authz = &resources.Authorization{
 		ID: authzURL,
 	}
-	err = client.UpdateAuthz(authz, &opts.HTTPOptions)
+	err = client.UpdateAuthz(authz, &acmeclient.HTTPOptions{
+		PrintResponse: true,
+	})
 	if err != nil {
 		c.Printf("getAuthz: error getting authz: %s\n", err.Error())
 		return

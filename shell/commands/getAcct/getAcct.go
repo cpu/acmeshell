@@ -37,7 +37,6 @@ func (g getAccountCmd) Setup(client *acmeclient.Client) (*ishell.Cmd, error) {
 }
 
 func getAccountHandler(c *ishell.Context) {
-	opts := getAccountOptions{}
 	getAccountFlags := flag.NewFlagSet("getAccount", flag.ContinueOnError)
 	err := getAccountFlags.Parse(c.Args)
 	if err != nil && err != flag.ErrHelp {
@@ -72,15 +71,18 @@ func getAccountHandler(c *ishell.Context) {
 		return
 	}
 
-	respCtx := client.PostURL(newAcctURL, signedBody, &opts.HTTPOptions)
-	if respCtx.Err != nil {
-		c.Printf("getAccount: failed to POST newAccount: %s\n", respCtx.Err.Error())
+	resp, err := client.PostURL(newAcctURL, signedBody, &acmeclient.HTTPOptions{
+		PrintResponse: true,
+	})
+	if err != nil {
+		c.Printf("getAccount: failed to POST newAccount: %v\n", err)
 		return
 	}
 
-	if respCtx.Resp.StatusCode != http.StatusOK {
-		c.Printf("getAccount: failed to POST newAccount. Status code: %d\n", respCtx.Resp.StatusCode)
-		c.Printf("getAccount: response body: %s\n", respCtx.Body)
+	respOb := resp.Response
+	if respOb.StatusCode != http.StatusOK {
+		c.Printf("getAccount: failed to POST newAccount. Status code: %d\n", respOb.StatusCode)
+		c.Printf("getAccount: response body: %s\n", resp.RespBody)
 		return
 	}
 }

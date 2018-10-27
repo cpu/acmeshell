@@ -69,7 +69,7 @@ func finalizeHandler(c *ishell.Context) {
 
 	var orderURL string
 	if len(finalizeFlags.Args()) == 0 {
-		var order *resources.Order
+		order := &resources.Order{}
 		if opts.orderIndex >= 0 && opts.orderIndex < len(client.ActiveAccount.Orders) {
 			orderURL := client.ActiveAccount.Orders[opts.orderIndex]
 			order.ID = orderURL
@@ -143,14 +143,15 @@ func finalizeHandler(c *ishell.Context) {
 		return
 	}
 
-	respCtx := client.PostURL(order.Finalize, signedBody, nil)
-	if respCtx.Err != nil {
-		c.Printf("finalize: failed to POST order finalization URL %q: %s\n", order.Finalize, respCtx.Err.Error())
+	resp, err := client.PostURL(order.Finalize, signedBody, nil)
+	if err != nil {
+		c.Printf("finalize: failed to POST order finalization URL %q: %v\n", order.Finalize, err)
 		return
 	}
-	if respCtx.Resp.StatusCode != http.StatusOK {
-		c.Printf("finalize: failed to POST order finalization URL %q . Status code: %d\n", order.Finalize, respCtx.Resp.StatusCode)
-		c.Printf("finalize: response body: %s\n", respCtx.Body)
+	respOb := resp.Response
+	if respOb.StatusCode != http.StatusOK {
+		c.Printf("finalize: failed to POST order finalization URL %q . Status code: %d\n", order.Finalize, respOb.StatusCode)
+		c.Printf("finalize: response body: %s\n", resp.RespBody)
 		return
 	}
 	c.Printf("order %q finalization requested\n", order.ID)

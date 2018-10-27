@@ -14,10 +14,6 @@ type getCmd struct {
 	commands.BaseCmd
 }
 
-type getOptions struct {
-	acmeclient.HTTPOptions
-}
-
 var GetCommand = getCmd{
 	BaseCmd: commands.BaseCmd{
 		Once: new(sync.Once),
@@ -69,18 +65,19 @@ func (g getCmd) Setup(client *acmeclient.Client) (*ishell.Cmd, error) {
 	return GetCommand.Cmd, nil
 }
 
-func getURL(opts getOptions, targetURL string, c *ishell.Context) {
+func getURL(targetURL string, c *ishell.Context) {
 	client := commands.GetClient(c)
 
-	respCtx := client.GetURL(targetURL, &opts.HTTPOptions)
-	if respCtx.Err != nil {
-		c.Printf("get: error getting URL: %s\n", respCtx.Err)
+	_, err := client.GetURL(targetURL, &acmeclient.HTTPOptions{
+		PrintResponse: true,
+	})
+	if err != nil {
+		c.Printf("get: error getting URL: %v\n", err)
 		return
 	}
 }
 
 func getHandler(c *ishell.Context) {
-	opts := getOptions{}
 	getFlags := flag.NewFlagSet("get", flag.ContinueOnError)
 	// Set up flags for the get flagset
 
@@ -135,5 +132,5 @@ func getHandler(c *ishell.Context) {
 		targetURL = argument
 	}
 
-	getURL(opts, targetURL, c)
+	getURL(targetURL, c)
 }

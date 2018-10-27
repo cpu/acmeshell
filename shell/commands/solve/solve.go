@@ -160,14 +160,15 @@ func solveHandler(c *ishell.Context) {
 		return
 	}
 
-	respCtx := client.PostURL(chall.URL, signedBody, nil)
-	if respCtx.Err != nil {
-		c.Printf("solve: failed to POST challenge %q: %s\n", chall.URL, respCtx.Err.Error())
+	resp, err := client.PostURL(chall.URL, signedBody, nil)
+	if err != nil {
+		c.Printf("solve: failed to POST challenge %q: %v\n", chall.URL, err)
 		return
 	}
-	if respCtx.Resp.StatusCode != http.StatusOK {
-		c.Printf("solve: failed to POST %q challenge. Status code: %d\n", chall.URL, respCtx.Resp.StatusCode)
-		c.Printf("solve: response body: %s\n", respCtx.Body)
+	respOb := resp.Response
+	if respOb.StatusCode != http.StatusOK {
+		c.Printf("solve: failed to POST %q challenge. Status code: %d\n", chall.URL, respOb.StatusCode)
+		c.Printf("solve: response body: %s\n", resp.RespBody)
 		return
 	}
 	c.Printf("solve: %q challenge for identifier %q (%q) started\n", chall.Type, authz.Identifier.Value, chall.URL)

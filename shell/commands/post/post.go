@@ -103,9 +103,11 @@ func postURL(opts postOptions, targetURL string, c *ishell.Context) {
 		postBody = signedBody
 	}
 
-	respCtx := client.PostURL(targetURL, postBody, &opts.HTTPOptions)
-	if respCtx.Err != nil {
-		c.Printf("post: error POSTing signed request body to URL: %s\n", respCtx.Err)
+	_, err := client.PostURL(targetURL, postBody, &acmeclient.HTTPOptions{
+		PrintResponse: true,
+	})
+	if err != nil {
+		c.Printf("post: error POSTing signed request body to URL: %v\n", err)
 		return
 	}
 }
@@ -204,6 +206,5 @@ func postHandler(c *ishell.Context) {
 		return
 	}
 
-	c.Printf("POSTing: \n%s\n", string(opts.postBody))
 	postURL(opts, targetURL, c)
 }

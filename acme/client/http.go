@@ -1,8 +1,10 @@
 package client
 
 import (
+	"log"
 	"net/http"
-	"net/http/httputil"
+
+	"github.com/cpu/acmeshell/net"
 )
 
 type HTTPOptions struct {
@@ -18,12 +20,6 @@ type HTTPPostOptions struct {
 	PrintJSON      bool
 }
 
-type ResponseCtx struct {
-	Body []byte
-	Resp *http.Response
-	Err  error
-}
-
 var (
 	defaultHTTPOptions = &HTTPOptions{
 		PrintRequest:  false,
@@ -37,42 +33,37 @@ var (
 	}
 )
 
-func (c *Client) handleRequest(req *http.Request, opts *HTTPOptions) ResponseCtx {
+func (c *Client) handleRequest(req *http.Request, opts *HTTPOptions) (*net.NetResponse, error) {
 	if opts == nil {
 		opts = defaultHTTPOptions
 	}
+	resp, err := c.net.Do(req)
+	if err != nil {
+		return nil, err
+	}
 	if opts.PrintRequest {
-		httputil.DumpRequest(req, true)
+		log.Printf("Request:\n%s\n", resp.ReqDump)
 	}
-	respBody, resp, err := c.net.Do(req)
 	if opts.PrintResponse {
-		httputil.DumpResponse(resp, true)
+		log.Printf("Response:\n%s\n", resp.RespDump)
 	}
-	return ResponseCtx{
-		Body: respBody,
-		Resp: resp,
-		Err:  err,
-	}
+	return resp, nil
 }
 
-func (c *Client) GetURL(url string, opts *HTTPOptions) ResponseCtx {
+func (c *Client) GetURL(url string, opts *HTTPOptions) (*net.NetResponse, error) {
+	// TODO(@cpu): Just use net.GetURL
 	req, err := c.net.GetRequest(url)
 	if err != nil {
-		return ResponseCtx{
-			Err: err,
-		}
+		return nil, err
 	}
 	return c.handleRequest(req, opts)
 }
 
-// NOTE(@cpu): PostURL takes *HTTPOptions not HTTPPostOptions because its badly
-// named. HTTPPostOptions is a higher level JWS type thing.
-func (c *Client) PostURL(url string, body []byte, opts *HTTPOptions) ResponseCtx {
+func (c *Client) PostURL(url string, body []byte, opts *HTTPOptions) (*net.NetResponse, error) {
+	// TODO(@cpu): Just use net.PostURL
 	req, err := c.net.PostRequest(url, body)
 	if err != nil {
-		return ResponseCtx{
-			Err: err,
-		}
+		return nil, err
 	}
 	return c.handleRequest(req, opts)
 }

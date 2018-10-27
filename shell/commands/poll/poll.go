@@ -64,7 +64,7 @@ func pollHandler(c *ishell.Context) {
 			c.Printf("poll: the active account has no orders\n")
 			return
 		}
-		var order *resources.Order
+		order := &resources.Order{}
 		if opts.orderIndex >= 0 && opts.orderIndex < len(client.ActiveAccount.Orders) {
 			orderURL := client.ActiveAccount.Orders[opts.orderIndex]
 			order.ID = orderURL
@@ -110,13 +110,13 @@ func pollHandler(c *ishell.Context) {
 		Status string
 	}
 
-	respCtx := client.GetURL(targetURL, nil)
-	if respCtx.Err != nil {
-		c.Printf("poll: error polling %q : %s\n", targetURL, respCtx.Err.Error())
+	resp, err := client.GetURL(targetURL, nil)
+	if err != nil {
+		c.Printf("poll: error polling %q : %v\n", targetURL, err)
 		return
 	}
 
-	err = json.Unmarshal(respCtx.Body, &polledOb)
+	err = json.Unmarshal(resp.RespBody, &polledOb)
 	if err != nil {
 		c.Printf("poll: error unmarshaling %q : %s\n", targetURL, err.Error())
 		return
@@ -125,13 +125,13 @@ func pollHandler(c *ishell.Context) {
 	if polledOb.Status != opts.status {
 		for try := 0; try < opts.maxTries; try++ {
 
-			respCtx := client.GetURL(targetURL, nil)
-			if respCtx.Err != nil {
-				c.Printf("poll: error polling %q : %s\n", targetURL, err.Error())
+			resp, err := client.GetURL(targetURL, nil)
+			if err != nil {
+				c.Printf("poll: error polling %q : %v\n", targetURL, err)
 				return
 			}
 
-			err := json.Unmarshal(respCtx.Body, &polledOb)
+			err = json.Unmarshal(resp.RespBody, &polledOb)
 			if err != nil {
 				c.Printf("poll: error unmarshaling %q : %s\n", targetURL, err.Error())
 				return

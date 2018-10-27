@@ -15,7 +15,6 @@ type getChallCmd struct {
 }
 
 type getChallOptions struct {
-	acmeclient.HTTPOptions
 	orderIndex int
 	identifier string
 	challType  string
@@ -56,7 +55,7 @@ func getChallHandler(c *ishell.Context) {
 
 	var challURL string
 	if len(getChallFlags.Args()) == 0 {
-		var order *resources.Order
+		order := &resources.Order{}
 		if opts.orderIndex >= 0 && opts.orderIndex < len(client.ActiveAccount.Orders) {
 			orderURL := client.ActiveAccount.Orders[opts.orderIndex]
 			order.ID = orderURL
@@ -72,7 +71,7 @@ func getChallHandler(c *ishell.Context) {
 				return
 			}
 		}
-		var authz *resources.Authorization
+		authz := &resources.Authorization{}
 		if opts.identifier != "" {
 			for _, authzURL := range order.Authorizations {
 				authz.ID = authzURL
@@ -85,7 +84,7 @@ func getChallHandler(c *ishell.Context) {
 					break
 				}
 			}
-			if authz == nil {
+			if authz.ID == "" {
 				c.Printf("getChall: order %q has no authz for identifier %q\n", order.ID, opts.identifier)
 				return
 			}
@@ -97,7 +96,7 @@ func getChallHandler(c *ishell.Context) {
 			}
 		}
 
-		var chall *resources.Challenge
+		chall := &resources.Challenge{}
 		if opts.challType != "" {
 			for _, c := range authz.Challenges {
 				if c.Type == opts.challType {
@@ -105,7 +104,7 @@ func getChallHandler(c *ishell.Context) {
 					break
 				}
 			}
-			if chall == nil {
+			if chall.URL == "" {
 				c.Printf("getChall: authz %q has no challenge with type %q\n", authz.ID, opts.challType)
 				return
 			}
@@ -134,7 +133,9 @@ func getChallHandler(c *ishell.Context) {
 	chall := &resources.Challenge{
 		URL: challURL,
 	}
-	err = client.UpdateChallenge(chall, nil)
+	err = client.UpdateChallenge(chall, &acmeclient.HTTPOptions{
+		PrintResponse: true,
+	})
 	if err != nil {
 		c.Printf("getChall: error getting authz: %s\n", err.Error())
 		return

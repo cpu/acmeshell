@@ -53,13 +53,13 @@ func (ctx TemplateCtx) authz(order *resources.Order, identifier string) (*resour
 
 	var match *resources.Authorization
 	for _, authzURL := range order.Authorizations {
-		respCtx := ctx.Client.GetURL(authzURL, nil)
-		if respCtx.Err != nil {
-			return nil, respCtx.Err
+		resp, err := ctx.Client.GetURL(authzURL, nil)
+		if err != nil {
+			return nil, err
 		}
 
 		var authz resources.Authorization
-		err := json.Unmarshal(respCtx.Body, &authz)
+		err = json.Unmarshal(resp.RespBody, &authz)
 		if err != nil {
 			return nil, err
 		}

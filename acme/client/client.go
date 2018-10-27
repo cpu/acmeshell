@@ -287,13 +287,13 @@ func (c *Client) ActiveAccountID() string {
 func (c *Client) getDirectory() (map[string]interface{}, error) {
 	url := c.DirectoryURL.String()
 
-	respBody, _, err := c.net.GetURL(url)
+	resp, err := c.net.GetURL(url)
 	if err != nil {
 		return nil, err
 	}
 
 	var directory map[string]interface{}
-	err = json.Unmarshal(respBody, &directory)
+	err = json.Unmarshal(resp.RespBody, &directory)
 	if err != nil {
 		return nil, err
 	}
@@ -474,17 +474,18 @@ func (c *Client) CreateAccount(acct *resources.Account, opts *HTTPPostOptions) e
 
 	log.Printf("Sending %q request (contact: %s) to %q",
 		acme.NEW_ACCOUNT_ENDPOINT, acct.Contact, newAcctURL)
-	respCtx := c.PostURL(newAcctURL, signedBody, &opts.HTTPOptions)
-	if respCtx.Err != nil {
+	resp, err := c.PostURL(newAcctURL, signedBody, &opts.HTTPOptions)
+	if err != nil {
 		return err
 	}
 
-	if respCtx.Resp.StatusCode != http.StatusCreated {
+	respOb := resp.Response
+	if respOb.StatusCode != http.StatusCreated {
 		return fmt.Errorf("create: server returned status code %d, expected %d",
-			respCtx.Resp.StatusCode, http.StatusCreated)
+			respOb.StatusCode, http.StatusCreated)
 	}
 
-	locHeader := respCtx.Resp.Header.Get("Location")
+	locHeader := respOb.Header.Get("Location")
 	if locHeader == "" {
 		return fmt.Errorf("create: server returned response with no Location header")
 	}
@@ -554,24 +555,24 @@ func (c *Client) CreateOrder(order *resources.Order, opts *HTTPPostOptions) erro
 		return fmt.Errorf("createOrder: %s\n", err)
 	}
 
-	respCtx := c.PostURL(newOrderURL, signedBody, &opts.HTTPOptions)
-	if respCtx.Err != nil {
+	resp, err := c.PostURL(newOrderURL, signedBody, &opts.HTTPOptions)
+	if err != nil {
 		return err
 	}
 
-	if respCtx.Resp.StatusCode != http.StatusCreated {
-		c.Printf("Response body: \n%s\n", respCtx.Body)
+	respOb := resp.Response
+	if respOb.StatusCode != http.StatusCreated {
 		return fmt.Errorf("createOrder: server returned status code %d, expected %d",
-			respCtx.Resp.StatusCode, http.StatusCreated)
+			respOb.StatusCode, http.StatusCreated)
 	}
 
-	locHeader := respCtx.Resp.Header.Get("Location")
+	locHeader := respOb.Header.Get("Location")
 	if locHeader == "" {
 		return fmt.Errorf("create: server returned response with no Location header")
 	}
 
 	// Unmarshal the updated order
-	err = json.Unmarshal(respCtx.Body, &order)
+	err = json.Unmarshal(resp.RespBody, &order)
 	if err != nil {
 		return fmt.Errorf("create: server returned invalid JSON: %s", err)
 	}
@@ -601,12 +602,12 @@ func (c *Client) UpdateOrder(order *resources.Order, opts *HTTPOptions) error {
 		opts = defaultHTTPOptions
 	}
 
-	respCtx := c.GetURL(order.ID, opts)
-	if respCtx.Err != nil {
-		return respCtx.Err
+	resp, err := c.GetURL(order.ID, opts)
+	if err != nil {
+		return err
 	}
 
-	err := json.Unmarshal(respCtx.Body, &order)
+	err = json.Unmarshal(resp.RespBody, &order)
 	if err != nil {
 		return err
 	}
@@ -631,12 +632,12 @@ func (c *Client) UpdateAuthz(authz *resources.Authorization, opts *HTTPOptions) 
 		opts = defaultHTTPOptions
 	}
 
-	respCtx := c.GetURL(authz.ID, opts)
-	if respCtx.Err != nil {
-		return respCtx.Err
+	resp, err := c.GetURL(authz.ID, opts)
+	if err != nil {
+		return err
 	}
 
-	err := json.Unmarshal(respCtx.Body, &authz)
+	err = json.Unmarshal(resp.RespBody, &authz)
 	if err != nil {
 		return err
 	}
@@ -658,12 +659,12 @@ func (c *Client) UpdateChallenge(chall *resources.Challenge, opts *HTTPOptions) 
 		opts = defaultHTTPOptions
 	}
 
-	respCtx := c.GetURL(chall.URL, opts)
-	if respCtx.Err != nil {
-		return respCtx.Err
+	resp, err := c.GetURL(chall.URL, opts)
+	if err != nil {
+		return err
 	}
 
-	err := json.Unmarshal(respCtx.Body, &chall)
+	err = json.Unmarshal(resp.RespBody, &chall)
 	if err != nil {
 		return err
 	}

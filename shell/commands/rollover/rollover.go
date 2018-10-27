@@ -103,6 +103,10 @@ func rolloverHandler(c *ishell.Context) {
 		}
 	}
 
+	// TODO(@cpu): Most of this should be hoisted into a client Rollover function
+	// that the command can use for the heavy lifting (ala the newAccount command
+	// and the CreateAccount function).
+
 	oldKey := jose.JSONWebKey{
 		Key:       account.PrivateKey.Public(),
 		Algorithm: "ECDSA",
@@ -152,19 +156,21 @@ func rolloverHandler(c *ishell.Context) {
 		return
 	}
 
-	respCtx := client.PostURL(targetURL, outerJWS, &opts.HTTPOptions)
-	if respCtx.Err != nil {
-		c.Printf("keyRollover: keyRollover POST failed: %s\n", respCtx.Err.Error())
+	c.Printf("Rolling over account %q to use specified key\n", account.ID)
+	resp, err := client.PostURL(targetURL, outerJWS, &opts.HTTPOptions)
+	if err != nil {
+		c.Printf("keyRollover: keyRollover POST failed: %v\n", err)
 		return
 	}
 
-	if respCtx.Resp.StatusCode != http.StatusOK {
-		c.Printf("keyRollover: keyRollover POST failed. Status code: %d\n", respCtx.Resp.StatusCode)
-		c.Printf("Response body: \n%s\n", respCtx.Body)
+	respOb := resp.Response
+	if respOb.StatusCode != http.StatusOK {
+		c.Printf("keyRollover: keyRollover POST failed. Status code: %d\n", respOb.StatusCode)
+		c.Printf("Response body: \n%s\n", resp.RespBody)
 		return
 	}
 
 	client.Keys[account.ID] = newKey
 	account.PrivateKey = newKey
-	c.Printf("keyRollover completed\n")
+	c.Printf("keyRollover for account %q completed\n", account.ID)
 }

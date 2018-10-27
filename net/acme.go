@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"runtime"
 	"strings"
 )
@@ -63,28 +64,50 @@ func New(conf Config) (*ACMENet, error) {
 	}, nil
 }
 
-func (c *ACMENet) Do(req *http.Request) ([]byte, *http.Response, error) {
+type NetResponse struct {
+	Response *http.Response
+	RespBody []byte
+	RespDump []byte
+	ReqDump  []byte
+}
+
+func (c *ACMENet) Do(req *http.Request) (*NetResponse, error) {
 	return c.httpRequest(req)
 }
 
-func (c *ACMENet) httpRequest(req *http.Request) ([]byte, *http.Response, error) {
+func (c *ACMENet) httpRequest(req *http.Request) (*NetResponse, error) {
 	ua := fmt.Sprintf("%s %s (%s; %s)",
 		userAgentBase, version, runtime.GOOS, runtime.GOARCH)
 	req.Header.Set("User-Agent", ua)
 	req.Header.Set("Accept-Language", locale)
 
+	reqDump, err := httputil.DumpRequest(req, true)
+	if err != nil {
+		return nil, err
+	}
+
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
-	respBody, err := ioutil.ReadAll(resp.Body)
+	respDump, err := httputil.DumpResponse(resp, true)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	return respBody, resp, nil
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return &NetResponse{
+		Response: resp,
+		RespBody: respBody,
+		RespDump: respDump,
+		ReqDump:  reqDump,
+	}, nil
 }
 
 func (c *ACMENet) HeadURL(url string) (*http.Response, error) {
@@ -100,11 +123,11 @@ func (c *ACMENet) PostRequest(url string, body []byte) (*http.Request, error) {
 
 // Convenience function to POST the given URL with the given body. This is
 // a wrapper combining PostRequest and Do.
-func (c *ACMENet) PostURL(url string, body []byte) ([]byte, *http.Response, error) {
+func (c *ACMENet) PostURL(url string, body []byte) (*NetResponse, error) {
 	log.Printf("Sending POST request to URL %q\n", url)
 	req, err := c.PostRequest(url, body)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	req.Header.Set("Content-Type", "application/jose+json")
@@ -119,11 +142,11 @@ func (c *ACMENet) GetRequest(url string) (*http.Request, error) {
 
 // Convenience function to GET the given URL. This is a wrapper combining
 // GetRequest and Do.
-func (c *ACMENet) GetURL(url string) ([]byte, *http.Response, error) {
+func (c *ACMENet) GetURL(url string) (*NetResponse, error) {
 	log.Printf("Sending GET request to URL %q\n", url)
 	req, err := c.GetRequest(url)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	return c.Do(req)
 }

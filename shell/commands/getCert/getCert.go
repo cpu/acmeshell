@@ -63,7 +63,7 @@ func getCertHandler(c *ishell.Context) {
 
 	var orderURL string
 	if len(getCertFlags.Args()) == 0 {
-		var order *resources.Order
+		order := &resources.Order{}
 		if opts.orderIndex >= 0 && opts.orderIndex < len(client.ActiveAccount.Orders) {
 			orderURL := client.ActiveAccount.Orders[opts.orderIndex]
 			order.ID = orderURL
@@ -114,23 +114,24 @@ func getCertHandler(c *ishell.Context) {
 		return
 	}
 
-	respCtx := client.GetURL(order.Certificate, nil)
-	if respCtx.Err != nil {
-		c.Printf("getCert: failed to GET order certificate URL %q : %d\n", order.Certificate, respCtx.Err.Error())
+	resp, err := client.GetURL(order.Certificate, nil)
+	if err != nil {
+		c.Printf("getCert: failed to GET order certificate URL %q : %v\n", order.Certificate, err)
 		return
 	}
-	if respCtx.Resp.StatusCode != http.StatusOK {
-		c.Printf("getCert: failed to GET order certificate URL %q . Status code: %d\n", order.Certificate, respCtx.Resp.StatusCode)
-		c.Printf("getCert: response body: %s\n", respCtx.Body)
+	respOb := resp.Response
+	if respOb.StatusCode != http.StatusOK {
+		c.Printf("getCert: failed to GET order certificate URL %q . Status code: %d\n", order.Certificate, respOb.StatusCode)
+		c.Printf("getCert: response body: %s\n", resp.RespBody)
 		return
 	}
 
 	if opts.printPEM {
-		c.Printf("%s", string(respCtx.Body))
+		c.Printf("%s", string(resp.RespBody))
 	}
 
 	if opts.pemPath != "" {
-		err := ioutil.WriteFile(opts.pemPath, respCtx.Body, os.ModePerm)
+		err := ioutil.WriteFile(opts.pemPath, resp.RespBody, os.ModePerm)
 		if err != nil {
 			c.Printf("getCert: error writing pem to %q: %s\n", opts.pemPath, err.Error())
 			return
