@@ -104,7 +104,7 @@ type OutputOptions struct {
 // the file path to the "test/certs/pebble.minica.pem" file from the Pebble
 // source directory. If you are using a public ACME server with a trusted HTTPS
 // certificate you should provide the path to a file containing the
-// concatination of all of the PEM encoded system trusted root CA certificates.
+// combination of all of the PEM encoded system trusted root CA certificates.
 // Often this is something like "/etc/ssl/certs.pem".
 //
 // The ContactEmail field is a string expected to contain a single email
