@@ -4,9 +4,12 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
+	"syscall"
 
 	acmeclient "github.com/cpu/acmeshell/acme/client"
+	acmecmd "github.com/cpu/acmeshell/cmd"
 	acmeshell "github.com/cpu/acmeshell/shell"
 )
 
@@ -67,6 +70,11 @@ func main() {
 		false,
 		"Use Pebble defaults")
 
+	commandFile := flag.String(
+		"in",
+		"",
+		"Read commands from the specified file instead of stdin")
+
 	flag.Parse()
 
 	if *pebble {
@@ -75,6 +83,17 @@ func main() {
 		pebbleBaseDir := os.Getenv("GOPATH")
 		pebbleCA := pebbleBaseDir + "/src/github.com/letsencrypt/pebble/test/certs/pebble.minica.pem"
 		caCert = &pebbleCA
+	}
+
+	if *commandFile != "" {
+		f, err := os.Open(*commandFile)
+		defer f.Close()
+		acmecmd.FailOnError(err, fmt.Sprintf(
+			"Error opening -in file %q: %v", *commandFile, err))
+		err = syscall.Dup2(int(f.Fd()), 0)
+		acmecmd.FailOnError(err, fmt.Sprintf(
+			"Error duplicating stdin fd: %v", err))
+		fmt.Printf("Replaced stdin with file\n")
 	}
 
 	config := &acmeshell.ACMEShellOptions{
