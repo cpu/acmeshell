@@ -107,9 +107,9 @@ func main() {
 
 	if *commandFile != "" {
 		f, err := os.Open(*commandFile)
-		defer f.Close()
 		acmecmd.FailOnError(err, fmt.Sprintf(
 			"Error opening -in file %q: %v", *commandFile, err))
+		defer f.Close()
 		err = syscall.Dup2(int(f.Fd()), 0)
 		acmecmd.FailOnError(err, fmt.Sprintf(
 			"Error duplicating stdin fd: %v", err))
