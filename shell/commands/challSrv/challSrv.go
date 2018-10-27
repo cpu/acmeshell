@@ -81,15 +81,15 @@ func challSrvHandler(c *ishell.Context) {
 	}
 
 	challengeHandlers := map[string]challengeType{
-		"http-01": challengeType{
+		"http-01": {
 			adder:   challSrv.AddHTTPOneChallenge,
 			remover: challSrv.DeleteHTTPOneChallenge,
 		},
-		"dns-01": challengeType{
+		"dns-01": {
 			adder:   challSrv.AddDNSOneChallenge,
 			remover: challSrv.DeleteDNSOneChallenge,
 		},
-		"tls-alpn-01": challengeType{
+		"tls-alpn-01": {
 			adder:   challSrv.AddTLSALPNChallenge,
 			remover: challSrv.DeleteTLSALPNChallenge,
 		},
