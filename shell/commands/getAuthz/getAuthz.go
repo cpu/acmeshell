@@ -15,7 +15,6 @@ type getAuthzCmd struct {
 }
 
 type getAuthzOptions struct {
-	acmeclient.HTTPOptions
 	orderIndex int
 	identifier string
 }
@@ -63,7 +62,7 @@ func getAuthzHandler(c *ishell.Context) {
 		if opts.orderIndex >= 0 && opts.orderIndex < len(client.ActiveAccount.Orders) {
 			orderURL := client.ActiveAccount.Orders[opts.orderIndex]
 			order.ID = orderURL
-			err = client.UpdateOrder(order, nil)
+			err = client.UpdateOrder(order)
 			if err != nil {
 				c.Printf("getAuthz: error getting order: %s\n", err.Error())
 				return
@@ -80,7 +79,7 @@ func getAuthzHandler(c *ishell.Context) {
 			var found bool
 			for _, authURL := range order.Authorizations {
 				authz.ID = authURL
-				err := client.UpdateAuthz(authz, nil)
+				err := client.UpdateAuthz(authz)
 				if err != nil {
 					c.Printf("getAuthz: error matching authorization: %s\n", err.Error())
 					return
@@ -120,11 +119,16 @@ func getAuthzHandler(c *ishell.Context) {
 	var authz = &resources.Authorization{
 		ID: authzURL,
 	}
-	err = client.UpdateAuthz(authz, &acmeclient.HTTPOptions{
-		PrintResponse: true,
-	})
+	err = client.UpdateAuthz(authz)
 	if err != nil {
 		c.Printf("getAuthz: error getting authz: %s\n", err.Error())
 		return
 	}
+
+	authzStr, err := commands.PrintJSON(authz)
+	if err != nil {
+		c.Printf("getAuthz: error serializing authz: %v\n", err)
+		return
+	}
+	c.Printf("%s\n", authzStr)
 }

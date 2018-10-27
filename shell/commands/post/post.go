@@ -15,8 +15,7 @@ import (
 )
 
 type postOptions struct {
-	acmeclient.HTTPOptions
-	resources.SignOptions
+	resources.SigningOptions
 	postBody     string
 	templateBody bool
 	sign         bool
@@ -90,35 +89,28 @@ func postURL(opts postOptions, targetURL string, c *ishell.Context) {
 
 	postBody := []byte(opts.postBody)
 	if opts.sign {
-		signedBody, err := account.Sign(targetURL, postBody, resources.SignOptions{
-			NonceSource:    client,
-			PrintJWS:       opts.PrintJWS,
-			PrintJWSObject: opts.PrintJWSObject,
-			PrintJSON:      opts.PrintJSON,
+		signResult, err := account.Sign(targetURL, postBody, resources.SigningOptions{
+			NonceSource: client,
 		})
 		if err != nil {
 			c.Printf("post: error signing POST request body: %s\n", err)
 			return
 		}
-		postBody = signedBody
+		postBody = signResult.SerializedJWS
 	}
 
-	_, err := client.PostURL(targetURL, postBody, &acmeclient.HTTPOptions{
-		PrintResponse: true,
-	})
+	resp, err := client.PostURL(targetURL, postBody)
 	if err != nil {
 		c.Printf("post: error POSTing signed request body to URL: %v\n", err)
 		return
 	}
+	c.Printf("%s\n", resp.RespBody)
 }
 
 func postHandler(c *ishell.Context) {
 	// Set up flags for the get flagset
 	opts := postOptions{}
 	postFlags := flag.NewFlagSet("post", flag.ContinueOnError)
-	postFlags.BoolVar(&opts.PrintJWS, "jwsBody", false, "Print JWS body before POSTing")
-	postFlags.BoolVar(&opts.PrintJWSObject, "jwsObj", false, "Print JWS object before POSTing")
-	postFlags.BoolVar(&opts.PrintJSON, "jsonBody", false, "Print JSON body before signing")
 	postFlags.StringVar(&opts.postBody, "body", "", "HTTP POST request body")
 	postFlags.BoolVar(&opts.templateBody, "templateBody", true, "Template HTTP POST body")
 	postFlags.BoolVar(&opts.sign, "sign", true, "Sign body with active account key")

@@ -20,7 +20,6 @@ type keyRolloverCmd struct {
 }
 
 type keyRolloverOptions struct {
-	acmeclient.HTTPPostOptions
 	printInnerJWS     bool
 	printInnerJWSBody bool
 	keyID             string
@@ -48,10 +47,6 @@ func rolloverHandler(c *ishell.Context) {
 	keyRolloverFlags.BoolVar(&opts.printInnerJWS, "innerJWS", false, "Print inner JWS JSON")
 	keyRolloverFlags.BoolVar(&opts.printInnerJWSBody, "innerJWSBody", false, "Print inner JWS body JSON")
 	keyRolloverFlags.StringVar(&opts.keyID, "keyID", "", "Key ID to rollover to (leave empty to select interactively)")
-
-	keyRolloverFlags.BoolVar(&opts.PrintJWS, "jwsBody", false, "Print JWS body before POSTing")
-	keyRolloverFlags.BoolVar(&opts.PrintJWSObject, "jwsObj", false, "Print JWS object before POSTing")
-	keyRolloverFlags.BoolVar(&opts.PrintJSON, "jsonBody", false, "Print JSON body before signing")
 
 	err := keyRolloverFlags.Parse(c.Args)
 	if err != nil && err != flag.ErrHelp {
@@ -126,30 +121,20 @@ func rolloverHandler(c *ishell.Context) {
 		return
 	}
 
-	innerSignOpts := resources.SignOptions{
-		NonceSource:    client,
-		Key:            newKey,
-		EmbedKey:       true,
-		PrintJWS:       false,
-		PrintJWSObject: false,
-		PrintJSON:      opts.printInnerJWSBody,
+	innerSignOpts := resources.SigningOptions{
+		NonceSource: client,
+		Key:         newKey,
+		EmbedKey:    true,
 	}
 
-	innerJWS, err := account.Sign(targetURL, rolloverRequestJSON, innerSignOpts)
+	innerSignResult, err := account.Sign(targetURL, rolloverRequestJSON, innerSignOpts)
 	if err != nil {
 		c.Printf("keyRollover: error signing inner JWS: %s\n", err.Error())
 		return
 	}
 
-	if opts.printInnerJWS {
-		c.Printf("inner JWS:\n%s\n", string(innerJWS))
-	}
-
-	outerJWS, err := account.Sign(targetURL, innerJWS, resources.SignOptions{
-		NonceSource:    client,
-		PrintJWS:       false,
-		PrintJWSObject: false,
-		PrintJSON:      false,
+	outerSignResult, err := account.Sign(targetURL, innerSignResult.SerializedJWS, resources.SigningOptions{
+		NonceSource: client,
 	})
 	if err != nil {
 		c.Printf("keyRollover: error signing outer JWS: %s\n", err.Error())
@@ -157,7 +142,7 @@ func rolloverHandler(c *ishell.Context) {
 	}
 
 	c.Printf("Rolling over account %q to use specified key\n", account.ID)
-	resp, err := client.PostURL(targetURL, outerJWS, &opts.HTTPOptions)
+	resp, err := client.PostURL(targetURL, outerSignResult.SerializedJWS)
 	if err != nil {
 		c.Printf("keyRollover: keyRollover POST failed: %v\n", err)
 		return

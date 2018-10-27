@@ -2,6 +2,7 @@ package get
 
 import (
 	"flag"
+	"fmt"
 	"strings"
 	"sync"
 
@@ -68,13 +69,12 @@ func (g getCmd) Setup(client *acmeclient.Client) (*ishell.Cmd, error) {
 func getURL(targetURL string, c *ishell.Context) {
 	client := commands.GetClient(c)
 
-	_, err := client.GetURL(targetURL, &acmeclient.HTTPOptions{
-		PrintResponse: true,
-	})
+	resp, err := client.GetURL(targetURL)
 	if err != nil {
 		c.Printf("get: error getting URL: %v\n", err)
 		return
 	}
+	fmt.Printf("%s\n", resp.RespBody)
 }
 
 func getHandler(c *ishell.Context) {

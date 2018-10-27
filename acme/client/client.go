@@ -221,7 +221,7 @@ func NewClient(config ClientConfig) (*Client, error) {
 		// use the auto-registered account as the active account
 		client.ActiveAccount = acct
 		// create the account with the ACME server
-		err = client.CreateAccount(acct, nil)
+		err = client.CreateAccount(acct)
 		if err != nil {
 			return nil, err
 		}
@@ -418,7 +418,7 @@ func (c *Client) RefreshNonce() error {
 // See
 // https://ietf-wg-acme.github.io/acme/draft-ietf-acme-acme.html#rfc.section.7.3
 // for more information on account creation.
-func (c *Client) CreateAccount(acct *resources.Account, opts *HTTPPostOptions) error {
+func (c *Client) CreateAccount(acct *resources.Account) error {
 	if c.nonce == "" {
 		if err := c.RefreshNonce(); err != nil {
 			return err
@@ -427,15 +427,6 @@ func (c *Client) CreateAccount(acct *resources.Account, opts *HTTPPostOptions) e
 	if acct.ID != "" {
 		return fmt.Errorf(
 			"create: account already exists under ID %q\n", acct.ID)
-	}
-	// TODO(@cpu): revisit this. should be using defaultHTTPPostOptions or
-	// something.
-	if opts == nil {
-		opts = &HTTPPostOptions{
-			PrintJWS:       false,
-			PrintJWSObject: false,
-			PrintJSON:      false,
-		}
 	}
 
 	newAcctReq := struct {
@@ -458,15 +449,12 @@ func (c *Client) CreateAccount(acct *resources.Account, opts *HTTPPostOptions) e
 			acme.NEW_ACCOUNT_ENDPOINT)
 	}
 
-	signedBody, err := acct.Sign(
+	signResult, err := acct.Sign(
 		newAcctURL,
 		reqBody,
-		resources.SignOptions{
-			EmbedKey:       true,
-			NonceSource:    c,
-			PrintJWS:       opts.PrintJWS,
-			PrintJWSObject: opts.PrintJWSObject,
-			PrintJSON:      opts.PrintJSON,
+		resources.SigningOptions{
+			EmbedKey:    true,
+			NonceSource: c,
 		})
 	if err != nil {
 		return fmt.Errorf("create: %s\n", err)
@@ -474,7 +462,7 @@ func (c *Client) CreateAccount(acct *resources.Account, opts *HTTPPostOptions) e
 
 	log.Printf("Sending %q request (contact: %s) to %q",
 		acme.NEW_ACCOUNT_ENDPOINT, acct.Contact, newAcctURL)
-	resp, err := c.PostURL(newAcctURL, signedBody, &opts.HTTPOptions)
+	resp, err := c.PostURL(newAcctURL, signResult.SerializedJWS)
 	if err != nil {
 		return err
 	}
@@ -503,7 +491,7 @@ func (c *Client) CreateAccount(acct *resources.Account, opts *HTTPPostOptions) e
 // For more information on Order creation see "Applying for Certificate
 // Issuance" in the ACME specification:
 // https://ietf-wg-acme.github.io/acme/draft-ietf-acme-acme.html#rfc.section.7.4
-func (c *Client) CreateOrder(order *resources.Order, opts *HTTPPostOptions) error {
+func (c *Client) CreateOrder(order *resources.Order) error {
 	if c.nonce == "" {
 		if err := c.RefreshNonce(); err != nil {
 			return err
@@ -511,15 +499,6 @@ func (c *Client) CreateOrder(order *resources.Order, opts *HTTPPostOptions) erro
 	}
 	if c.ActiveAccountID() == "" {
 		return fmt.Errorf("createOrder: active account is nil or has not been created")
-	}
-	// TODO(@cpu): revisit this. should be using defaultHTTPPostOptions or
-	// something.
-	if opts == nil {
-		opts = &HTTPPostOptions{
-			PrintJWS:       false,
-			PrintJWSObject: false,
-			PrintJSON:      false,
-		}
 	}
 
 	req := struct {
@@ -541,21 +520,17 @@ func (c *Client) CreateOrder(order *resources.Order, opts *HTTPPostOptions) erro
 	}
 
 	// Save the account that will create this order
-	order.Account = c.ActiveAccount
-	signedBody, err := c.ActiveAccount.Sign(
+	signResult, err := c.ActiveAccount.Sign(
 		newOrderURL,
 		reqBody,
-		resources.SignOptions{
-			NonceSource:    c,
-			PrintJWS:       opts.PrintJWS,
-			PrintJWSObject: opts.PrintJWSObject,
-			PrintJSON:      opts.PrintJSON,
+		resources.SigningOptions{
+			NonceSource: c,
 		})
 	if err != nil {
 		return fmt.Errorf("createOrder: %s\n", err)
 	}
 
-	resp, err := c.PostURL(newOrderURL, signedBody, &opts.HTTPOptions)
+	resp, err := c.PostURL(newOrderURL, signResult.SerializedJWS)
 	if err != nil {
 		return err
 	}
@@ -591,18 +566,15 @@ func (c *Client) CreateOrder(order *resources.Order, opts *HTTPPostOptions) erro
 //
 // Calling UpdateOrder is required to refresh an Order's Status field to
 // synchronize the resource with the server-side representation.
-func (c *Client) UpdateOrder(order *resources.Order, opts *HTTPOptions) error {
+func (c *Client) UpdateOrder(order *resources.Order) error {
 	if order == nil {
 		return fmt.Errorf("updateOrder: order must not be nil")
 	}
 	if order.ID == "" {
 		return fmt.Errorf("updateOrder: order must have an ID")
 	}
-	if opts == nil {
-		opts = defaultHTTPOptions
-	}
 
-	resp, err := c.GetURL(order.ID, opts)
+	resp, err := c.GetURL(order.ID)
 	if err != nil {
 		return err
 	}
@@ -621,18 +593,15 @@ func (c *Client) UpdateOrder(order *resources.Order, opts *HTTPOptions) error {
 //
 // Calling UpdateAuthz is required to refresh an Authz's Status field to
 // synchronize the resource with the server-side representation.
-func (c *Client) UpdateAuthz(authz *resources.Authorization, opts *HTTPOptions) error {
+func (c *Client) UpdateAuthz(authz *resources.Authorization) error {
 	if authz == nil {
 		return fmt.Errorf("UpdateAuthz: authz must not be nil")
 	}
 	if authz.ID == "" {
 		return fmt.Errorf("UpdateAuthz: authz must have an ID")
 	}
-	if opts == nil {
-		opts = defaultHTTPOptions
-	}
 
-	resp, err := c.GetURL(authz.ID, opts)
+	resp, err := c.GetURL(authz.ID)
 	if err != nil {
 		return err
 	}
@@ -648,18 +617,15 @@ func (c *Client) UpdateAuthz(authz *resources.Authorization, opts *HTTPOptions) 
 // UpdateChallenge refreshes a given Challenge by fetching its URL from the ACME
 // server. If this is successful the Challenge is updated in place. Otherwise an
 // error is returned.
-func (c *Client) UpdateChallenge(chall *resources.Challenge, opts *HTTPOptions) error {
+func (c *Client) UpdateChallenge(chall *resources.Challenge) error {
 	if chall == nil {
 		return fmt.Errorf("UpdateChallenge: chall must not be nil")
 	}
 	if chall.URL == "" {
 		return fmt.Errorf("UpdateChallenge: chall must have a URL")
 	}
-	if opts == nil {
-		opts = defaultHTTPOptions
-	}
 
-	resp, err := c.GetURL(chall.URL, opts)
+	resp, err := c.GetURL(chall.URL)
 	if err != nil {
 		return err
 	}

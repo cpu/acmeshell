@@ -73,7 +73,7 @@ func finalizeHandler(c *ishell.Context) {
 		if opts.orderIndex >= 0 && opts.orderIndex < len(client.ActiveAccount.Orders) {
 			orderURL := client.ActiveAccount.Orders[opts.orderIndex]
 			order.ID = orderURL
-			err = client.UpdateOrder(order, nil)
+			err = client.UpdateOrder(order)
 			if err != nil {
 				c.Printf("finalize: error getting order: %s\n", err.Error())
 				return
@@ -103,7 +103,7 @@ func finalizeHandler(c *ishell.Context) {
 	var order = &resources.Order{
 		ID: orderURL,
 	}
-	err = client.UpdateOrder(order, nil)
+	err = client.UpdateOrder(order)
 	if err != nil {
 		c.Printf("finalize: error getting order: %s\n", err.Error())
 		return
@@ -132,18 +132,15 @@ func finalizeHandler(c *ishell.Context) {
 	}
 	finalizeRequestJSON, _ := json.Marshal(&finalizeRequest)
 
-	signedBody, err := client.ActiveAccount.Sign(order.Finalize, finalizeRequestJSON, resources.SignOptions{
-		NonceSource:    client,
-		PrintJWS:       false,
-		PrintJWSObject: false,
-		PrintJSON:      false,
+	signResult, err := client.ActiveAccount.Sign(order.Finalize, finalizeRequestJSON, resources.SigningOptions{
+		NonceSource: client,
 	})
 	if err != nil {
 		c.Printf("finalize: failed to sign finalize POST body: %s\n", err.Error())
 		return
 	}
 
-	resp, err := client.PostURL(order.Finalize, signedBody, nil)
+	resp, err := client.PostURL(order.Finalize, signResult.SerializedJWS)
 	if err != nil {
 		c.Printf("finalize: failed to POST order finalization URL %q: %v\n", order.Finalize, err)
 		return

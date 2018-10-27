@@ -29,7 +29,7 @@ func (a newOrderCmd) Setup(client *acmeclient.Client) (*ishell.Cmd, error) {
 	return NewOrderCommand.Cmd, nil
 }
 
-func createOrder(fqdns []string, c *ishell.Context, opts *acmeclient.HTTPPostOptions) {
+func createOrder(fqdns []string, c *ishell.Context) {
 	var idents []resources.Identifier
 	// Convert the fqdns to DNS identifiers
 	for _, ident := range fqdns {
@@ -47,7 +47,7 @@ func createOrder(fqdns []string, c *ishell.Context, opts *acmeclient.HTTPPostOpt
 	order := &resources.Order{
 		Identifiers: idents,
 	}
-	err := client.CreateOrder(order, opts)
+	err := client.CreateOrder(order)
 	if err != nil {
 		c.Printf("newOrder: error creating new order with ACME server: %s\n", err)
 		return
@@ -67,12 +67,6 @@ func newOrderHandler(c *ishell.Context) {
 	newOrderFlags := flag.NewFlagSet("newOrder", flag.ContinueOnError)
 	identifiersArg := newOrderFlags.String("identifiers", "", "Comma separated list of DNS identifiers")
 
-	httpOpts := &acmeclient.HTTPPostOptions{}
-
-	newOrderFlags.BoolVar(&httpOpts.PrintJWS, "jwsBody", false, "Print JWS body before POSTing")
-	newOrderFlags.BoolVar(&httpOpts.PrintJWSObject, "jwsObj", false, "Print JWS object before POSTing")
-	newOrderFlags.BoolVar(&httpOpts.PrintJSON, "jsonBody", false, "Print JSON body before signing")
-
 	err := newOrderFlags.Parse(c.Args)
 	if err != nil && err != flag.ErrHelp {
 		c.Printf("newOrder: error parsing input flags: %s\n", err.Error())
@@ -84,7 +78,7 @@ func newOrderHandler(c *ishell.Context) {
 	if *identifiersArg != "" {
 		rawIdentifiers := strings.Split(*identifiersArg, ",")
 		if len(rawIdentifiers) > 0 {
-			createOrder(rawIdentifiers, c, httpOpts)
+			createOrder(rawIdentifiers, c)
 			return
 		}
 	}
@@ -95,5 +89,5 @@ func newOrderHandler(c *ishell.Context) {
 		return
 	}
 
-	createOrder(strings.Split(inputIdentifiers, "\n"), c, httpOpts)
+	createOrder(strings.Split(inputIdentifiers, "\n"), c)
 }

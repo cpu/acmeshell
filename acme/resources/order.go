@@ -16,10 +16,6 @@ type Order struct {
 	// The Identifiers the Order wishes to finalize a Certificate for once the
 	// Order is ready.
 	Identifiers []Identifier
-	// The Account that is creating the Order. (Note: This is an ACME Shell field
-	// pointing to the in-memory Account that created the Order and is not an ACME
-	// specified field used in ACME requests/responses).
-	Account *Account
 	// A list of URLs for Authorization resources the server specifies for the
 	// Order Identifiers.
 	Authorizations []string
@@ -29,7 +25,7 @@ type Order struct {
 	// A URL used to fetch the Certificate issued by the server for the Order
 	// after being Finalized. The Certificate field should be present and
 	// not-empty when the Order has a status of "valid".
-	Certificate string
+	Certificate string `json:",omitempty"`
 }
 
 // String returns the Order's ID URL.

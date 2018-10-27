@@ -67,7 +67,7 @@ func getCertHandler(c *ishell.Context) {
 		if opts.orderIndex >= 0 && opts.orderIndex < len(client.ActiveAccount.Orders) {
 			orderURL := client.ActiveAccount.Orders[opts.orderIndex]
 			order.ID = orderURL
-			err = client.UpdateOrder(order, nil)
+			err = client.UpdateOrder(order)
 			if err != nil {
 				c.Printf("getCert: error getting order: %s\n", err.Error())
 				return
@@ -98,7 +98,7 @@ func getCertHandler(c *ishell.Context) {
 	order := &resources.Order{
 		ID: orderURL,
 	}
-	err = client.UpdateOrder(order, nil)
+	err = client.UpdateOrder(order)
 	if err != nil {
 		c.Printf("getCert: error getting order: %s\n", err.Error())
 		return
@@ -114,7 +114,7 @@ func getCertHandler(c *ishell.Context) {
 		return
 	}
 
-	resp, err := client.GetURL(order.Certificate, nil)
+	resp, err := client.GetURL(order.Certificate)
 	if err != nil {
 		c.Printf("getCert: failed to GET order certificate URL %q : %v\n", order.Certificate, err)
 		return

@@ -91,7 +91,7 @@ func solveHandler(c *ishell.Context) {
 	authz := &resources.Authorization{
 		ID: authzURL,
 	}
-	err = client.UpdateAuthz(authz, nil)
+	err = client.UpdateAuthz(authz)
 	if err != nil {
 		c.Printf("solve: error getting authz: %s\n", err.Error())
 		return
@@ -149,18 +149,15 @@ func solveHandler(c *ishell.Context) {
 	}
 	c.Printf("Challenge response ready\n")
 
-	signedBody, err := client.ActiveAccount.Sign(chall.URL, []byte("{}"), resources.SignOptions{
-		NonceSource:    client,
-		PrintJWS:       false,
-		PrintJWSObject: false,
-		PrintJSON:      false,
+	signResult, err := client.ActiveAccount.Sign(chall.URL, []byte("{}"), resources.SigningOptions{
+		NonceSource: client,
 	})
 	if err != nil {
 		c.Printf("solve: failed to sign challenge POST body: %s\n", err.Error())
 		return
 	}
 
-	resp, err := client.PostURL(chall.URL, signedBody, nil)
+	resp, err := client.PostURL(chall.URL, signResult.SerializedJWS)
 	if err != nil {
 		c.Printf("solve: failed to POST challenge %q: %v\n", chall.URL, err)
 		return

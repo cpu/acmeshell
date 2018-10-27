@@ -68,7 +68,7 @@ func pollHandler(c *ishell.Context) {
 		if opts.orderIndex >= 0 && opts.orderIndex < len(client.ActiveAccount.Orders) {
 			orderURL := client.ActiveAccount.Orders[opts.orderIndex]
 			order.ID = orderURL
-			err = client.UpdateOrder(order, nil)
+			err = client.UpdateOrder(order)
 			if err != nil {
 				c.Printf("poll: error getting order: %s\n", err.Error())
 				return
@@ -87,7 +87,7 @@ func pollHandler(c *ishell.Context) {
 				authz := &resources.Authorization{
 					ID: authzURL,
 				}
-				err = client.UpdateAuthz(authz, nil)
+				err = client.UpdateAuthz(authz)
 				if err != nil {
 					c.Printf("poll: error getting authz %q : %s\n", authzURL, err.Error())
 					return
@@ -110,7 +110,7 @@ func pollHandler(c *ishell.Context) {
 		Status string
 	}
 
-	resp, err := client.GetURL(targetURL, nil)
+	resp, err := client.GetURL(targetURL)
 	if err != nil {
 		c.Printf("poll: error polling %q : %v\n", targetURL, err)
 		return
@@ -125,7 +125,7 @@ func pollHandler(c *ishell.Context) {
 	if polledOb.Status != opts.status {
 		for try := 0; try < opts.maxTries; try++ {
 
-			resp, err := client.GetURL(targetURL, nil)
+			resp, err := client.GetURL(targetURL)
 			if err != nil {
 				c.Printf("poll: error polling %q : %v\n", targetURL, err)
 				return

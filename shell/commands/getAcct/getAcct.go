@@ -16,10 +16,6 @@ type getAccountCmd struct {
 	commands.BaseCmd
 }
 
-type getAccountOptions struct {
-	acmeclient.HTTPOptions
-}
-
 var GetAccountCommand = getAccountCmd{
 	commands.BaseCmd{
 		Cmd: &ishell.Cmd{
@@ -62,7 +58,7 @@ func getAccountHandler(c *ishell.Context) {
 		return
 	}
 
-	signedBody, err := client.ActiveAccount.Sign(newAcctURL, reqBody, resources.SignOptions{
+	signResult, err := client.ActiveAccount.Sign(newAcctURL, reqBody, resources.SigningOptions{
 		EmbedKey:    true,
 		NonceSource: client,
 	})
@@ -71,9 +67,7 @@ func getAccountHandler(c *ishell.Context) {
 		return
 	}
 
-	resp, err := client.PostURL(newAcctURL, signedBody, &acmeclient.HTTPOptions{
-		PrintResponse: true,
-	})
+	resp, err := client.PostURL(newAcctURL, signResult.SerializedJWS)
 	if err != nil {
 		c.Printf("getAccount: failed to POST newAccount: %v\n", err)
 		return
@@ -85,4 +79,6 @@ func getAccountHandler(c *ishell.Context) {
 		c.Printf("getAccount: response body: %s\n", resp.RespBody)
 		return
 	}
+
+	c.Printf("%s\n", resp.RespBody)
 }

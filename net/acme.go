@@ -64,13 +64,22 @@ func New(conf Config) (*ACMENet, error) {
 	}, nil
 }
 
+// NetResponse holds the results from calling Do with an HTTP Request.
 type NetResponse struct {
+	// The HTTP Response object from making the request.
 	Response *http.Response
+	// The response body.
 	RespBody []byte
+	// The response dumped by httputil to a printable form.
 	RespDump []byte
-	ReqDump  []byte
+	// The request dumped by httputil to a printable form.
+	ReqDump []byte
 }
 
+// Do performs an HTTP request, returning a pointer to a NetResponse instance or
+// an error. User-Agent and Accept-Language headers are automatically added. to
+// the request. The body of the HTTP Response is read into the NetResponse and
+// can not be read again.
 func (c *ACMENet) Do(req *http.Request) (*NetResponse, error) {
 	return c.httpRequest(req)
 }

@@ -15,7 +15,7 @@ type signCmd struct {
 }
 
 type signCmdOptions struct {
-	resources.SignOptions
+	resources.SigningOptions
 	embedKey bool
 	data     []byte
 	keyID    string
@@ -45,12 +45,9 @@ func signData(opts signCmdOptions, targetURL string, c *ishell.Context) {
 		return
 	}
 
-	signOpts := resources.SignOptions{
-		NonceSource:    client,
-		EmbedKey:       opts.embedKey,
-		PrintJWS:       opts.PrintJWS,
-		PrintJWSObject: opts.PrintJWSObject,
-		PrintJSON:      opts.PrintJSON,
+	signOpts := resources.SigningOptions{
+		NonceSource: client,
+		EmbedKey:    opts.embedKey,
 	}
 
 	if opts.keyID != "" {
@@ -65,19 +62,19 @@ func signData(opts signCmdOptions, targetURL string, c *ishell.Context) {
 		}
 	}
 
-	_, err := account.Sign(targetURL, opts.data, signOpts)
+	signResult, err := account.Sign(targetURL, opts.data, signOpts)
 	if err != nil {
 		c.Printf("sign: error signing data: %s\n", err)
 		return
 	}
+
+	c.Printf("sign: Result JWS: \n%s\n", signResult.SerializedJWS)
 }
 
 func signHandler(c *ishell.Context) {
 	// Set up flags for the sign cmd flagset
 	opts := signCmdOptions{}
 	signFlags := flag.NewFlagSet("sign", flag.ContinueOnError)
-	signFlags.BoolVar(&opts.PrintJWS, "jws", true, "Print result as JSON JWS")
-	signFlags.BoolVar(&opts.PrintJWSObject, "jwsObj", false, "Print result jose.JWS object")
 	signFlags.BoolVar(&opts.embedKey, "embedKey", false, "Embed JWK in JWS instead of a Key ID Header")
 	signFlags.StringVar(&opts.keyID, "keyID", "", "Key ID of existing key to use instead of active account key")
 	dataString := signFlags.String("data", "", "Data to sign")

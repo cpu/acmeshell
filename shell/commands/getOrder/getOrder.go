@@ -15,7 +15,6 @@ type getOrderCmd struct {
 }
 
 type getOrderOptions struct {
-	acmeclient.HTTPOptions
 	orderIndex int
 }
 
@@ -56,7 +55,7 @@ func getOrderHandler(c *ishell.Context) {
 		if opts.orderIndex >= 0 && opts.orderIndex < len(client.ActiveAccount.Orders) {
 			orderURL := client.ActiveAccount.Orders[opts.orderIndex]
 			order.ID = orderURL
-			err = client.UpdateOrder(order, nil)
+			err = client.UpdateOrder(order)
 			if err != nil {
 				c.Printf("getOrder: error getting order: %s\n", err.Error())
 				return
@@ -87,12 +86,16 @@ func getOrderHandler(c *ishell.Context) {
 	order := &resources.Order{
 		ID: orderURL,
 	}
-	err = client.UpdateOrder(order, &acmeclient.HTTPOptions{
-		// We expressly want the response printed
-		PrintResponse: true,
-	})
+	err = client.UpdateOrder(order)
 	if err != nil {
 		c.Printf("getOrder: error getting order: %s\n", err.Error())
 		return
 	}
+
+	orderStr, err := commands.PrintJSON(order)
+	if err != nil {
+		c.Printf("getOrder: error serializing order: %v\n", err)
+		return
+	}
+	c.Printf("%s\n", orderStr)
 }

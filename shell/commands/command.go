@@ -3,6 +3,7 @@
 package commands
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"strings"
@@ -31,6 +32,10 @@ type Environment struct {
 	PrintRequests bool
 	// Print all HTTP responses from the ACME server.
 	PrintResponses bool
+	// Print all the input to JWS produced.
+	PrintSignedData bool
+	// Print the JSON serialization of all JWS produced.
+	PrintJWS bool
 }
 
 // ACMEShellCmds can be Setup with a Client instance. This allows the command to
@@ -139,4 +144,12 @@ func ReadJSON(c *ishell.Context) string {
 	terminator := "."
 	c.Printf("Input JSON POST request body. End by sending '%s'\n", terminator)
 	return strings.TrimSuffix(c.ReadMultiLines(terminator), terminator)
+}
+
+func PrintJSON(ob interface{}) (string, error) {
+	bytes, err := json.MarshalIndent(ob, "", "  ")
+	if err != nil {
+		return "", err
+	}
+	return string(bytes), err
 }

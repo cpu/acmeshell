@@ -59,7 +59,7 @@ func getChallHandler(c *ishell.Context) {
 		if opts.orderIndex >= 0 && opts.orderIndex < len(client.ActiveAccount.Orders) {
 			orderURL := client.ActiveAccount.Orders[opts.orderIndex]
 			order.ID = orderURL
-			err = client.UpdateOrder(order, nil)
+			err = client.UpdateOrder(order)
 			if err != nil {
 				c.Printf("getChall: error getting challenge: %s\n", err.Error())
 				return
@@ -75,7 +75,7 @@ func getChallHandler(c *ishell.Context) {
 		if opts.identifier != "" {
 			for _, authzURL := range order.Authorizations {
 				authz.ID = authzURL
-				err := client.UpdateAuthz(authz, nil)
+				err := client.UpdateAuthz(authz)
 				if err != nil {
 					c.Printf("getChall: error matching authorization: %s\n", err.Error())
 					return
@@ -133,11 +133,15 @@ func getChallHandler(c *ishell.Context) {
 	chall := &resources.Challenge{
 		URL: challURL,
 	}
-	err = client.UpdateChallenge(chall, &acmeclient.HTTPOptions{
-		PrintResponse: true,
-	})
+	err = client.UpdateChallenge(chall)
 	if err != nil {
 		c.Printf("getChall: error getting authz: %s\n", err.Error())
 		return
 	}
+	challStr, err := commands.PrintJSON(chall)
+	if err != nil {
+		c.Printf("getChall: error serializing challenge: %v\n", err)
+		return
+	}
+	c.Printf("%s\n", challStr)
 }

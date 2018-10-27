@@ -36,7 +36,7 @@ func (ctx TemplateCtx) order(index int) (*resources.Order, error) {
 	order := &resources.Order{
 		ID: ctx.Acct.Orders[index],
 	}
-	err := ctx.Client.UpdateOrder(order, nil)
+	err := ctx.Client.UpdateOrder(order)
 	return order, err
 }
 
@@ -53,7 +53,7 @@ func (ctx TemplateCtx) authz(order *resources.Order, identifier string) (*resour
 
 	var match *resources.Authorization
 	for _, authzURL := range order.Authorizations {
-		resp, err := ctx.Client.GetURL(authzURL, nil)
+		resp, err := ctx.Client.GetURL(authzURL)
 		if err != nil {
 			return nil, err
 		}

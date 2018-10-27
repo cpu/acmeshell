@@ -16,7 +16,6 @@ type newAccountCmd struct {
 }
 
 type newAccountOptions struct {
-	acmeclient.HTTPPostOptions
 	contacts string
 	switchTo bool
 	jsonPath string
@@ -46,10 +45,6 @@ func newAccountHandler(c *ishell.Context) {
 	newAccountFlags.BoolVar(&opts.switchTo, "switch", true, "Switch to the new account after creating it")
 	newAccountFlags.StringVar(&opts.jsonPath, "json", "", "Optional filepath to a JSON save file for the account")
 	newAccountFlags.StringVar(&opts.keyID, "keyID", "", "Key ID for existing key (empty to generate new key)")
-
-	newAccountFlags.BoolVar(&opts.PrintJWS, "jwsBody", false, "Print JWS body before POSTing")
-	newAccountFlags.BoolVar(&opts.PrintJWSObject, "jwsObj", false, "Print JWS object before POSTing")
-	newAccountFlags.BoolVar(&opts.PrintJSON, "jsonBody", false, "Print JSON body before signing")
 
 	err := newAccountFlags.Parse(c.Args)
 	if err != nil && err != flag.ErrHelp {
@@ -91,7 +86,7 @@ func newAccountHandler(c *ishell.Context) {
 	}
 
 	// create the account with the ACME server
-	err = client.CreateAccount(acct, &opts.HTTPPostOptions)
+	err = client.CreateAccount(acct)
 	if err != nil {
 		c.Printf("newAccount: error creating new account with ACME server: %s\n", err)
 		return

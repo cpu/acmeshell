@@ -32,10 +32,10 @@ func PickOrder(c *ishell.Context) (*resources.Order, error) {
 
 	choice := c.MultiChoice(orderList, "Select an order")
 	orderURL := client.ActiveAccount.Orders[choice]
-	var order = &resources.Order{
+	order := &resources.Order{
 		ID: orderURL,
 	}
-	err := client.UpdateOrder(order, nil)
+	err := client.UpdateOrder(order)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +50,7 @@ func PickAuthz(c *ishell.Context, order *resources.Order) (*resources.Authorizat
 		authz := &resources.Authorization{
 			ID: authzURL,
 		}
-		err := client.UpdateAuthz(authz, nil)
+		err := client.UpdateAuthz(authz)
 		if err != nil {
 			return nil, err
 		}
