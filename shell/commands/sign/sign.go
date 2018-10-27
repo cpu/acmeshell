@@ -6,7 +6,6 @@ import (
 
 	"github.com/abiosoft/ishell"
 	acmeclient "github.com/cpu/acmeshell/acme/client"
-	"github.com/cpu/acmeshell/acme/resources"
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
@@ -15,7 +14,6 @@ type signCmd struct {
 }
 
 type signCmdOptions struct {
-	resources.SigningOptions
 	embedKey bool
 	data     []byte
 	keyID    string
@@ -45,9 +43,8 @@ func signData(opts signCmdOptions, targetURL string, c *ishell.Context) {
 		return
 	}
 
-	signOpts := resources.SigningOptions{
-		NonceSource: client,
-		EmbedKey:    opts.embedKey,
+	signOpts := &acmeclient.SigningOptions{
+		EmbedKey: opts.embedKey,
 	}
 
 	if opts.keyID != "" {
@@ -62,7 +59,7 @@ func signData(opts signCmdOptions, targetURL string, c *ishell.Context) {
 		}
 	}
 
-	signResult, err := account.Sign(targetURL, opts.data, signOpts)
+	signResult, err := client.Sign(targetURL, opts.data, signOpts)
 	if err != nil {
 		c.Printf("sign: error signing data: %s\n", err)
 		return

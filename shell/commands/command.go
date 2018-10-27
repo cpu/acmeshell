@@ -22,21 +22,7 @@ const (
 	// The ishell context key that we store a challenge response server instance
 	// under.
 	ChallSrvKey = "challsrv"
-	// The ishell context key that we store env settings under.
-	EnvKey = "env"
 )
-
-// Environment holds runtime settings for an ACMEShell.
-type Environment struct {
-	// Print all HTTP requests made to the ACME server.
-	PrintRequests bool
-	// Print all HTTP responses from the ACME server.
-	PrintResponses bool
-	// Print all the input to JWS produced.
-	PrintSignedData bool
-	// Print the JSON serialization of all JWS produced.
-	PrintJWS bool
-}
 
 // ACMEShellCmds can be Setup with a Client instance. This allows the command to
 // setup auto-completers and other properties based on interactions with the
@@ -101,24 +87,6 @@ func GetClient(c shellContext) *acmeclient.Client {
 	panic(fmt.Sprintf(
 		"%q value in shellContext was not an *acmeclient.Client",
 		ClientKey))
-}
-
-// GetEnviromment reads a *Environment from the shellContext or
-// panics.
-func GetEnvironment(c shellContext) *Environment {
-	if c.Get(EnvKey) == nil {
-		panic(fmt.Sprintf("nil %q value in shellContext", EnvKey))
-	}
-
-	rawEnv := c.Get(EnvKey)
-	switch env := rawEnv.(type) {
-	case *Environment:
-		return env
-	}
-
-	panic(fmt.Sprintf(
-		"%q value in shellContext was not an *Environment",
-		EnvKey))
 }
 
 // GetChallSrv reads a *challtestsrv.ChallSrv from the shellContext or panics.

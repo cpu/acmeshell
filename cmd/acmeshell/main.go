@@ -70,6 +70,26 @@ func main() {
 		false,
 		"Use Pebble defaults")
 
+	printRequests := flag.Bool(
+		"printRequests",
+		false,
+		"Print all HTTP requests to stdout")
+
+	printResponses := flag.Bool(
+		"printResponses",
+		false,
+		"Print all HTTP responses to stdout")
+
+	printSignedData := flag.Bool(
+		"printSignedData",
+		false,
+		"Print request data to stdout before signing")
+
+	printJWS := flag.Bool(
+		"printJWS",
+		false,
+		"Print all JWS in serialized form to stdout")
+
 	commandFile := flag.String(
 		"in",
 		"",
@@ -103,6 +123,12 @@ func main() {
 			ContactEmail: *email,
 			AccountPath:  *acctPath,
 			AutoRegister: *autoRegister,
+			InitialOutput: acmeclient.OutputOptions{
+				PrintRequests:   *printRequests,
+				PrintResponses:  *printResponses,
+				PrintSignedData: *printSignedData,
+				PrintJWS:        *printJWS,
+			},
 		},
 		HTTPPort: *httpPort,
 		TLSPort:  *tlsPort,

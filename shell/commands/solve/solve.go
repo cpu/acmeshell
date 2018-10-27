@@ -149,9 +149,7 @@ func solveHandler(c *ishell.Context) {
 	}
 	c.Printf("Challenge response ready\n")
 
-	signResult, err := client.ActiveAccount.Sign(chall.URL, []byte("{}"), resources.SigningOptions{
-		NonceSource: client,
-	})
+	signResult, err := client.Sign(chall.URL, []byte("{}"), nil)
 	if err != nil {
 		c.Printf("solve: failed to sign challenge POST body: %s\n", err.Error())
 		return

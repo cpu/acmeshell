@@ -10,12 +10,11 @@ import (
 
 	"github.com/abiosoft/ishell"
 	acmeclient "github.com/cpu/acmeshell/acme/client"
-	"github.com/cpu/acmeshell/acme/resources"
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
 type postOptions struct {
-	resources.SigningOptions
+	acmeclient.SigningOptions
 	postBody     string
 	templateBody bool
 	sign         bool
@@ -89,9 +88,7 @@ func postURL(opts postOptions, targetURL string, c *ishell.Context) {
 
 	postBody := []byte(opts.postBody)
 	if opts.sign {
-		signResult, err := account.Sign(targetURL, postBody, resources.SigningOptions{
-			NonceSource: client,
-		})
+		signResult, err := client.Sign(targetURL, postBody, nil)
 		if err != nil {
 			c.Printf("post: error signing POST request body: %s\n", err)
 			return

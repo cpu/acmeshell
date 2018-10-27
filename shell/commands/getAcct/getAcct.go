@@ -8,7 +8,6 @@ import (
 	"github.com/abiosoft/ishell"
 	"github.com/cpu/acmeshell/acme"
 	acmeclient "github.com/cpu/acmeshell/acme/client"
-	"github.com/cpu/acmeshell/acme/resources"
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
@@ -58,9 +57,8 @@ func getAccountHandler(c *ishell.Context) {
 		return
 	}
 
-	signResult, err := client.ActiveAccount.Sign(newAcctURL, reqBody, resources.SigningOptions{
-		EmbedKey:    true,
-		NonceSource: client,
+	signResult, err := client.Sign(newAcctURL, reqBody, &acmeclient.SigningOptions{
+		EmbedKey: true,
 	})
 	if err != nil {
 		c.Printf("getAccount: %s\n", err)

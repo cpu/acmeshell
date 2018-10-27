@@ -132,9 +132,7 @@ func finalizeHandler(c *ishell.Context) {
 	}
 	finalizeRequestJSON, _ := json.Marshal(&finalizeRequest)
 
-	signResult, err := client.ActiveAccount.Sign(order.Finalize, finalizeRequestJSON, resources.SigningOptions{
-		NonceSource: client,
-	})
+	signResult, err := client.Sign(order.Finalize, finalizeRequestJSON, nil)
 	if err != nil {
 		c.Printf("finalize: failed to sign finalize POST body: %s\n", err.Error())
 		return

@@ -117,9 +117,6 @@ func NewACMEShell(opts *ACMEShellOptions) *ACMEShell {
 	// Stash the ACME client in the shell for commands to access
 	shell.Set(commands.ClientKey, client)
 
-	// Stash the default Environment in the shell for commands to access
-	shell.Set(commands.EnvKey, &commands.Environment{})
-
 	// Add all of the ACMEShell commands
 	for _, cmd := range shellCommands {
 		shellCommand, err := cmd.Setup(client)

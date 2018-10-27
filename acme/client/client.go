@@ -62,6 +62,8 @@ type Client struct {
 	// A slice of Account object pointers. The ActiveAccount is selected from this
 	// list of available accounts.
 	Accounts []*resources.Account
+	// Options controlling the Client's output.
+	Output OutputOptions
 	// the net object is used to make HTTP GET/POST/HEAD requests to the ACME
 	// server.
 	net *acmenet.ACMENet
@@ -71,6 +73,18 @@ type Client struct {
 	// nonce is the value of the last-seen ReplayNonce header from the ACME
 	// server's HTTP responses. It will be used for the next signing operation.
 	nonce string
+}
+
+// OutputOptions holds runtime output settings for a client.
+type OutputOptions struct {
+	// Print all HTTP requests made to the ACME server.
+	PrintRequests bool
+	// Print all HTTP responses from the ACME server.
+	PrintResponses bool
+	// Print all the input to JWS produced.
+	PrintSignedData bool
+	// Print the JSON serialization of all JWS produced.
+	PrintJWS bool
 }
 
 // ClientConfig contains configuration options provided to NewClient when
@@ -127,6 +141,8 @@ type ClientConfig struct {
 	// with the ACME server and use it as the ActiveAccount. If ContactEmail is
 	// specified it will be used as the new ACME account's Contact mailto address.
 	AutoRegister bool
+	// Initial OutputOptions settings
+	InitialOutput OutputOptions
 }
 
 // normalize validates a ClientConfig.
@@ -179,8 +195,9 @@ func NewClient(config ClientConfig) (*Client, error) {
 	// Create a base client
 	client := &Client{
 		DirectoryURL: dirURL,
-		net:          net,
 		Keys:         map[string]*ecdsa.PrivateKey{},
+		Output:       config.InitialOutput,
+		net:          net,
 	}
 
 	// If requested, try to load an existing account from disk
@@ -449,12 +466,12 @@ func (c *Client) CreateAccount(acct *resources.Account) error {
 			acme.NEW_ACCOUNT_ENDPOINT)
 	}
 
-	signResult, err := acct.Sign(
+	signResult, err := c.Sign(
 		newAcctURL,
 		reqBody,
-		resources.SigningOptions{
-			EmbedKey:    true,
-			NonceSource: c,
+		&SigningOptions{
+			EmbedKey: true,
+			Key:      acct.PrivateKey,
 		})
 	if err != nil {
 		return fmt.Errorf("create: %s\n", err)
@@ -519,13 +536,8 @@ func (c *Client) CreateOrder(order *resources.Order) error {
 			acme.NEW_ORDER_ENDPOINT)
 	}
 
-	// Save the account that will create this order
-	signResult, err := c.ActiveAccount.Sign(
-		newOrderURL,
-		reqBody,
-		resources.SigningOptions{
-			NonceSource: c,
-		})
+	// Sign the new order request with the active account
+	signResult, err := c.Sign(newOrderURL, reqBody, nil)
 	if err != nil {
 		return fmt.Errorf("createOrder: %s\n", err)
 	}

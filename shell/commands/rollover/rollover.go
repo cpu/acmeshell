@@ -11,7 +11,6 @@ import (
 
 	"github.com/abiosoft/ishell"
 	acmeclient "github.com/cpu/acmeshell/acme/client"
-	"github.com/cpu/acmeshell/acme/resources"
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
@@ -121,21 +120,18 @@ func rolloverHandler(c *ishell.Context) {
 		return
 	}
 
-	innerSignOpts := resources.SigningOptions{
-		NonceSource: client,
-		Key:         newKey,
-		EmbedKey:    true,
+	innerSignOpts := &acmeclient.SigningOptions{
+		Key:      newKey,
+		EmbedKey: true,
 	}
 
-	innerSignResult, err := account.Sign(targetURL, rolloverRequestJSON, innerSignOpts)
+	innerSignResult, err := client.Sign(targetURL, rolloverRequestJSON, innerSignOpts)
 	if err != nil {
 		c.Printf("keyRollover: error signing inner JWS: %s\n", err.Error())
 		return
 	}
 
-	outerSignResult, err := account.Sign(targetURL, innerSignResult.SerializedJWS, resources.SigningOptions{
-		NonceSource: client,
-	})
+	outerSignResult, err := client.Sign(targetURL, innerSignResult.SerializedJWS, nil)
 	if err != nil {
 		c.Printf("keyRollover: error signing outer JWS: %s\n", err.Error())
 		return

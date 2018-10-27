@@ -1,6 +1,7 @@
 package client
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/cpu/acmeshell/net"
@@ -11,14 +12,12 @@ func (c *Client) handleRequest(req *http.Request) (*net.NetResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	/*
-		if opts.PrintRequest {
-			log.Printf("Request:\n%s\n", resp.ReqDump)
-		}
-		if opts.PrintResponse {
-			log.Printf("Response:\n%s\n", resp.RespDump)
-		}
-	*/
+	if c.Output.PrintRequests {
+		log.Printf("Request:\n%s\n", resp.ReqDump)
+	}
+	if c.Output.PrintResponses {
+		log.Printf("Response:\n%s\n", resp.RespDump)
+	}
 	return resp, nil
 }
 
