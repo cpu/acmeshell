@@ -75,6 +75,7 @@ func signHandler(c *ishell.Context) {
 	signFlags.BoolVar(&opts.embedKey, "embedKey", false, "Embed JWK in JWS instead of a Key ID Header")
 	signFlags.StringVar(&opts.keyID, "keyID", "", "Key ID of existing key to use instead of active account key")
 	dataString := signFlags.String("data", "", "Data to sign")
+	noData := signFlags.Bool("noData", false, "Use an empty byteslice as the data to sign (e.g. POST-as-GET)")
 	err := signFlags.Parse(c.Args)
 
 	if err != nil && err != flag.ErrHelp {
@@ -99,16 +100,17 @@ func signHandler(c *ishell.Context) {
 	// If the -data flag was specified and after trimming it is a non-empty value
 	// use the trimmed value as the data
 	if trimmedData := strings.TrimSpace(*dataString); trimmedData != "" {
-		// Need a way to indicate to use the -data arg but with no value (can't use "")
-		if trimmedData == "null" {
-			opts.data = []byte("")
-		} else {
-			opts.data = []byte(trimmedData)
+		if *noData {
+			c.Printf("sign: using -noData and providing a -data value are mutually exclusive\n")
+			return
 		}
-	} else {
+		opts.data = []byte(trimmedData)
+	} else if !*noData {
 		// Otherwise, read the POST body interactively
 		inputJSON := commands.ReadJSON(c)
 		opts.data = []byte(inputJSON)
+	} else if *noData {
+		opts.data = []byte("")
 	}
 
 	signData(opts, url, c)
