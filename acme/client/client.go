@@ -428,6 +428,15 @@ func (c *Client) CreateAccount(acct *resources.Account, opts *HTTPPostOptions) e
 		return fmt.Errorf(
 			"create: account already exists under ID %q\n", acct.ID)
 	}
+	// TODO(@cpu): revisit this. should be using defaultHTTPPostOptions or
+	// something.
+	if opts == nil {
+		opts = &HTTPPostOptions{
+			PrintJWS:       false,
+			PrintJWSObject: false,
+			PrintJSON:      false,
+		}
+	}
 
 	newAcctReq := struct {
 		Contact   []string `json:",omitempty"`
@@ -502,8 +511,14 @@ func (c *Client) CreateOrder(order *resources.Order, opts *HTTPPostOptions) erro
 	if c.ActiveAccountID() == "" {
 		return fmt.Errorf("createOrder: active account is nil or has not been created")
 	}
+	// TODO(@cpu): revisit this. should be using defaultHTTPPostOptions or
+	// something.
 	if opts == nil {
-		opts = defaultHTTPPostOptions
+		opts = &HTTPPostOptions{
+			PrintJWS:       false,
+			PrintJWSObject: false,
+			PrintJSON:      false,
+		}
 	}
 
 	req := struct {
