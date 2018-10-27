@@ -114,15 +114,15 @@ type rawAccount struct {
 	PrivateKey []byte
 }
 
-func (acct *Account) save() ([]byte, error) {
-	k, err := x509.MarshalECPrivateKey(acct.PrivateKey)
+func (a *Account) save() ([]byte, error) {
+	k, err := x509.MarshalECPrivateKey(a.PrivateKey)
 	if err != nil {
 		return nil, err
 	}
 
 	rawAcct := rawAccount{
-		ID:         acct.ID,
-		Contact:    acct.Contact,
+		ID:         a.ID,
+		Contact:    a.Contact,
 		PrivateKey: k,
 	}
 	frozenAcct, err := json.MarshalIndent(rawAcct, "", "  ")
@@ -148,7 +148,7 @@ func RestoreAccount(path string) (*Account, error) {
 	return acct, err
 }
 
-func (acct *Account) restore(frozenAcct []byte) error {
+func (a *Account) restore(frozenAcct []byte) error {
 	var rawAcct rawAccount
 
 	err := json.Unmarshal(frozenAcct, &rawAcct)
@@ -161,8 +161,8 @@ func (acct *Account) restore(frozenAcct []byte) error {
 		return err
 	}
 
-	acct.ID = rawAcct.ID
-	acct.Contact = rawAcct.Contact
-	acct.PrivateKey = privKey
+	a.ID = rawAcct.ID
+	a.Contact = rawAcct.Contact
+	a.PrivateKey = privKey
 	return nil
 }
