@@ -15,7 +15,7 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 	accounts "github.com/cpu/acmeshell/shell/commands/accounts"
 	challSrv "github.com/cpu/acmeshell/shell/commands/challSrv"
-	csr "github.com/cpu/acmeshell/shell/commands/csr"
+	//csr "github.com/cpu/acmeshell/shell/commands/csr"
 	echo "github.com/cpu/acmeshell/shell/commands/echo"
 	finalize "github.com/cpu/acmeshell/shell/commands/finalize"
 	get "github.com/cpu/acmeshell/shell/commands/get"
@@ -42,7 +42,8 @@ import (
 var shellCommands = []commands.ACMEShellCmd{
 	accounts.AccountsCommand,
 	challSrv.ChallSrvCommand,
-	csr.CSRCommand,
+	// TODO(@cpu): Fix CSR command
+	//csr.CSRCommand,
 	finalize.FinalizeCommand,
 	get.GetCommand,
 	getAcct.GetAccountCommand,
