@@ -52,7 +52,7 @@ func getOrderHandler(c *ishell.Context) {
 
 	var orderURL string
 	if len(getOrderFlags.Args()) == 0 {
-		var order *resources.Order
+		order := &resources.Order{}
 		if opts.orderIndex >= 0 && opts.orderIndex < len(client.ActiveAccount.Orders) {
 			orderURL := client.ActiveAccount.Orders[opts.orderIndex]
 			order.ID = orderURL
@@ -87,7 +87,10 @@ func getOrderHandler(c *ishell.Context) {
 	order := &resources.Order{
 		ID: orderURL,
 	}
-	err = client.UpdateOrder(order, nil)
+	err = client.UpdateOrder(order, &acmeclient.HTTPOptions{
+		// We expressly want the response printed
+		PrintResponse: true,
+	})
 	if err != nil {
 		c.Printf("getOrder: error getting order: %s\n", err.Error())
 		return
