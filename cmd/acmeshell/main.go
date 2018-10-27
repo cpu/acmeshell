@@ -1,18 +1,15 @@
-// acmeshell provides a developer-oriented command-line shell interface for
-// interacting with an ACME server.
+// The acmeshell command line tool provides a developer-oriented command-line
+// shell interface for interacting with an ACME server.
 package main
 
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
+	"syscall"
 
-	"github.com/abiosoft/ishell"
-	"github.com/abiosoft/readline"
 	acmeclient "github.com/cpu/acmeshell/acme/client"
-	"github.com/cpu/acmeshell/challtestsrv"
-	"github.com/cpu/acmeshell/cmd"
+	acmecmd "github.com/cpu/acmeshell/cmd"
 	acmeshell "github.com/cpu/acmeshell/shell"
 )
 
@@ -73,6 +70,31 @@ func main() {
 		false,
 		"Use Pebble defaults")
 
+	printRequests := flag.Bool(
+		"printRequests",
+		false,
+		"Print all HTTP requests to stdout")
+
+	printResponses := flag.Bool(
+		"printResponses",
+		false,
+		"Print all HTTP responses to stdout")
+
+	printSignedData := flag.Bool(
+		"printSignedData",
+		false,
+		"Print request data to stdout before signing")
+
+	printJWS := flag.Bool(
+		"printJWS",
+		false,
+		"Print all JWS in serialized form to stdout")
+
+	commandFile := flag.String(
+		"in",
+		"",
+		"Read commands from the specified file instead of stdin")
+
 	flag.Parse()
 
 	if *pebble {
@@ -83,45 +105,36 @@ func main() {
 		caCert = &pebbleCA
 	}
 
-	// TODO(@cpu): There should be an acmeshell that does this crap all at once
-
-	// Create an interactive shell
-	shell := ishell.NewWithConfig(&readline.Config{
-		Prompt: acmeshell.BasePrompt,
-	})
-
-	challSrv, err := challtestsrv.New(challtestsrv.Config{
-		HTTPOneAddrs:    []string{fmt.Sprintf(":%d", *httpPort)},
-		TLSALPNOneAddrs: []string{fmt.Sprintf(":%d", *tlsPort)},
-		DNSOneAddrs:     []string{fmt.Sprintf(":%d", *dnsPort)},
-		Log:             log.New(os.Stdout, "", log.Ldate|log.Ltime),
-	})
-	cmd.FailOnError(err, "Unable to create challenge test server")
-	// Stash the challenge server in the shell for commands to access
-	shell.Set(acmeshell.ChallSrvKey, challSrv)
-
-	go challSrv.Run()
-
-	// Create an ACME client
-	client, err := acmeclient.NewClient(acmeclient.ClientConfig{
-		DirectoryURL: *directory,
-		CACert:       *caCert,
-		AutoRegister: *autoRegister,
-		AccountPath:  *acctPath,
-		ContactEmail: *email,
-	})
-	cmd.FailOnError(err, "Unable to create ACME client")
-
-	// Stash the ACME client in the shell for commands to access
-	shell.Set(acmeshell.ClientKey, client)
-
-	// Add all of the ACME shell's commands
-	for _, cmd := range acmeshell.Commands {
-		shell.AddCmd(cmd.New(client))
+	if *commandFile != "" {
+		f, err := os.Open(*commandFile)
+		acmecmd.FailOnError(err, fmt.Sprintf(
+			"Error opening -in file %q: %v", *commandFile, err))
+		defer f.Close()
+		err = syscall.Dup2(int(f.Fd()), 0)
+		acmecmd.FailOnError(err, fmt.Sprintf(
+			"Error duplicating stdin fd: %v", err))
+		fmt.Printf("Replaced stdin with file\n")
 	}
 
-	shell.Println("Welcome to ACME Shell")
+	config := &acmeshell.ACMEShellOptions{
+		ClientConfig: acmeclient.ClientConfig{
+			DirectoryURL: *directory,
+			CACert:       *caCert,
+			ContactEmail: *email,
+			AccountPath:  *acctPath,
+			AutoRegister: *autoRegister,
+			InitialOutput: acmeclient.OutputOptions{
+				PrintRequests:   *printRequests,
+				PrintResponses:  *printResponses,
+				PrintSignedData: *printSignedData,
+				PrintJWS:        *printJWS,
+			},
+		},
+		HTTPPort: *httpPort,
+		TLSPort:  *tlsPort,
+		DNSPort:  *dnsPort,
+	}
+
+	shell := acmeshell.NewACMEShell(config)
 	shell.Run()
-	shell.Println("Goodbye!")
-	challSrv.Shutdown()
 }
