@@ -7,14 +7,9 @@ import (
 	"time"
 
 	"github.com/abiosoft/ishell"
-	acmeclient "github.com/cpu/acmeshell/acme/client"
 	"github.com/cpu/acmeshell/acme/resources"
 	"github.com/cpu/acmeshell/shell/commands"
 )
-
-type pollCmd struct {
-	commands.BaseCmd
-}
 
 type pollOptions struct {
 	maxTries     int
@@ -24,23 +19,15 @@ type pollOptions struct {
 	identifier   string
 }
 
-var PollCommand = pollCmd{
-	commands.BaseCmd{
-		Cmd: &ishell.Cmd{
-			Name:     "poll",
-			Func:     pollHandler,
-			Help:     "Poll an object until it is in the desired status",
-			LongHelp: `TODO(@cpu): write this`,
-		},
-	},
+var (
+	opts = pollOptions{}
+)
+
+func init() {
+	registerPollCommand()
 }
 
-func (a pollCmd) Setup(client *acmeclient.Client) (*ishell.Cmd, error) {
-	return PollCommand.Cmd, nil
-}
-
-func pollHandler(c *ishell.Context) {
-	opts := pollOptions{}
+func registerPollCommand() {
 	pollFlags := flag.NewFlagSet("poll", flag.ContinueOnError)
 	pollFlags.StringVar(&opts.status, "status", "ready", "Poll object until it is the given status")
 	pollFlags.IntVar(&opts.maxTries, "maxTries", 5, "Number of times to poll before giving up")
@@ -48,27 +35,32 @@ func pollHandler(c *ishell.Context) {
 	pollFlags.IntVar(&opts.orderIndex, "order", -1, "index of order to poll")
 	pollFlags.StringVar(&opts.identifier, "identifier", "", "identifier of authorization")
 
-	err := pollFlags.Parse(c.Args)
-	if err != nil && err != flag.ErrHelp {
-		c.Printf("poll: error parsing input flags: %s\n", err.Error())
-		return
-	} else if err == flag.ErrHelp {
-		return
-	}
+	commands.RegisterCommand(
+		&ishell.Cmd{
+			Name:     "poll",
+			Help:     "Poll an order or authz until it is has the desired status field value",
+			LongHelp: `TODO(@cpu): Write the poll cmd longHelp`,
+		},
+		nil,
+		pollHandler,
+		pollFlags)
+}
 
+func pollHandler(c *ishell.Context, leftovers []string) {
 	client := commands.GetClient(c)
 
 	var targetURL string
-	if len(pollFlags.Args()) == 0 {
+	if len(leftovers) == 0 {
 		if len(client.ActiveAccount.Orders) == 0 {
 			c.Printf("poll: the active account has no orders\n")
 			return
 		}
 		order := &resources.Order{}
+		var err error
 		if opts.orderIndex >= 0 && opts.orderIndex < len(client.ActiveAccount.Orders) {
 			orderURL := client.ActiveAccount.Orders[opts.orderIndex]
 			order.ID = orderURL
-			err = client.UpdateOrder(order)
+			err := client.UpdateOrder(order)
 			if err != nil {
 				c.Printf("poll: error getting order: %s\n", err.Error())
 				return
@@ -87,7 +79,7 @@ func pollHandler(c *ishell.Context) {
 				authz := &resources.Authorization{
 					ID: authzURL,
 				}
-				err = client.UpdateAuthz(authz)
+				err := client.UpdateAuthz(authz)
 				if err != nil {
 					c.Printf("poll: error getting authz %q : %s\n", authzURL, err.Error())
 					return
@@ -103,7 +95,7 @@ func pollHandler(c *ishell.Context) {
 			}
 		}
 	} else {
-		targetURL = strings.Join(pollFlags.Args(), " ")
+		targetURL = strings.Join(leftovers, " ")
 	}
 
 	var polledOb struct {

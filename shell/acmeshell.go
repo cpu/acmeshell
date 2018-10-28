@@ -18,7 +18,7 @@ import (
 	//csr "github.com/cpu/acmeshell/shell/commands/csr"
 	echo "github.com/cpu/acmeshell/shell/commands/echo"
 	finalize "github.com/cpu/acmeshell/shell/commands/finalize"
-	get "github.com/cpu/acmeshell/shell/commands/get"
+	_ "github.com/cpu/acmeshell/shell/commands/get"
 	getAcct "github.com/cpu/acmeshell/shell/commands/getAcct"
 	getAuthz "github.com/cpu/acmeshell/shell/commands/getAuthz"
 	getCert "github.com/cpu/acmeshell/shell/commands/getCert"
@@ -31,8 +31,8 @@ import (
 	newKey "github.com/cpu/acmeshell/shell/commands/newKey"
 	newOrder "github.com/cpu/acmeshell/shell/commands/newOrder"
 	orders "github.com/cpu/acmeshell/shell/commands/orders"
-	poll "github.com/cpu/acmeshell/shell/commands/poll"
-	post "github.com/cpu/acmeshell/shell/commands/post"
+	_ "github.com/cpu/acmeshell/shell/commands/poll"
+	_ "github.com/cpu/acmeshell/shell/commands/post"
 	rollover "github.com/cpu/acmeshell/shell/commands/rollover"
 	sign "github.com/cpu/acmeshell/shell/commands/sign"
 	solve "github.com/cpu/acmeshell/shell/commands/solve"
@@ -45,7 +45,6 @@ var shellCommands = []commands.ACMEShellCmd{
 	// TODO(@cpu): Fix CSR command
 	//csr.CSRCommand,
 	finalize.FinalizeCommand,
-	get.GetCommand,
 	getAcct.GetAccountCommand,
 	getAuthz.GetAuthzCommand,
 	getCert.GetCertCommand,
@@ -54,12 +53,10 @@ var shellCommands = []commands.ACMEShellCmd{
 	keys.KeysCommand,
 	loadAccount.LoadAccountCommand,
 	loadKey.LoadKeyCommand,
-	post.PostCommand,
 	newAccount.NewAccountCommand,
 	newKey.NewKeyCommand,
 	newOrder.NewOrderCommand,
 	orders.OrdersCommand,
-	poll.PollCommand,
 	rollover.RolloverCommand,
 	sign.SignCommand,
 	solve.SolveCommand,
@@ -119,6 +116,7 @@ func NewACMEShell(opts *ACMEShellOptions) *ACMEShell {
 	shell.Set(commands.ClientKey, client)
 
 	// Add all of the ACMEShell commands
+	// TODO(@cpu): Delete this junk
 	for _, cmd := range shellCommands {
 		shellCommand, err := cmd.Setup(client)
 		acmecmd.FailOnError(err, fmt.Sprintf(
@@ -126,6 +124,8 @@ func NewACMEShell(opts *ACMEShellOptions) *ACMEShell {
 			cmd))
 		shell.AddCmd(shellCommand)
 	}
+
+	commands.AddCommands(shell, client)
 
 	return &ACMEShell{
 		Shell: shell,
