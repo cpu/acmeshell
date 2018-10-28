@@ -41,10 +41,11 @@ func (c *Client) CSR(commonName string, names []string, keyID string) (B64CSR, P
 
 	var privateKey *ecdsa.PrivateKey
 	if keyID != "" {
-		if key, found := c.Keys[keyID]; !found {
-			return B64CSR(""), PEMCSR(""), fmt.Errorf("no existing key in shell for key ID %q", keyID)
-		} else {
+		if key, found := c.Keys[keyID]; found {
 			privateKey = key
+		}
+		if privateKey == nil {
+			return B64CSR(""), PEMCSR(""), fmt.Errorf("no existing key in shell for key ID %q", keyID)
 		}
 	} else {
 		// save a new random key for the names
