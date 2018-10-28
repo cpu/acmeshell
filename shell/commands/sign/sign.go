@@ -12,6 +12,7 @@ import (
 type signCmdOptions struct {
 	embedKey   bool
 	data       []byte
+	noData     bool
 	keyID      string
 	dataString string
 }
@@ -29,6 +30,7 @@ func registerSignCmd() {
 	signFlags.BoolVar(&opts.embedKey, "embedKey", false, "Embed JWK in JWS instead of a Key ID Header")
 	signFlags.StringVar(&opts.keyID, "keyID", "", "Key ID of existing key to use instead of active account key")
 	signFlags.StringVar(&opts.dataString, "data", "", "Data to sign")
+	signFlags.BoolVar(&opts.noData, "noData", false, "Use an empty byteslice as the data to sign (e.g. POST-as-GET)")
 
 	commands.RegisterCommand(
 		&ishell.Cmd{
@@ -60,16 +62,17 @@ func signHandler(c *ishell.Context, leftovers []string) {
 	// If the -data flag was specified and after trimming it is a non-empty value
 	// use the trimmed value as the data
 	if trimmedData := strings.TrimSpace(opts.dataString); trimmedData != "" {
-		// Need a way to indicate to use the -data arg but with no value (can't use "")
-		if trimmedData == "null" {
-			opts.data = []byte("")
-		} else {
-			opts.data = []byte(trimmedData)
+		if opts.noData {
+			c.Printf("sign: using -noData and providing a -data value are mutually exclusive\n")
+			return
 		}
-	} else {
+		opts.data = []byte(trimmedData)
+	} else if !opts.noData {
 		// Otherwise, read the POST body interactively
 		inputJSON := commands.ReadJSON(c)
 		opts.data = []byte(inputJSON)
+	} else if opts.noData {
+		opts.data = []byte("")
 	}
 
 	signData(c, url)
