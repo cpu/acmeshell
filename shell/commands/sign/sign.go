@@ -92,14 +92,15 @@ func signData(c *ishell.Context, targetURL string) {
 	}
 
 	if opts.keyID != "" {
-		if key, found := client.Keys[opts.keyID]; !found {
-			c.Printf("sign: no key with ID %q exists in shell\n", opts.keyID)
-			return
-		} else {
+		if key, found := client.Keys[opts.keyID]; found {
 			signOpts.Key = key
 			if !opts.embedKey {
 				signOpts.KeyID = opts.keyID
 			}
+		}
+		if signOpts.Key == nil {
+			c.Printf("sign: no key with ID %q exists in shell\n", opts.keyID)
+			return
 		}
 	}
 

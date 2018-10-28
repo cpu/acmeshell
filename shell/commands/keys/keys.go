@@ -93,11 +93,12 @@ func keysHandler(c *ishell.Context, leftovers []string) {
 			return
 		}
 		// Use the templated result as the argument
-		if k, found := client.Keys[rendered]; !found {
+		if k, found := client.Keys[rendered]; found {
+			key = k
+		}
+		if key == nil {
 			c.Printf("viewKey: no key known to shell with id %q\n", rendered)
 			return
-		} else {
-			key = k
 		}
 	}
 

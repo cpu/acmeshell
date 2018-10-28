@@ -70,11 +70,11 @@ func newAccountHandler(c *ishell.Context, leftovers []string) {
 
 	var acctKey *ecdsa.PrivateKey
 	if opts.keyID != "" {
-		if key, found := client.Keys[opts.keyID]; !found {
+		if key, found := client.Keys[opts.keyID]; found {
+			acctKey = key
+		} else {
 			c.Printf("newAccount: Key ID %q does not exist in shell\n", opts.keyID)
 			return
-		} else {
-			acctKey = key
 		}
 	}
 	acct, err := resources.NewAccount(emails, acctKey)
