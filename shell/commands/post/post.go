@@ -6,10 +6,8 @@ import (
 	"encoding/json"
 	"flag"
 	"strings"
-	"sync"
 
 	"github.com/abiosoft/ishell"
-	acmeclient "github.com/cpu/acmeshell/acme/client"
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
@@ -19,19 +17,12 @@ type postOptions struct {
 	sign         bool
 }
 
-type postCmd struct {
-	commands.BaseCmd
-}
+var (
+	opts = postOptions{}
+)
 
-var PostCommand = postCmd{
-	BaseCmd: commands.BaseCmd{
-		Once: new(sync.Once),
-		Cmd: &ishell.Cmd{
-			Name:    "post",
-			Aliases: []string{"postURL"},
-			Func:    postHandler,
-			Help:    "Send an HTTP POST to a ACME endpoint or a URL",
-			LongHelp: `
+const (
+	longHelp = `
 	post [acme endpoint]:
 		Send an HTTP POST request to the URL that is contained in the ACME server's
 		directory object under the specified endpoint name. You will be prompted
@@ -52,102 +43,46 @@ var PostCommand = postCmd{
 		Examples:
 			post https://acme-staging-v02.api.letsencrypt.org/acme/newOrder
 				Send an HTTP POST to the Let's Encrypt V2 API's newOrder URL.
-	`,
-		},
-	},
+	`
+)
+
+func init() {
+	registerPostCommand()
 }
 
-func (c postCmd) Setup(client *acmeclient.Client) (*ishell.Cmd, error) {
-	// Get the directory from the client to use when constructing shell commands
-	dirMap, err := client.Directory()
-	if err != nil {
-		return nil, err
-	}
-
-	// If this was the first time New was called with a directory, set up the
-	// completer. We can't create a static completer in the getCmd initializer
-	// because the directory isn't known. Unfortunately the ishell.Completer
-	// function signature doesn't allow passing the ishell.State or directory as
-	// a parameter either so we have to use this `sync.Once` approach and
-	// a constructor.
-	PostCommand.Once.Do(func() {
-		PostCommand.Cmd.Completer = commands.DirectoryKeyCompleter(dirMap, nil)
-	})
-	return PostCommand.Cmd, nil
-}
-
-func postURL(opts postOptions, targetURL string, c *ishell.Context) {
-	client := commands.GetClient(c)
-	account := client.ActiveAccount
-
-	if account == nil {
-		c.Printf("post: no active ACME account to authenticate POST requests\n")
-		return
-	}
-
-	postBody := []byte(opts.postBody)
-	if opts.sign {
-		signResult, err := client.Sign(targetURL, postBody, nil)
-		if err != nil {
-			c.Printf("post: error signing POST request body: %s\n", err)
-			return
-		}
-		postBody = signResult.SerializedJWS
-	}
-
-	resp, err := client.PostURL(targetURL, postBody)
-	if err != nil {
-		c.Printf("post: error POSTing signed request body to URL: %v\n", err)
-		return
-	}
-	c.Printf("%s\n", resp.RespBody)
-}
-
-func postHandler(c *ishell.Context) {
-	// Set up flags for the get flagset
-	opts := postOptions{}
+func registerPostCommand() {
 	postFlags := flag.NewFlagSet("post", flag.ContinueOnError)
 	postFlags.StringVar(&opts.postBody, "body", "", "HTTP POST request body")
 	postFlags.BoolVar(&opts.templateBody, "templateBody", true, "Template HTTP POST body")
 	postFlags.BoolVar(&opts.sign, "sign", true, "Sign body with active account key")
-	err := postFlags.Parse(c.Args)
 
-	if err != nil && err != flag.ErrHelp {
-		c.Printf("post: error parsing input flags: %s", err.Error())
-		return
-	} else if err == flag.ErrHelp {
-		return
-	}
+	commands.RegisterCommand(
+		&ishell.Cmd{
+			Name:     "post",
+			Aliases:  []string{"postURL"},
+			Help:     "Send an HTTP POST to a ACME endpoint or a URL",
+			LongHelp: longHelp,
+		},
+		commands.DirectoryAutocompleter,
+		postHandler,
+		postFlags)
+}
 
-	if postFlags.NArg() < 1 {
-		c.Printf("post: you must specify an endpoint or a URL\n")
-		return
-	}
+func postHandler(c *ishell.Context, leftovers []string) {
+	// Reset options to default after handling
+	defer func() {
+		opts = postOptions{
+			templateBody: true,
+			sign:         true,
+		}
+	}()
 
-	argument := strings.TrimSpace(postFlags.Arg(0))
 	client := commands.GetClient(c)
 
-	var targetURL string
-
-	if endpointURL, ok := client.GetEndpointURL(argument); ok {
-		// If the argument is an endpoint, find its URL
-		targetURL = endpointURL
-	} else {
-		templateText := strings.Join(postFlags.Args(), " ")
-
-		// Render the input as a template
-		rendered, err := commands.EvalTemplate(
-			templateText,
-			commands.TemplateCtx{
-				Client: client,
-				Acct:   client.ActiveAccount,
-			})
-		if err != nil {
-			c.Printf("post: target URL templating error: %s\n", err.Error())
-			return
-		}
-		// Use the templated result as the argument
-		targetURL = rendered
+	targetURL, err := commands.FindURL(client, leftovers)
+	if err != nil {
+		c.Printf("post: error finding URL: %v", err)
+		return
 	}
 
 	// Check the URL and make sure it is valid-ish
@@ -172,12 +107,7 @@ func postHandler(c *ishell.Context) {
 
 	if opts.templateBody {
 		// Render the body input as a template
-		rendered, err := commands.EvalTemplate(
-			opts.postBody,
-			commands.TemplateCtx{
-				Client: client,
-				Acct:   client.ActiveAccount,
-			})
+		rendered, err := commands.ClientTemplate(client, opts.postBody)
 		if err != nil {
 			c.Printf("post: warning: target URL templating error: %s\n", err.Error())
 			return
@@ -194,5 +124,31 @@ func postHandler(c *ishell.Context) {
 		return
 	}
 
-	postURL(opts, targetURL, c)
+	postURL(c, targetURL)
+}
+
+func postURL(c *ishell.Context, targetURL string) {
+	client := commands.GetClient(c)
+	account := client.ActiveAccount
+
+	postBody := []byte(opts.postBody)
+	if opts.sign {
+		if account == nil {
+			c.Printf("post: no active ACME account to authenticate POST requests\n")
+			return
+		}
+		signResult, err := client.Sign(targetURL, postBody, nil)
+		if err != nil {
+			c.Printf("post: error signing POST request body: %s\n", err)
+			return
+		}
+		postBody = signResult.SerializedJWS
+	}
+
+	resp, err := client.PostURL(targetURL, postBody)
+	if err != nil {
+		c.Printf("post: error POSTing signed request body to URL: %v\n", err)
+		return
+	}
+	c.Printf("%s\n", resp.RespBody)
 }

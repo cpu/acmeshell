@@ -5,54 +5,50 @@ import (
 	"strings"
 
 	"github.com/abiosoft/ishell"
-	acmeclient "github.com/cpu/acmeshell/acme/client"
 	"github.com/cpu/acmeshell/acme/resources"
 	"github.com/cpu/acmeshell/shell/commands"
 )
-
-type loadAccountCmd struct {
-	commands.BaseCmd
-}
 
 type loadAccountOptions struct {
 	switchTo bool
 }
 
-var LoadAccountCommand = loadAccountCmd{
-	commands.BaseCmd{
-		Cmd: &ishell.Cmd{
-			Name:     "loadAccount",
-			Aliases:  []string{"loadAcct", "loadReg", "loadRegistration"},
-			Func:     loadAccountHandler,
-			Help:     "Load an existing ACME account from JSON",
-			LongHelp: `TODO(@cpu): Write this!`,
-		},
-	},
+var (
+	opts = loadAccountOptions{}
+)
+
+func init() {
+	registerLoadAccountCmd()
 }
 
-func (a loadAccountCmd) Setup(client *acmeclient.Client) (*ishell.Cmd, error) {
-	return LoadAccountCommand.Cmd, nil
-}
-
-func loadAccountHandler(c *ishell.Context) {
-	opts := loadAccountOptions{}
+func registerLoadAccountCmd() {
 	loadAccountFlags := flag.NewFlagSet("loadAccount", flag.ContinueOnError)
 	loadAccountFlags.BoolVar(&opts.switchTo, "switch", true, "Switch to the account after loading it")
 
-	err := loadAccountFlags.Parse(c.Args)
-	if err != nil && err != flag.ErrHelp {
-		c.Printf("loadAccount: error parsing input flags: %s\n", err.Error())
-		return
-	} else if err == flag.ErrHelp {
-		return
-	}
+	commands.RegisterCommand(
+		&ishell.Cmd{
+			Name:     "loadAccount",
+			Aliases:  []string{"loadAcct", "loadReg", "loadRegistration"},
+			Help:     "Load an existing ACME account from JSON",
+			LongHelp: `TODO(@cpu): Write this!`,
+		},
+		nil,
+		loadAccountHandler,
+		loadAccountFlags)
+}
 
-	if loadAccountFlags.NArg() != 1 {
+func loadAccountHandler(c *ishell.Context, leftovers []string) {
+	defer func() {
+		opts = loadAccountOptions{
+			switchTo: true,
+		}
+	}()
+	if len(leftovers) < 1 {
 		c.Printf("loadAccount: you must specify a JSON filepath to load from\n")
 		return
 	}
 
-	argument := strings.TrimSpace(loadAccountFlags.Arg(0))
+	argument := strings.TrimSpace(leftovers[0])
 	client := commands.GetClient(c)
 
 	acct, err := resources.RestoreAccount(argument)

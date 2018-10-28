@@ -11,108 +11,99 @@ import (
 	jose "gopkg.in/square/go-jose.v2"
 
 	"github.com/abiosoft/ishell"
-	acmeclient "github.com/cpu/acmeshell/acme/client"
 	"github.com/cpu/acmeshell/acme/resources"
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
-type solveCmd struct {
-	commands.BaseCmd
-}
-
 type solveOptions struct {
 	printKeyAuthorization bool
 	printToken            bool
+	orderIndex            int
+	identifier            string
 	challType             string
 }
 
-var SolveCommand = solveCmd{
-	commands.BaseCmd{
-		Cmd: &ishell.Cmd{
-			Name:     "solve",
-			Aliases:  []string{"solveChallenge"},
-			Func:     solveHandler,
-			Help:     "Complete an ACME challenge",
-			LongHelp: `TODO(@cpu): Write this!`,
-		},
-	},
+var (
+	opts = solveOptions{}
+)
+
+func init() {
+	registerSolveCmd()
 }
 
-func (s solveCmd) Setup(client *acmeclient.Client) (*ishell.Cmd, error) {
-	return SolveCommand.Cmd, nil
-}
-
-func solveHandler(c *ishell.Context) {
-	opts := solveOptions{}
+func registerSolveCmd() {
 	solveFlags := flag.NewFlagSet("solve", flag.ContinueOnError)
 	solveFlags.BoolVar(&opts.printKeyAuthorization, "printKeyAuth", false, "Print calculated key authorization")
 	solveFlags.BoolVar(&opts.printToken, "printToken", false, "Print challenge token")
 	solveFlags.StringVar(&opts.challType, "challengeType", "", "Challenge type to solve")
+	solveFlags.StringVar(&opts.identifier, "identifier", "", "Authorization identifier to solve for")
+	solveFlags.IntVar(&opts.orderIndex, "order", -1, "index of existing order")
 
-	err := solveFlags.Parse(c.Args)
-	if err != nil && err != flag.ErrHelp {
-		c.Printf("solve: error parsing input flags: %s\n", err.Error())
-		return
-	} else if err == flag.ErrHelp {
-		return
-	}
+	commands.RegisterCommand(
+		&ishell.Cmd{
+			Name:     "solve",
+			Aliases:  []string{"solveChallenge"},
+			Help:     "Complete an ACME challenge",
+			LongHelp: `TODO(@cpu): Write this!`,
+		},
+		nil,
+		solveHandler,
+		solveFlags)
+}
+
+func solveHandler(c *ishell.Context, leftovers []string) {
+	defer func() {
+		opts = solveOptions{}
+	}()
 
 	client := commands.GetClient(c)
 	challSrv := commands.GetChallSrv(c)
 
-	var authzURL string
-	if len(solveFlags.Args()) == 0 {
-		order, err := commands.PickOrder(c)
-		if err != nil {
-			c.Printf("solve: error picking order to solve: %s\n", err.Error())
-			return
-		}
-		authz, err := commands.PickAuthz(c, order)
-		if err != nil {
-			c.Printf("solve: error picking authz to solve: %s\n", err.Error())
-			return
-		}
-		authzURL = authz.ID
+	var targetURL string
+	var err error
+	if len(leftovers) > 0 {
+		templateText := strings.Join(leftovers, " ")
+		targetURL, err = commands.ClientTemplate(client, templateText)
 	} else {
-		templateText := strings.Join(solveFlags.Args(), " ")
-		rendered, err := commands.EvalTemplate(
-			templateText,
-			commands.TemplateCtx{
-				Client: client,
-				Acct:   client.ActiveAccount,
-			})
+		targetURL, err = commands.FindOrderURL(c, nil, opts.orderIndex)
 		if err != nil {
-			c.Printf("solve: authz URL templating error: %s\n", err.Error())
+			c.Printf("solve: error getting order URL: %v\n", err)
 			return
 		}
-		authzURL = rendered
+		targetURL, err = commands.FindAuthzURL(c, targetURL, opts.identifier)
+		if err != nil {
+			c.Printf("solve: error getting authz URL: %v\n", err)
+			return
+		}
 	}
 
 	authz := &resources.Authorization{
-		ID: authzURL,
+		ID: targetURL,
 	}
 	err = client.UpdateAuthz(authz)
 	if err != nil {
-		c.Printf("solve: error getting authz: %s\n", err.Error())
+		c.Printf("solve: error getting authorization object from %q: %v\n", targetURL, err)
 		return
 	}
 
 	var chall *resources.Challenge
-	if opts.challType == "" {
-		chall, err = commands.PickChall(c, authz)
-		if err != nil {
-			c.Printf("solve: error picking challenge: %s", err.Error())
-			return
-		}
-	} else {
+	if opts.challType != "" {
 		for _, c := range authz.Challenges {
-			if opts.challType == c.Type {
+			if c.Type == opts.challType {
 				chall = &c
 				break
 			}
 		}
 		if chall == nil {
-			c.Printf("solve: authz %q has no %q challenge type\n", authz.ID, opts.challType)
+			c.Printf("solve: authz %q has no %q type challenge\n",
+				authz.ID, opts.challType)
+			return
+		}
+	} else {
+		var err error
+		chall, err = commands.PickChall(c, authz)
+		if err != nil {
+			c.Printf("solve: error picking challenge: %v\n", err)
 			return
 		}
 	}

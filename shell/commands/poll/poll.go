@@ -3,18 +3,12 @@ package poll
 import (
 	"encoding/json"
 	"flag"
-	"strings"
 	"time"
 
 	"github.com/abiosoft/ishell"
 	acmeclient "github.com/cpu/acmeshell/acme/client"
-	"github.com/cpu/acmeshell/acme/resources"
 	"github.com/cpu/acmeshell/shell/commands"
 )
-
-type pollCmd struct {
-	commands.BaseCmd
-}
 
 type pollOptions struct {
 	maxTries     int
@@ -24,23 +18,15 @@ type pollOptions struct {
 	identifier   string
 }
 
-var PollCommand = pollCmd{
-	commands.BaseCmd{
-		Cmd: &ishell.Cmd{
-			Name:     "poll",
-			Func:     pollHandler,
-			Help:     "Poll an object until it is in the desired status",
-			LongHelp: `TODO(@cpu): write this`,
-		},
-	},
+var (
+	opts = pollOptions{}
+)
+
+func init() {
+	registerPollCommand()
 }
 
-func (a pollCmd) Setup(client *acmeclient.Client) (*ishell.Cmd, error) {
-	return PollCommand.Cmd, nil
-}
-
-func pollHandler(c *ishell.Context) {
-	opts := pollOptions{}
+func registerPollCommand() {
 	pollFlags := flag.NewFlagSet("poll", flag.ContinueOnError)
 	pollFlags.StringVar(&opts.status, "status", "ready", "Poll object until it is the given status")
 	pollFlags.IntVar(&opts.maxTries, "maxTries", 5, "Number of times to poll before giving up")
@@ -48,106 +34,101 @@ func pollHandler(c *ishell.Context) {
 	pollFlags.IntVar(&opts.orderIndex, "order", -1, "index of order to poll")
 	pollFlags.StringVar(&opts.identifier, "identifier", "", "identifier of authorization")
 
-	err := pollFlags.Parse(c.Args)
-	if err != nil && err != flag.ErrHelp {
-		c.Printf("poll: error parsing input flags: %s\n", err.Error())
-		return
-	} else if err == flag.ErrHelp {
-		return
-	}
+	commands.RegisterCommand(
+		&ishell.Cmd{
+			Name:     "poll",
+			Help:     "Poll an order or authz until it is has the desired status field value",
+			LongHelp: `TODO(@cpu): Write the poll cmd longHelp`,
+		},
+		nil,
+		pollHandler,
+		pollFlags)
+}
+
+func pollHandler(c *ishell.Context, leftovers []string) {
+	// Reset the pollOptions to default after handling.
+	defer func() {
+		opts = pollOptions{
+			orderIndex:   -1,
+			maxTries:     5,
+			sleepSeconds: 5,
+			status:       "ready",
+		}
+	}()
 
 	client := commands.GetClient(c)
 
-	var targetURL string
-	if len(pollFlags.Args()) == 0 {
-		if len(client.ActiveAccount.Orders) == 0 {
-			c.Printf("poll: the active account has no orders\n")
+	targetURL, err := commands.FindOrderURL(c, leftovers, opts.orderIndex)
+	if err != nil {
+		c.Printf("poll: error getting order URL: %v\n", err)
+		return
+	}
+
+	if opts.identifier != "" {
+		targetURL, err = commands.FindAuthzURL(c, targetURL, opts.identifier)
+		if err != nil {
+			c.Printf("poll: error getting order URL: %v\n", err)
 			return
 		}
-		order := &resources.Order{}
-		if opts.orderIndex >= 0 && opts.orderIndex < len(client.ActiveAccount.Orders) {
-			orderURL := client.ActiveAccount.Orders[opts.orderIndex]
-			order.ID = orderURL
-			err = client.UpdateOrder(order)
-			if err != nil {
-				c.Printf("poll: error getting order: %s\n", err.Error())
-				return
-			}
-		} else {
-			order, err = commands.PickOrder(c)
-			if err != nil {
-				c.Printf("poll: error picking order: %s\n", err.Error())
-				return
-			}
-		}
-		if opts.identifier == "" {
-			targetURL = order.ID
-		} else {
-			for _, authzURL := range order.Authorizations {
-				authz := &resources.Authorization{
-					ID: authzURL,
-				}
-				err = client.UpdateAuthz(authz)
-				if err != nil {
-					c.Printf("poll: error getting authz %q : %s\n", authzURL, err.Error())
-					return
-				}
-				if authz.Identifier.Value == opts.identifier {
-					targetURL = authz.ID
-					break
-				}
-			}
-			if targetURL == "" {
-				c.Printf("poll: order %q had no authz for identifier %q\n", order.ID, opts.identifier)
-				return
-			}
-		}
-	} else {
-		targetURL = strings.Join(pollFlags.Args(), " ")
 	}
 
-	var polledOb struct {
-		Status string
+	// Shouldn't happen...
+	if targetURL == "" {
+		c.Printf("poll: error, no targetURL\n")
+		return
 	}
 
+	pollURL(c, client, targetURL)
+}
+
+type polledOb struct {
+	Status string
+}
+
+func pollObject(client *acmeclient.Client, targetURL string) (polledOb, error) {
+	var ob polledOb
 	resp, err := client.GetURL(targetURL)
 	if err != nil {
-		c.Printf("poll: error polling %q : %v\n", targetURL, err)
-		return
+		return ob, err
 	}
-
-	err = json.Unmarshal(resp.RespBody, &polledOb)
+	err = json.Unmarshal(resp.RespBody, &ob)
 	if err != nil {
-		c.Printf("poll: error unmarshaling %q : %s\n", targetURL, err.Error())
+		return ob, err
+	}
+	return ob, nil
+}
+
+func pollURL(c *ishell.Context, client *acmeclient.Client, targetURL string) {
+	ob, err := pollObject(client, targetURL)
+	if err != nil {
+		c.Printf("poll: error polling object at %q: %v\n", targetURL, err)
 		return
 	}
 
-	if polledOb.Status != opts.status {
+	if ob.Status != opts.status {
 		for try := 0; try < opts.maxTries; try++ {
-
-			resp, err := client.GetURL(targetURL)
+			ob, err := pollObject(client, targetURL)
 			if err != nil {
-				c.Printf("poll: error polling %q : %v\n", targetURL, err)
+				c.Printf("poll: error polling object at %q: %v\n", targetURL, err)
 				return
 			}
-
-			err = json.Unmarshal(resp.RespBody, &polledOb)
-			if err != nil {
-				c.Printf("poll: error unmarshaling %q : %s\n", targetURL, err.Error())
-				return
-			}
-			if polledOb.Status == opts.status {
+			if ob.Status == opts.status {
 				break
 			}
 
-			c.Printf("poll: try %d. %q is status %q\n", try, targetURL, polledOb.Status)
+			c.Printf("poll: try %d. %q is status %q\n", try, targetURL, ob.Status)
 			time.Sleep(time.Duration(opts.sleepSeconds) * time.Second)
 		}
 	}
 
-	if polledOb.Status == opts.status {
-		c.Printf("poll: polling done. %q is status %q\n", targetURL, polledOb.Status)
+	if ob.Status == opts.status {
+		c.Printf("poll: polling done. %q is status %q\n",
+			targetURL,
+			ob.Status)
 	} else {
-		c.Printf("poll: polling failed. reached %d tries. %q is status %q\n", opts.maxTries, targetURL, polledOb.Status)
+		c.Printf("poll: polling failed. reached %d tries. %q is status %q\n",
+			opts.maxTries,
+			targetURL,
+			ob.Status)
 	}
 }

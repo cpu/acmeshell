@@ -5,31 +5,69 @@ import (
 	"strings"
 
 	"github.com/abiosoft/ishell"
-	acmeclient "github.com/cpu/acmeshell/acme/client"
 	"github.com/cpu/acmeshell/acme/resources"
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
-type newOrderCmd struct {
-	commands.BaseCmd
+type newOrderOptions struct {
+	rawIdentifiers string
 }
 
-var NewOrderCommand = newOrderCmd{
-	commands.BaseCmd{
-		Cmd: &ishell.Cmd{
+var (
+	opts = newOrderOptions{}
+)
+
+func init() {
+	registerNewOrderCmd()
+}
+
+func registerNewOrderCmd() {
+	newOrderFlags := flag.NewFlagSet("newOrder", flag.ContinueOnError)
+	newOrderFlags.StringVar(&opts.rawIdentifiers, "identifiers", "", "Comma separated list of DNS identifiers")
+
+	commands.RegisterCommand(
+		&ishell.Cmd{
 			Name:     "newOrder",
-			Func:     newOrderHandler,
 			Help:     "Create a new ACME order",
 			LongHelp: `TODO(@cpu): Write this!`,
 		},
-	},
+		nil,
+		newOrderHandler,
+		newOrderFlags)
 }
 
-func (a newOrderCmd) Setup(client *acmeclient.Client) (*ishell.Cmd, error) {
-	return NewOrderCommand.Cmd, nil
+func newOrderHandler(c *ishell.Context, leftovers []string) {
+	defer func() {
+		opts = newOrderOptions{}
+	}()
+
+	if opts.rawIdentifiers != "" {
+		rawIdentifiers := strings.Split(opts.rawIdentifiers, ",")
+		if len(rawIdentifiers) > 0 {
+			createOrder(c, rawIdentifiers)
+			return
+		}
+	}
+
+	inputIdentifiers := readIdentifiers(c)
+	if inputIdentifiers == "" {
+		c.Printf("No identifiers provided.\n")
+		return
+	}
+
+	createOrder(c, strings.Split(inputIdentifiers, "\n"))
 }
 
-func createOrder(fqdns []string, c *ishell.Context) {
+func readIdentifiers(c *ishell.Context) string {
+	c.SetPrompt(commands.BasePrompt + "FQDN > ")
+	defer c.SetPrompt(commands.BasePrompt)
+	terminator := "."
+	c.Printf("Input fully qualified domain name identifiers for your order. "+
+		" End by sending '%s'\n", terminator)
+	return strings.TrimSuffix(c.ReadMultiLines(terminator), terminator)
+}
+
+func createOrder(c *ishell.Context, fqdns []string) {
 	var idents []resources.Identifier
 	// Convert the fqdns to DNS identifiers
 	for _, ident := range fqdns {
@@ -52,42 +90,4 @@ func createOrder(fqdns []string, c *ishell.Context) {
 		c.Printf("newOrder: error creating new order with ACME server: %s\n", err)
 		return
 	}
-}
-
-func readIdentifiers(c *ishell.Context) string {
-	c.SetPrompt(commands.BasePrompt + "FQDN > ")
-	defer c.SetPrompt(commands.BasePrompt)
-	terminator := "."
-	c.Printf("Input fully qualified domain name identifiers for your order. "+
-		" End by sending '%s'\n", terminator)
-	return strings.TrimSuffix(c.ReadMultiLines(terminator), terminator)
-}
-
-func newOrderHandler(c *ishell.Context) {
-	newOrderFlags := flag.NewFlagSet("newOrder", flag.ContinueOnError)
-	identifiersArg := newOrderFlags.String("identifiers", "", "Comma separated list of DNS identifiers")
-
-	err := newOrderFlags.Parse(c.Args)
-	if err != nil && err != flag.ErrHelp {
-		c.Printf("newOrder: error parsing input flags: %s\n", err.Error())
-		return
-	} else if err == flag.ErrHelp {
-		return
-	}
-
-	if *identifiersArg != "" {
-		rawIdentifiers := strings.Split(*identifiersArg, ",")
-		if len(rawIdentifiers) > 0 {
-			createOrder(rawIdentifiers, c)
-			return
-		}
-	}
-
-	inputIdentifiers := readIdentifiers(c)
-	if inputIdentifiers == "" {
-		c.Printf("No identifiers provided.\n")
-		return
-	}
-
-	createOrder(strings.Split(inputIdentifiers, "\n"), c)
 }

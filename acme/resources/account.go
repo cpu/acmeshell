@@ -8,6 +8,7 @@ import (
 	"crypto/rand"
 	"crypto/x509"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -53,6 +54,18 @@ type Account struct {
 // with the ACME server.
 func (a Account) String() string {
 	return a.ID
+}
+
+// OrderURL returns the Order URL for the ith Order the Account owns. An error
+// is returned if the Account has no Orders or if the index is out of bounds.
+func (a *Account) OrderURL(i int) (string, error) {
+	if len(a.Orders) == 0 {
+		return "", errors.New("Account has no orders")
+	}
+	if i < 0 || i >= len(a.Orders) {
+		return "", fmt.Errorf("Order index must be 0 < x < %d", len(a.Orders))
+	}
+	return a.Orders[i], nil
 }
 
 // NewAccount creates an ACME account in-memory. *Important:* the
@@ -114,15 +127,15 @@ type rawAccount struct {
 	PrivateKey []byte
 }
 
-func (acct *Account) save() ([]byte, error) {
-	k, err := x509.MarshalECPrivateKey(acct.PrivateKey)
+func (a *Account) save() ([]byte, error) {
+	k, err := x509.MarshalECPrivateKey(a.PrivateKey)
 	if err != nil {
 		return nil, err
 	}
 
 	rawAcct := rawAccount{
-		ID:         acct.ID,
-		Contact:    acct.Contact,
+		ID:         a.ID,
+		Contact:    a.Contact,
 		PrivateKey: k,
 	}
 	frozenAcct, err := json.MarshalIndent(rawAcct, "", "  ")
@@ -148,7 +161,7 @@ func RestoreAccount(path string) (*Account, error) {
 	return acct, err
 }
 
-func (acct *Account) restore(frozenAcct []byte) error {
+func (a *Account) restore(frozenAcct []byte) error {
 	var rawAcct rawAccount
 
 	err := json.Unmarshal(frozenAcct, &rawAcct)
@@ -161,8 +174,8 @@ func (acct *Account) restore(frozenAcct []byte) error {
 		return err
 	}
 
-	acct.ID = rawAcct.ID
-	acct.Contact = rawAcct.Contact
-	acct.PrivateKey = privKey
+	a.ID = rawAcct.ID
+	a.Contact = rawAcct.Contact
+	a.PrivateKey = privKey
 	return nil
 }

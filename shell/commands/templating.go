@@ -180,3 +180,12 @@ func EvalTemplate(templateStr string, ctx TemplateCtx) (string, error) {
 
 	return outputBuilder.String(), nil
 }
+
+func ClientTemplate(c *acmeclient.Client, input string) (string, error) {
+	return EvalTemplate(
+		input,
+		TemplateCtx{
+			Client: c,
+			Acct:   c.ActiveAccount,
+		})
+}

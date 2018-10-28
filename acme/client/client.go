@@ -4,6 +4,7 @@ package client
 import (
 	"crypto/ecdsa"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -104,7 +105,7 @@ type OutputOptions struct {
 // the file path to the "test/certs/pebble.minica.pem" file from the Pebble
 // source directory. If you are using a public ACME server with a trusted HTTPS
 // certificate you should provide the path to a file containing the
-// concatination of all of the PEM encoded system trusted root CA certificates.
+// combination of all of the PEM encoded system trusted root CA certificates.
 // Often this is something like "/etc/ssl/certs.pem".
 //
 // The ContactEmail field is a string expected to contain a single email
@@ -648,4 +649,49 @@ func (c *Client) UpdateChallenge(chall *resources.Challenge) error {
 	}
 
 	return nil
+}
+
+func (c *Client) OrderByIndex(index int) (*resources.Order, error) {
+	if c.ActiveAccountID() == "" {
+		return nil, errors.New(
+			"OrderByIndex: active account is nil or has not been created")
+	}
+
+	// Find the Order URL
+	orderURL, err := c.ActiveAccount.OrderURL(index)
+	if err != nil {
+		return nil, err
+	}
+
+	// Fetch the full Order object
+	order := &resources.Order{ID: orderURL}
+	if err := c.UpdateOrder(order); err != nil {
+		return nil, err
+	}
+	return order, nil
+}
+
+func (c *Client) AuthzByIdentifier(order *resources.Order, identifier string) (*resources.Authorization, error) {
+	if order == nil {
+		return nil, errors.New("AuthzByIdentifier: Order was nil")
+	}
+	if len(order.Authorizations) == 0 {
+		return nil, errors.New("AuthzByIdentifier: Order has no authorizations")
+	}
+
+	// Loop through the order's authoriation URLs, fetching the authz object for
+	// each. Stop when an authz with the requested identifier is found.
+	for _, authzURL := range order.Authorizations {
+		authz := &resources.Authorization{ID: authzURL}
+		if err := c.UpdateAuthz(authz); err != nil {
+			return nil, err
+		}
+		if authz.Identifier.Value == identifier {
+			return authz, nil
+		}
+	}
+	return nil, fmt.Errorf(
+		"AuthzByIdentifier: Order %q has no authz with identifier %q",
+		order.ID,
+		identifier)
 }

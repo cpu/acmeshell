@@ -5,14 +5,9 @@ import (
 	"strings"
 
 	"github.com/abiosoft/ishell"
-	acmeclient "github.com/cpu/acmeshell/acme/client"
 	"github.com/cpu/acmeshell/acme/resources"
 	"github.com/cpu/acmeshell/shell/commands"
 )
-
-type ordersCmd struct {
-	commands.BaseCmd
-}
 
 type ordersOptions struct {
 	printID          bool
@@ -20,35 +15,38 @@ type ordersOptions struct {
 	status           string
 }
 
-var OrdersCommand = ordersCmd{
-	commands.BaseCmd{
-		Cmd: &ishell.Cmd{
-			Name:     "orders",
-			Func:     ordersHandler,
-			Help:     "Show ACME orders created in this session by the active account",
-			LongHelp: `TODO(@cpu): write this`,
-		},
-	},
+var (
+	opts = ordersOptions{}
+)
+
+func init() {
+	registerOrdersCmd()
 }
 
-func (a ordersCmd) Setup(client *acmeclient.Client) (*ishell.Cmd, error) {
-	return OrdersCommand.Cmd, nil
-}
-
-func ordersHandler(c *ishell.Context) {
-	opts := ordersOptions{}
+func registerOrdersCmd() {
 	ordersFlags := flag.NewFlagSet("orders", flag.ContinueOnError)
 	ordersFlags.BoolVar(&opts.printID, "showID", true, "Print order IDs")
 	ordersFlags.BoolVar(&opts.printIdentifiers, "showIdents", true, "Print order identifiers")
 	ordersFlags.StringVar(&opts.status, "status", "", "Print orders only if they are in the given status")
 
-	err := ordersFlags.Parse(c.Args)
-	if err != nil && err != flag.ErrHelp {
-		c.Printf("orders: error parsing input flags: %s\n", err.Error())
-		return
-	} else if err == flag.ErrHelp {
-		return
-	}
+	commands.RegisterCommand(
+		&ishell.Cmd{
+			Name:     "orders",
+			Help:     "Show ACME orders created in this session by the active account",
+			LongHelp: `TODO(@cpu): write this`,
+		},
+		nil,
+		ordersHandler,
+		ordersFlags)
+}
+
+func ordersHandler(c *ishell.Context, leftovers []string) {
+	defer func() {
+		opts = ordersOptions{
+			printID:          true,
+			printIdentifiers: true,
+		}
+	}()
 
 	if !opts.printID && !opts.printIdentifiers {
 		c.Printf("orders: -showID and -showIdents can not both be false\n")
@@ -56,33 +54,17 @@ func ordersHandler(c *ishell.Context) {
 	}
 
 	client := commands.GetClient(c)
-
 	orders := client.ActiveAccount.Orders
 	if len(orders) == 0 {
 		c.Printf("orders: the active account has no orders\n")
 		return
 	}
 
-	/*
-		for i, o := range orders {
-			// Use a hardcoded HTTPOptions because this is a background operation and
-			// we never want to print headers/status
-			_, err := client.UpdateOrder(o, &acmeclient.HTTPOptions{
-				PrintHeaders: false,
-				PrintStatus:  false,
-			})
-			if err != nil {
-				c.Printf("orders: error updating order %d id %q : %s\n", i, o.ID, err)
-				return
-			}
-		}
-	*/
-
 	for i, orderURL := range orders {
 		order := &resources.Order{
 			ID: orderURL,
 		}
-		err = client.UpdateOrder(order)
+		err := client.UpdateOrder(order)
 		if err != nil {
 			c.Printf("orders: error getting order object: %s\n", err.Error())
 			return

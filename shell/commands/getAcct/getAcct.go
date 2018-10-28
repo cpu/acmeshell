@@ -2,7 +2,6 @@ package getAcct
 
 import (
 	"encoding/json"
-	"flag"
 	"net/http"
 
 	"github.com/abiosoft/ishell"
@@ -11,36 +10,25 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
-type getAccountCmd struct {
-	commands.BaseCmd
+func init() {
+	registerGetAccountCmd()
 }
 
-var GetAccountCommand = getAccountCmd{
-	commands.BaseCmd{
-		Cmd: &ishell.Cmd{
+func registerGetAccountCmd() {
+	commands.RegisterCommand(
+		&ishell.Cmd{
 			Name:     "getAccount",
 			Aliases:  []string{"account", "getAcct", "registration", "getReg", "getRegistration"},
-			Func:     getAccountHandler,
 			Help:     "Get ACME account details from server",
 			LongHelp: `TODO(@cpu): Write this!`,
 		},
-	},
+		nil,
+		getAccountHandler,
+		nil,
+	)
 }
 
-func (g getAccountCmd) Setup(client *acmeclient.Client) (*ishell.Cmd, error) {
-	return GetAccountCommand.Cmd, nil
-}
-
-func getAccountHandler(c *ishell.Context) {
-	getAccountFlags := flag.NewFlagSet("getAccount", flag.ContinueOnError)
-	err := getAccountFlags.Parse(c.Args)
-	if err != nil && err != flag.ErrHelp {
-		c.Printf("getAccount: error parsing input flags: %s\n", err.Error())
-		return
-	} else if err == flag.ErrHelp {
-		return
-	}
-
+func getAccountHandler(c *ishell.Context, leftovers []string) {
 	client := commands.GetClient(c)
 
 	getAcctReq := struct {

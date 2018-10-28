@@ -13,59 +13,31 @@ import (
 	"github.com/cpu/acmeshell/challtestsrv"
 	acmecmd "github.com/cpu/acmeshell/cmd"
 	"github.com/cpu/acmeshell/shell/commands"
-	accounts "github.com/cpu/acmeshell/shell/commands/accounts"
-	challSrv "github.com/cpu/acmeshell/shell/commands/challSrv"
-	//csr "github.com/cpu/acmeshell/shell/commands/csr"
-	echo "github.com/cpu/acmeshell/shell/commands/echo"
-	finalize "github.com/cpu/acmeshell/shell/commands/finalize"
-	get "github.com/cpu/acmeshell/shell/commands/get"
-	getAcct "github.com/cpu/acmeshell/shell/commands/getAcct"
-	getAuthz "github.com/cpu/acmeshell/shell/commands/getAuthz"
-	getCert "github.com/cpu/acmeshell/shell/commands/getCert"
-	getChall "github.com/cpu/acmeshell/shell/commands/getChall"
-	getOrder "github.com/cpu/acmeshell/shell/commands/getOrder"
-	keys "github.com/cpu/acmeshell/shell/commands/keys"
-	loadAccount "github.com/cpu/acmeshell/shell/commands/loadAccount"
-	loadKey "github.com/cpu/acmeshell/shell/commands/loadKey"
-	newAccount "github.com/cpu/acmeshell/shell/commands/newAccount"
-	newKey "github.com/cpu/acmeshell/shell/commands/newKey"
-	newOrder "github.com/cpu/acmeshell/shell/commands/newOrder"
-	orders "github.com/cpu/acmeshell/shell/commands/orders"
-	poll "github.com/cpu/acmeshell/shell/commands/poll"
-	post "github.com/cpu/acmeshell/shell/commands/post"
-	rollover "github.com/cpu/acmeshell/shell/commands/rollover"
-	sign "github.com/cpu/acmeshell/shell/commands/sign"
-	solve "github.com/cpu/acmeshell/shell/commands/solve"
-	switchAccount "github.com/cpu/acmeshell/shell/commands/switchAccount"
+	_ "github.com/cpu/acmeshell/shell/commands/accounts"
+	_ "github.com/cpu/acmeshell/shell/commands/challSrv"
+	_ "github.com/cpu/acmeshell/shell/commands/csr"
+	_ "github.com/cpu/acmeshell/shell/commands/echo"
+	_ "github.com/cpu/acmeshell/shell/commands/finalize"
+	_ "github.com/cpu/acmeshell/shell/commands/get"
+	_ "github.com/cpu/acmeshell/shell/commands/getAcct"
+	_ "github.com/cpu/acmeshell/shell/commands/getAuthz"
+	_ "github.com/cpu/acmeshell/shell/commands/getCert"
+	_ "github.com/cpu/acmeshell/shell/commands/getChall"
+	_ "github.com/cpu/acmeshell/shell/commands/getOrder"
+	_ "github.com/cpu/acmeshell/shell/commands/keys"
+	_ "github.com/cpu/acmeshell/shell/commands/loadAccount"
+	_ "github.com/cpu/acmeshell/shell/commands/loadKey"
+	_ "github.com/cpu/acmeshell/shell/commands/newAccount"
+	_ "github.com/cpu/acmeshell/shell/commands/newKey"
+	_ "github.com/cpu/acmeshell/shell/commands/newOrder"
+	_ "github.com/cpu/acmeshell/shell/commands/orders"
+	_ "github.com/cpu/acmeshell/shell/commands/poll"
+	_ "github.com/cpu/acmeshell/shell/commands/post"
+	_ "github.com/cpu/acmeshell/shell/commands/rollover"
+	_ "github.com/cpu/acmeshell/shell/commands/sign"
+	_ "github.com/cpu/acmeshell/shell/commands/solve"
+	_ "github.com/cpu/acmeshell/shell/commands/switchAccount"
 )
-
-var shellCommands = []commands.ACMEShellCmd{
-	accounts.AccountsCommand,
-	challSrv.ChallSrvCommand,
-	// TODO(@cpu): Fix CSR command
-	//csr.CSRCommand,
-	finalize.FinalizeCommand,
-	get.GetCommand,
-	getAcct.GetAccountCommand,
-	getAuthz.GetAuthzCommand,
-	getCert.GetCertCommand,
-	getChall.GetChallCommand,
-	getOrder.GetOrderCommand,
-	keys.KeysCommand,
-	loadAccount.LoadAccountCommand,
-	loadKey.LoadKeyCommand,
-	post.PostCommand,
-	newAccount.NewAccountCommand,
-	newKey.NewKeyCommand,
-	newOrder.NewOrderCommand,
-	orders.OrdersCommand,
-	poll.PollCommand,
-	rollover.RolloverCommand,
-	sign.SignCommand,
-	solve.SolveCommand,
-	switchAccount.SwitchAccountCommand,
-	echo.EchoCommand,
-}
 
 // ACMEShellOptions allows specifying options for creating an ACME shell. This includes
 // all of the acmeclient.ClientConfig options in addition challenge server
@@ -118,14 +90,8 @@ func NewACMEShell(opts *ACMEShellOptions) *ACMEShell {
 	// Stash the ACME client in the shell for commands to access
 	shell.Set(commands.ClientKey, client)
 
-	// Add all of the ACMEShell commands
-	for _, cmd := range shellCommands {
-		shellCommand, err := cmd.Setup(client)
-		acmecmd.FailOnError(err, fmt.Sprintf(
-			"Unable to setup ACME command %T",
-			cmd))
-		shell.AddCmd(shellCommand)
-	}
+	// Add registered commands to the shell
+	commands.AddCommands(shell, client)
 
 	return &ACMEShell{
 		Shell: shell,

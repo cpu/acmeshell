@@ -5,26 +5,20 @@ import (
 	"strings"
 
 	"github.com/abiosoft/ishell"
-	acmeclient "github.com/cpu/acmeshell/acme/client"
 	"github.com/cpu/acmeshell/shell/commands"
 )
-
-type accountsCmd struct {
-	commands.BaseCmd
-}
 
 type accountsOptions struct {
 	printID      bool
 	printContact bool
 }
 
-var AccountsCommand = accountsCmd{
-	commands.BaseCmd{
-		Cmd: &ishell.Cmd{
-			Name: "accounts",
-			Func: accountsHandler,
-			Help: "Show available ACME accounts",
-			LongHelp: `
+var (
+	opts accountsOptions
+)
+
+const (
+	longHelp = `
 	accounts:
 		List the ACME accounts that have been created during the shell session. Each
 		account's ID and contact information will be printed.
@@ -33,36 +27,42 @@ var AccountsCommand = accountsCmd{
 		List ACME accounts printing only each account's contact info.
 	
 	accounts -showContact=false:
-		List ACME accounts printing only each account's ID.`,
-		},
-	},
+		List ACME accounts printing only each account's ID.`
+)
+
+func init() {
+	registerAccountsCmd()
 }
 
-func (a accountsCmd) Setup(client *acmeclient.Client) (*ishell.Cmd, error) {
-	return AccountsCommand.Cmd, nil
-}
-
-func accountsHandler(c *ishell.Context) {
-	opts := accountsOptions{}
+func registerAccountsCmd() {
 	accountsFlags := flag.NewFlagSet("accounts", flag.ContinueOnError)
 	accountsFlags.BoolVar(&opts.printID, "showID", true, "Print ACME account IDs")
 	accountsFlags.BoolVar(&opts.printContact, "showContact", true, "Print ACME account contact info")
 
-	err := accountsFlags.Parse(c.Args)
-	if err != nil && err != flag.ErrHelp {
-		c.Printf("accounts: error parsing input flags: %s\n", err.Error())
-		return
-	} else if err == flag.ErrHelp {
-		return
-	}
+	commands.RegisterCommand(
+		&ishell.Cmd{
+			Name:     "accounts",
+			Help:     "Show available ACME accounts",
+			LongHelp: longHelp,
+		},
+		nil,
+		accountsHandler,
+		accountsFlags)
+}
 
+func accountsHandler(c *ishell.Context, leftovers []string) {
+	defer func() {
+		opts = accountsOptions{
+			printID:      true,
+			printContact: true,
+		}
+	}()
 	if !opts.printID && !opts.printContact {
 		c.Printf("accounts: -showID and -showContact can not both be false\n")
 		return
 	}
 
 	client := commands.GetClient(c)
-
 	if len(client.Accounts) == 0 {
 		c.Printf("No accounts\n")
 		return

@@ -4,13 +4,8 @@ import (
 	"flag"
 
 	"github.com/abiosoft/ishell"
-	acmeclient "github.com/cpu/acmeshell/acme/client"
 	"github.com/cpu/acmeshell/shell/commands"
 )
-
-type challSrvCmd struct {
-	commands.BaseCmd
-}
 
 type challSrvOptions struct {
 	challengeType string
@@ -20,24 +15,19 @@ type challSrvOptions struct {
 	operation     string
 }
 
-var ChallSrvCommand challSrvCmd = challSrvCmd{
-	commands.BaseCmd{
-		Cmd: &ishell.Cmd{
-			Name:     "challSrv",
-			Aliases:  []string{"chalSrv", "challengeServer"},
-			Func:     challSrvHandler,
-			Help:     "Add/remove challenge responses from the embedded challenge response server",
-			LongHelp: `TODO(@cpu): Write this!`,
-		},
-	},
+var (
+	opts challSrvOptions
+)
+
+const (
+	longHelp = `TODO(@cpu): write challSrv LongHelp`
+)
+
+func init() {
+	registerChallSrvCmd()
 }
 
-func (c challSrvCmd) Setup(client *acmeclient.Client) (*ishell.Cmd, error) {
-	return ChallSrvCommand.Cmd, nil
-}
-
-func challSrvHandler(c *ishell.Context) {
-	opts := challSrvOptions{}
+func registerChallSrvCmd() {
 	challSrvFlags := flag.NewFlagSet("challSrv", flag.ContinueOnError)
 	challSrvFlags.StringVar(&opts.challengeType, "challengeType", "", "Challenge type to add/remove")
 	challSrvFlags.StringVar(&opts.token, "token", "", "Challenge token (HTTP-01 only)")
@@ -45,14 +35,24 @@ func challSrvHandler(c *ishell.Context) {
 	challSrvFlags.StringVar(&opts.value, "value", "", "Challenge response value")
 	challSrvFlags.StringVar(&opts.operation, "operation", "add", "'add' to add a challenge, 'del' to remove")
 
-	err := challSrvFlags.Parse(c.Args)
-	if err != nil && err != flag.ErrHelp {
-		c.Printf("challSrv: error parsing input flags: %s\n", err.Error())
-		return
-	} else if err == flag.ErrHelp {
-		return
-	}
+	commands.RegisterCommand(
+		&ishell.Cmd{
+			Name:     "challSrv",
+			Aliases:  []string{"chalSrv", "challengeServer"},
+			Help:     "Add/remove challenge responses from the embedded challenge response server",
+			LongHelp: longHelp,
+		},
+		nil,
+		challSrvHandler,
+		challSrvFlags)
+}
 
+func challSrvHandler(c *ishell.Context, leftovers []string) {
+	defer func() {
+		opts = challSrvOptions{
+			operation: "add",
+		}
+	}()
 	if opts.operation != "add" && opts.operation != "delete" {
 		c.Printf("challSrv: -operation must be \"add\" or \"delete\"\n")
 		return
@@ -81,15 +81,15 @@ func challSrvHandler(c *ishell.Context) {
 	}
 
 	challengeHandlers := map[string]challengeType{
-		"http-01": challengeType{
+		"http-01": {
 			adder:   challSrv.AddHTTPOneChallenge,
 			remover: challSrv.DeleteHTTPOneChallenge,
 		},
-		"dns-01": challengeType{
+		"dns-01": {
 			adder:   challSrv.AddDNSOneChallenge,
 			remover: challSrv.DeleteDNSOneChallenge,
 		},
-		"tls-alpn-01": challengeType{
+		"tls-alpn-01": {
 			adder:   challSrv.AddTLSALPNChallenge,
 			remover: challSrv.DeleteTLSALPNChallenge,
 		},

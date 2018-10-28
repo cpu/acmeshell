@@ -14,46 +14,42 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
-type keyRolloverCmd struct {
-	commands.BaseCmd
-}
-
 type keyRolloverOptions struct {
 	printInnerJWS     bool
 	printInnerJWSBody bool
 	keyID             string
 }
 
-var RolloverCommand = keyRolloverCmd{
-	commands.BaseCmd{
-		Cmd: &ishell.Cmd{
-			Name:     "rollover",
-			Aliases:  []string{"keyRollover", "keyChange", "switchKey"},
-			Func:     rolloverHandler,
-			Help:     "Switch active account's key to a different key",
-			LongHelp: `TODO`,
-		},
-	},
+var (
+	opts = keyRolloverOptions{}
+)
+
+func init() {
+	registerRolloverCmd()
 }
 
-func (kr keyRolloverCmd) Setup(client *acmeclient.Client) (*ishell.Cmd, error) {
-	return RolloverCommand.Cmd, nil
-}
-
-func rolloverHandler(c *ishell.Context) {
-	opts := keyRolloverOptions{}
+func registerRolloverCmd() {
 	keyRolloverFlags := flag.NewFlagSet("keyRollover", flag.ContinueOnError)
 	keyRolloverFlags.BoolVar(&opts.printInnerJWS, "innerJWS", false, "Print inner JWS JSON")
 	keyRolloverFlags.BoolVar(&opts.printInnerJWSBody, "innerJWSBody", false, "Print inner JWS body JSON")
 	keyRolloverFlags.StringVar(&opts.keyID, "keyID", "", "Key ID to rollover to (leave empty to select interactively)")
 
-	err := keyRolloverFlags.Parse(c.Args)
-	if err != nil && err != flag.ErrHelp {
-		c.Printf("keyRollover: error parsing input flags: %s", err.Error())
-		return
-	} else if err == flag.ErrHelp {
-		return
-	}
+	commands.RegisterCommand(
+		&ishell.Cmd{
+			Name:     "rollover",
+			Aliases:  []string{"keyRollover", "keyChange", "switchKey"},
+			Help:     "Switch active account's key to a different key",
+			LongHelp: `TODO`,
+		},
+		nil,
+		rolloverHandler,
+		keyRolloverFlags)
+}
+
+func rolloverHandler(c *ishell.Context, leftovers []string) {
+	defer func() {
+		opts = keyRolloverOptions{}
+	}()
 
 	client := commands.GetClient(c)
 	account := client.ActiveAccount

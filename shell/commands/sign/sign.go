@@ -9,32 +9,76 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
-type signCmd struct {
-	commands.BaseCmd
-}
-
 type signCmdOptions struct {
-	embedKey bool
-	data     []byte
-	keyID    string
+	embedKey   bool
+	data       []byte
+	noData     bool
+	keyID      string
+	dataString string
 }
 
-var SignCommand = signCmd{
-	commands.BaseCmd{
-		Cmd: &ishell.Cmd{
+var (
+	opts = signCmdOptions{}
+)
+
+func init() {
+	registerSignCmd()
+}
+
+func registerSignCmd() {
+	signFlags := flag.NewFlagSet("sign", flag.ContinueOnError)
+	signFlags.BoolVar(&opts.embedKey, "embedKey", false, "Embed JWK in JWS instead of a Key ID Header")
+	signFlags.StringVar(&opts.keyID, "keyID", "", "Key ID of existing key to use instead of active account key")
+	signFlags.StringVar(&opts.dataString, "data", "", "Data to sign")
+	signFlags.BoolVar(&opts.noData, "noData", false, "Use an empty byteslice as the data to sign (e.g. POST-as-GET)")
+
+	commands.RegisterCommand(
+		&ishell.Cmd{
 			Name:     "sign",
-			Func:     signHandler,
 			Help:     "Sign JSON for a URL with the active account key (or a specified key) and a nonce",
 			LongHelp: `TODO(@cpu): write this`,
 		},
-	},
+		nil,
+		signHandler,
+		signFlags)
 }
 
-func (s signCmd) Setup(client *acmeclient.Client) (*ishell.Cmd, error) {
-	return SignCommand.Cmd, nil
+func signHandler(c *ishell.Context, leftovers []string) {
+	defer func() {
+		opts = signCmdOptions{}
+	}()
+	if len(leftovers) < 1 {
+		c.Printf("sign: you must specify a URL for the JWS header\n")
+		return
+	}
+
+	url := strings.TrimSpace(leftovers[0])
+
+	if url == "" {
+		c.Printf("sign: you must specify a non-empty URL for the JWS header\n")
+		return
+	}
+
+	// If the -data flag was specified and after trimming it is a non-empty value
+	// use the trimmed value as the data
+	if trimmedData := strings.TrimSpace(opts.dataString); trimmedData != "" {
+		if opts.noData {
+			c.Printf("sign: using -noData and providing a -data value are mutually exclusive\n")
+			return
+		}
+		opts.data = []byte(trimmedData)
+	} else if !opts.noData {
+		// Otherwise, read the POST body interactively
+		inputJSON := commands.ReadJSON(c)
+		opts.data = []byte(inputJSON)
+	} else if opts.noData {
+		opts.data = []byte("")
+	}
+
+	signData(c, url)
 }
 
-func signData(opts signCmdOptions, targetURL string, c *ishell.Context) {
+func signData(c *ishell.Context, targetURL string) {
 	client := commands.GetClient(c)
 	account := client.ActiveAccount
 
@@ -66,52 +110,4 @@ func signData(opts signCmdOptions, targetURL string, c *ishell.Context) {
 	}
 
 	c.Printf("sign: Result JWS: \n%s\n", signResult.SerializedJWS)
-}
-
-func signHandler(c *ishell.Context) {
-	// Set up flags for the sign cmd flagset
-	opts := signCmdOptions{}
-	signFlags := flag.NewFlagSet("sign", flag.ContinueOnError)
-	signFlags.BoolVar(&opts.embedKey, "embedKey", false, "Embed JWK in JWS instead of a Key ID Header")
-	signFlags.StringVar(&opts.keyID, "keyID", "", "Key ID of existing key to use instead of active account key")
-	dataString := signFlags.String("data", "", "Data to sign")
-	noData := signFlags.Bool("noData", false, "Use an empty byteslice as the data to sign (e.g. POST-as-GET)")
-	err := signFlags.Parse(c.Args)
-
-	if err != nil && err != flag.ErrHelp {
-		c.Printf("sign: error parsing input flags: %s", err.Error())
-		return
-	} else if err == flag.ErrHelp {
-		return
-	}
-
-	if signFlags.NArg() != 1 {
-		c.Printf("sign: you must specify a URL for the JWS header\n")
-		return
-	}
-
-	url := strings.TrimSpace(signFlags.Arg(0))
-
-	if url == "" {
-		c.Printf("sign: you must specify a non-empty URL for the JWS header\n")
-		return
-	}
-
-	// If the -data flag was specified and after trimming it is a non-empty value
-	// use the trimmed value as the data
-	if trimmedData := strings.TrimSpace(*dataString); trimmedData != "" {
-		if *noData {
-			c.Printf("sign: using -noData and providing a -data value are mutually exclusive\n")
-			return
-		}
-		opts.data = []byte(trimmedData)
-	} else if !*noData {
-		// Otherwise, read the POST body interactively
-		inputJSON := commands.ReadJSON(c)
-		opts.data = []byte(inputJSON)
-	} else if *noData {
-		opts.data = []byte("")
-	}
-
-	signData(opts, url, c)
 }
