@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 
@@ -8,38 +9,46 @@ import (
 	"github.com/cpu/acmeshell/acme/resources"
 )
 
-func PickOrder(c *ishell.Context) (*resources.Order, error) {
+func PickOrderURL(c *ishell.Context) (string, error) {
 	client := GetClient(c)
 	if len(client.ActiveAccount.Orders) == 0 {
-		return nil, fmt.Errorf("active account has no orders")
+		return "", fmt.Errorf("active account has no orders")
 	}
 
 	orderList := make([]string, len(client.ActiveAccount.Orders))
-	for i, order := range client.ActiveAccount.Orders {
-		line := fmt.Sprintf("%3d)", i)
-		line += fmt.Sprintf("\t%#q", order)
-
-		// TODO(@cpu): Restore identifiers
-		/*
-			var domains []string
-			for _, d := range order.Identifiers {
-				domains = append(domains, d.Value)
-			}
-			line += fmt.Sprintf("\t%s", strings.Join(domains, ","))
-		*/
+	for i, orderURL := range client.ActiveAccount.Orders {
+		line := fmt.Sprintf("%3d) %s", i, orderURL)
 		orderList[i] = line
 	}
 
 	choice := c.MultiChoice(orderList, "Select an order")
-	orderURL := client.ActiveAccount.Orders[choice]
+	return client.ActiveAccount.Orders[choice], nil
+}
+
+func PickOrder(c *ishell.Context) (*resources.Order, error) {
+	client := GetClient(c)
+
+	orderURL, err := PickOrderURL(c)
+	if err != nil {
+		return nil, err
+	}
 	order := &resources.Order{
 		ID: orderURL,
 	}
-	err := client.UpdateOrder(order)
+	err = client.UpdateOrder(order)
 	if err != nil {
 		return nil, err
 	}
 	return order, nil
+}
+
+func PickAuthzURL(c *ishell.Context, order *resources.Order) (string, error) {
+	if len(order.Authorizations) == 0 {
+		return "", errors.New("order has no authorizations")
+	}
+
+	choice := c.MultiChoice(order.Authorizations, "Choose an authorization")
+	return order.Authorizations[choice], nil
 }
 
 func PickAuthz(c *ishell.Context, order *resources.Order) (*resources.Authorization, error) {

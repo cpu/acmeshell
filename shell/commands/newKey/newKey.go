@@ -15,13 +15,8 @@ import (
 	"crypto/x509"
 
 	"github.com/abiosoft/ishell"
-	acmeclient "github.com/cpu/acmeshell/acme/client"
 	"github.com/cpu/acmeshell/shell/commands"
 )
-
-type newKeyCmd struct {
-	commands.BaseCmd
-}
 
 type newKeyOptions struct {
 	keyID    string
@@ -30,37 +25,39 @@ type newKeyOptions struct {
 	pemPath  string
 }
 
-var NewKeyCommand = newKeyCmd{
-	commands.BaseCmd{
-		Cmd: &ishell.Cmd{
-			Name:     "newKey",
-			Aliases:  []string{"newPrivateKey"},
-			Func:     newKeyHandler,
-			Help:     "Create a new private key for use with newAccount/CSR/sign",
-			LongHelp: `TODO(@cpu): Write this!`,
-		},
-	},
+var (
+	opts = newKeyOptions{}
+)
+
+func init() {
+	registerNewKeyCmd()
 }
 
-func (nk newKeyCmd) Setup(client *acmeclient.Client) (*ishell.Cmd, error) {
-	return NewKeyCommand.Cmd, nil
-}
-
-func newKeyHandler(c *ishell.Context) {
-	opts := newKeyOptions{}
+func registerNewKeyCmd() {
 	newKeyFlags := flag.NewFlagSet("newKey", flag.ContinueOnError)
 	newKeyFlags.StringVar(&opts.keyID, "id", "", "ID for the new key")
 	newKeyFlags.BoolVar(&opts.printPEM, "pem", false, "Print PEM output")
 	newKeyFlags.BoolVar(&opts.printJWK, "jwk", true, "Print JWK output")
 	newKeyFlags.StringVar(&opts.pemPath, "path", "", "Path to write PEM private key to")
 
-	err := newKeyFlags.Parse(c.Args)
-	if err != nil && err != flag.ErrHelp {
-		c.Printf("newKey: error parsing input flags: %s\n", err.Error())
-		return
-	} else if err == flag.ErrHelp {
-		return
-	}
+	commands.RegisterCommand(
+		&ishell.Cmd{
+			Name:     "newKey",
+			Aliases:  []string{"newPrivateKey"},
+			Help:     "Create a new private key for use with newAccount/CSR/sign",
+			LongHelp: `TODO(@cpu): Write this!`,
+		},
+		nil,
+		newKeyHandler,
+		newKeyFlags)
+}
+
+func newKeyHandler(c *ishell.Context, leftovers []string) {
+	defer func() {
+		opts = newKeyOptions{
+			printJWK: true,
+		}
+	}()
 
 	if opts.keyID == "" {
 		c.Printf("newKey: -id must not be empty\n")

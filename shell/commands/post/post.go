@@ -69,35 +69,20 @@ func registerPostCommand() {
 }
 
 func postHandler(c *ishell.Context, leftovers []string) {
-	if len(leftovers) < 1 {
-		c.Printf("post: you must specify an endpoint or a URL\n")
-		return
-	}
+	// Reset options to default after handling
+	defer func() {
+		opts = postOptions{
+			templateBody: true,
+			sign:         true,
+		}
+	}()
 
-	argument := strings.TrimSpace(leftovers[0])
 	client := commands.GetClient(c)
 
-	var targetURL string
-
-	if endpointURL, ok := client.GetEndpointURL(argument); ok {
-		// If the argument is an endpoint, find its URL
-		targetURL = endpointURL
-	} else {
-		templateText := strings.Join(leftovers, " ")
-
-		// Render the input as a template
-		rendered, err := commands.EvalTemplate(
-			templateText,
-			commands.TemplateCtx{
-				Client: client,
-				Acct:   client.ActiveAccount,
-			})
-		if err != nil {
-			c.Printf("post: target URL templating error: %s\n", err.Error())
-			return
-		}
-		// Use the templated result as the argument
-		targetURL = rendered
+	targetURL, err := commands.FindURL(client, leftovers)
+	if err != nil {
+		c.Printf("post: error finding URL: %v", err)
+		return
 	}
 
 	// Check the URL and make sure it is valid-ish
@@ -122,12 +107,7 @@ func postHandler(c *ishell.Context, leftovers []string) {
 
 	if opts.templateBody {
 		// Render the body input as a template
-		rendered, err := commands.EvalTemplate(
-			opts.postBody,
-			commands.TemplateCtx{
-				Client: client,
-				Acct:   client.ActiveAccount,
-			})
+		rendered, err := commands.ClientTemplate(client, opts.postBody)
 		if err != nil {
 			c.Printf("post: warning: target URL templating error: %s\n", err.Error())
 			return

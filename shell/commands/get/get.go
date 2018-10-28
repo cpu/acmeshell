@@ -2,7 +2,6 @@ package get
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/abiosoft/ishell"
 	"github.com/cpu/acmeshell/shell/commands"
@@ -51,47 +50,17 @@ func registerGetCommand() {
 }
 
 func getHandler(c *ishell.Context, leftovers []string) {
-	if len(leftovers) < 1 {
-		c.Printf("get: you must specify an endpoint or a URL\n")
+	client := commands.GetClient(c)
+
+	targetURL, err := commands.FindURL(client, leftovers)
+	if err != nil {
+		c.Printf("get: error finding URL: %v\n", err)
 		return
 	}
 
-	argument := strings.TrimSpace(leftovers[0])
-	client := commands.GetClient(c)
-
-	var targetURL string
-
-	if argument == "directory" {
-		// If the argument is "directory", use the directory URL as the target
-		targetURL = client.DirectoryURL.String()
-	} else if endpointURL, ok := client.GetEndpointURL(argument); ok {
-		// If the argument is an endpoint, find its URL
-		targetURL = endpointURL
-	} else {
-		templateText := strings.Join(leftovers, " ")
-
-		// Render the input as a template
-		rendered, err := commands.EvalTemplate(
-			templateText,
-			commands.TemplateCtx{
-				Client: client,
-				Acct:   client.ActiveAccount,
-			})
-		if err != nil {
-			c.Printf("get: warning: templating error: %s\n", err.Error())
-			// Fall back to using the raw argument untemplated
-			rendered = argument
-		}
-		// Use the templated result as the argument
-		argument = rendered
-
-		// Otherwise treat the argument as a raw URL and make sure it is valid-ish
-		if !commands.OkURL(argument) {
-			c.Printf("get: illegal url argument %q\n", argument)
-			return
-		}
-		// If it is, use the raw argument as the target URL
-		targetURL = argument
+	if !commands.OkURL(targetURL) {
+		c.Printf("get: illegal url argument %q\n", targetURL)
+		return
 	}
 
 	resp, err := client.GetURL(targetURL)

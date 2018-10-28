@@ -5,15 +5,11 @@ import (
 	"strings"
 
 	"crypto/ecdsa"
+
 	"github.com/abiosoft/ishell"
-	acmeclient "github.com/cpu/acmeshell/acme/client"
 	"github.com/cpu/acmeshell/acme/resources"
 	"github.com/cpu/acmeshell/shell/commands"
 )
-
-type newAccountCmd struct {
-	commands.BaseCmd
-}
 
 type newAccountOptions struct {
 	contacts string
@@ -22,37 +18,39 @@ type newAccountOptions struct {
 	keyID    string
 }
 
-var NewAccountCommand = newAccountCmd{
-	commands.BaseCmd{
-		Cmd: &ishell.Cmd{
-			Name:     "newAccount",
-			Aliases:  []string{"newAcct", "newReg", "newRegistration"},
-			Func:     newAccountHandler,
-			Help:     "Create a new ACME account",
-			LongHelp: `TODO(@cpu): Write this!`,
-		},
-	},
+var (
+	opts = newAccountOptions{}
+)
+
+func init() {
+	registerNewAccountCmd()
 }
 
-func (a newAccountCmd) Setup(client *acmeclient.Client) (*ishell.Cmd, error) {
-	return NewAccountCommand.Cmd, nil
-}
-
-func newAccountHandler(c *ishell.Context) {
-	opts := newAccountOptions{}
+func registerNewAccountCmd() {
 	newAccountFlags := flag.NewFlagSet("newAccount", flag.ContinueOnError)
 	newAccountFlags.StringVar(&opts.contacts, "contacts", "", "Comma separated list of contact emails")
 	newAccountFlags.BoolVar(&opts.switchTo, "switch", true, "Switch to the new account after creating it")
 	newAccountFlags.StringVar(&opts.jsonPath, "json", "", "Optional filepath to a JSON save file for the account")
 	newAccountFlags.StringVar(&opts.keyID, "keyID", "", "Key ID for existing key (empty to generate new key)")
 
-	err := newAccountFlags.Parse(c.Args)
-	if err != nil && err != flag.ErrHelp {
-		c.Printf("newAccount: error parsing input flags: %s\n", err.Error())
-		return
-	} else if err == flag.ErrHelp {
-		return
-	}
+	commands.RegisterCommand(
+		&ishell.Cmd{
+			Name:     "newAccount",
+			Aliases:  []string{"newAcct", "newReg", "newRegistration"},
+			Help:     "Create a new ACME account",
+			LongHelp: `TODO(@cpu): Write this!`,
+		},
+		nil,
+		newAccountHandler,
+		newAccountFlags)
+}
+
+func newAccountHandler(c *ishell.Context, leftovers []string) {
+	defer func() {
+		opts = newAccountOptions{
+			switchTo: true,
+		}
+	}()
 
 	rawEmails := strings.Split(opts.contacts, ",")
 	var emails []string

@@ -8,6 +8,7 @@ import (
 	"crypto/rand"
 	"crypto/x509"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -53,6 +54,18 @@ type Account struct {
 // with the ACME server.
 func (a Account) String() string {
 	return a.ID
+}
+
+// OrderURL returns the Order URL for the ith Order the Account owns. An error
+// is returned if the Account has no Orders or if the index is out of bounds.
+func (a *Account) OrderURL(i int) (string, error) {
+	if len(a.Orders) == 0 {
+		return "", errors.New("Account has no orders")
+	}
+	if i < 0 || i >= len(a.Orders) {
+		return "", fmt.Errorf("Order index must be 0 < x < %d", len(a.Orders))
+	}
+	return a.Orders[i], nil
 }
 
 // NewAccount creates an ACME account in-memory. *Important:* the

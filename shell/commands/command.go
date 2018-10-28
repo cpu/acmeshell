@@ -4,6 +4,7 @@ package commands
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"net/url"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/abiosoft/ishell"
 	acmeclient "github.com/cpu/acmeshell/acme/client"
+	"github.com/cpu/acmeshell/acme/resources"
 	"github.com/cpu/acmeshell/challtestsrv"
 )
 
@@ -23,21 +25,6 @@ const (
 	// under.
 	ChallSrvKey = "challsrv"
 )
-
-// ACMEShellCmds can be Setup with a Client instance. This allows the command to
-// setup auto-completers and other properties based on interactions with the
-// client. Setup routines should return an ishell.Cmd instance.that an ACMEShell
-// can register.
-//
-// TODO(@cpu): Remove this crap
-type ACMEShellCmd interface {
-	Setup(client *acmeclient.Client) (*ishell.Cmd, error)
-}
-
-// TODO(@cpu): Remove this crap
-type BaseCmd struct {
-	Cmd *ishell.Cmd
-}
 
 func OkURL(urlStr string) bool {
 	result, err := url.Parse(urlStr)
@@ -177,4 +164,99 @@ func DirectoryAutocompleter(c *acmeclient.Client) func(args []string) []string {
 	return func(args []string) []string {
 		return keys
 	}
+}
+
+func FindOrderURL(ctx *ishell.Context, leftovers []string, orderIndex int) (string, error) {
+	var targetURL string
+	var err error
+	c := GetClient(ctx)
+	// If there was no URL specified we need to find one based on the other args.
+	if len(leftovers) == 0 {
+		// If there was an order index, use it to lookup a order URL
+		if orderIndex >= 0 {
+			targetURL, err = c.ActiveAccount.OrderURL(orderIndex)
+		} else {
+			// Otherwise, pick an order interactively
+			targetURL, err = PickOrderURL(ctx)
+		}
+	} else {
+		// Otherwise treat the leftovers as a template or URL
+		templateText := strings.Join(leftovers, " ")
+		targetURL, err = ClientTemplate(c, templateText)
+	}
+	// If there was an error, return it and no URL
+	if err != nil {
+		return "", err
+	}
+	// If there's no URL (shouldn't happen!) then return an error
+	if targetURL == "" {
+		return "", errors.New("Couldn't find a order URL with provided args")
+	}
+	return targetURL, nil
+}
+
+func FindAuthzURL(ctx *ishell.Context, orderURL string, identifier string) (string, error) {
+	c := GetClient(ctx)
+	order := &resources.Order{
+		ID: orderURL,
+	}
+	err := c.UpdateOrder(order)
+	if err != nil {
+		return "", err
+	}
+	var authzURL string
+	if identifier != "" {
+		authz, err := c.AuthzByIdentifier(order, identifier)
+		if err != nil {
+			return "", err
+		}
+		authzURL = authz.ID
+	} else {
+		// Otherwise, pick an authz interactively
+		authzURL, err = PickAuthzURL(ctx, order)
+		if err != nil {
+			return "", err
+		}
+	}
+	return authzURL, nil
+}
+
+func FindChallengeURL(ctx *ishell.Context, authzURL string, challType string) (string, error) {
+	c := GetClient(ctx)
+	authz := &resources.Authorization{
+		ID: authzURL,
+	}
+	if err := c.UpdateAuthz(authz); err != nil {
+		return "", err
+	}
+	if challType != "" {
+		for _, chall := range authz.Challenges {
+			if chall.Type == challType {
+				return chall.URL, nil
+			}
+		}
+		return "", fmt.Errorf("authz %q has no %q type challenge", authzURL, challType)
+	}
+	chall, err := PickChall(ctx, authz)
+	if err != nil {
+		return "", err
+	}
+	return chall.URL, nil
+}
+
+func FindURL(c *acmeclient.Client, leftovers []string) (string, error) {
+	if len(leftovers) == 0 {
+		return "", fmt.Errorf("an argument is required")
+	}
+	argument := strings.TrimSpace(leftovers[0])
+	// If the argument is "directory", use the directory URL as the target
+	if argument == "directory" {
+		return c.DirectoryURL.String(), nil
+	}
+	if endpointURL, ok := c.GetEndpointURL(argument); ok {
+		// If the argument is an endpoint, find its URL
+		return endpointURL, nil
+	}
+	templateText := strings.Join(leftovers, " ")
+	return ClientTemplate(c, templateText)
 }

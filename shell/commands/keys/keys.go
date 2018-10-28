@@ -14,14 +14,9 @@ import (
 	"strings"
 
 	"github.com/abiosoft/ishell"
-	acmeclient "github.com/cpu/acmeshell/acme/client"
 	"github.com/cpu/acmeshell/shell/commands"
 	jose "gopkg.in/square/go-jose.v2"
 )
-
-type viewKeyCmd struct {
-	commands.BaseCmd
-}
 
 type viewKeyOptions struct {
 	pem        bool
@@ -30,47 +25,49 @@ type viewKeyOptions struct {
 	pemPath    string
 }
 
-var KeysCommand = viewKeyCmd{
-	commands.BaseCmd{
-		Cmd: &ishell.Cmd{
-			Name:     "viewKey",
-			Aliases:  []string{"keys", "viewKeys"},
-			Func:     keysHandler,
-			Help:     "View available private keys",
-			LongHelp: `TODO`,
-		},
-	},
+var (
+	opts = viewKeyOptions{}
+)
+
+func init() {
+	registerKeysCmd()
 }
 
-func (vk viewKeyCmd) Setup(client *acmeclient.Client) (*ishell.Cmd, error) {
-	return KeysCommand.Cmd, nil
-}
-
-func keysHandler(c *ishell.Context) {
-	opts := viewKeyOptions{}
+func registerKeysCmd() {
 	viewKeyFlags := flag.NewFlagSet("viewKey", flag.ContinueOnError)
 	viewKeyFlags.BoolVar(&opts.pem, "pem", false, "Display private key in PEM format")
 	viewKeyFlags.BoolVar(&opts.jwk, "jwk", true, "Display public key in JWK format")
 	viewKeyFlags.BoolVar(&opts.thumbprint, "thumbprint", true, "Display hex JWK public key thumbprint")
 	viewKeyFlags.StringVar(&opts.pemPath, "path", "", "Path to write PEM private key to")
 
-	err := viewKeyFlags.Parse(c.Args)
-	if err != nil && err != flag.ErrHelp {
-		c.Printf("viewKey: error parsing input flags: %s\n", err.Error())
-		return
-	} else if err == flag.ErrHelp {
-		return
-	}
+	commands.RegisterCommand(
+		&ishell.Cmd{
+			Name:     "viewKey",
+			Aliases:  []string{"keys", "viewKeys"},
+			Help:     "View available private keys",
+			LongHelp: `TODO(@cpu): Write keys longhelp`,
+		},
+		nil,
+		keysHandler,
+		viewKeyFlags)
+}
 
+func keysHandler(c *ishell.Context, leftovers []string) {
+	defer func() {
+		opts = viewKeyOptions{
+			jwk:        true,
+			thumbprint: true,
+		}
+	}()
 	client := commands.GetClient(c)
 
 	if len(client.Keys) == 0 {
-		c.Printf("No keys\n")
+		c.Printf("Client has no keys created\n")
 		return
 	}
 
 	var key *ecdsa.PrivateKey
-	if len(viewKeyFlags.Args()) == 0 {
+	if len(leftovers) == 0 {
 		var keysList []string
 		for k := range client.Keys {
 			keysList = append(keysList, k)
@@ -89,15 +86,8 @@ func keysHandler(c *ishell.Context) {
 		choice := c.MultiChoice(choiceList, "Which key would you like to view? ")
 		key = client.Keys[keysList[choice]]
 	} else {
-		templateText := strings.Join(viewKeyFlags.Args(), " ")
-
-		// Render the input as a template
-		rendered, err := commands.EvalTemplate(
-			templateText,
-			commands.TemplateCtx{
-				Client: client,
-				Acct:   client.ActiveAccount,
-			})
+		templateText := strings.Join(leftovers, " ")
+		rendered, err := commands.ClientTemplate(client, templateText)
 		if err != nil {
 			c.Printf("viewKey: key ID templating error: %s\n", err.Error())
 			return

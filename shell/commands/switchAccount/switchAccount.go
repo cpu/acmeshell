@@ -6,56 +6,56 @@ import (
 	"strings"
 
 	"github.com/abiosoft/ishell"
-	acmeclient "github.com/cpu/acmeshell/acme/client"
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
-type switchAccountCmd struct {
-	commands.BaseCmd
+type switchAccountOptions struct {
+	accountIndex int
 }
 
-var SwitchAccountCommand = switchAccountCmd{
-	commands.BaseCmd{
-		Cmd: &ishell.Cmd{
+var (
+	opts = switchAccountOptions{}
+)
+
+func init() {
+	registerSwitchAccountCmd()
+}
+
+func registerSwitchAccountCmd() {
+	switchAccountFlags := flag.NewFlagSet("switchAccount", flag.ContinueOnError)
+	switchAccountFlags.IntVar(&opts.accountIndex, "account", -1, "account number to switch to. "+
+		"leave blank to pick interactively")
+
+	commands.RegisterCommand(
+		&ishell.Cmd{
 			Name:     "switchAccount",
 			Aliases:  []string{"switch", "switchAcct", "switchReg", "switchRegistration"},
-			Func:     switchAccountHandler,
 			Help:     "Switch the active ACME account",
 			LongHelp: `TODO(@cpu): Write this!`,
 		},
-	},
+		nil,
+		switchAccountHandler,
+		switchAccountFlags)
 }
 
-func (a switchAccountCmd) Setup(client *acmeclient.Client) (*ishell.Cmd, error) {
-	return SwitchAccountCommand.Cmd, nil
-}
-
-func switchAccountHandler(c *ishell.Context) {
-	switchAccountFlags := flag.NewFlagSet("switchAccount", flag.ContinueOnError)
-
-	accountIndex := switchAccountFlags.Int("account", -1, "account number to switch to. "+
-		"leave blank to pick interactively")
-
-	err := switchAccountFlags.Parse(c.Args)
-	if err != nil && err != flag.ErrHelp {
-		c.Printf("switchAccount: error parsing input flags: %s\n", err.Error())
-		return
-	} else if err == flag.ErrHelp {
-		return
-	}
-
+func switchAccountHandler(c *ishell.Context, leftovers []string) {
+	defer func() {
+		opts = switchAccountOptions{
+			accountIndex: -1,
+		}
+	}()
 	client := commands.GetClient(c)
 
-	if *accountIndex >= 0 {
-		if *accountIndex >= len(client.Accounts) {
+	if opts.accountIndex >= 0 {
+		if opts.accountIndex >= len(client.Accounts) {
 			c.Printf("switchAccount: provided account index (%d) "+
 				"is larger than number of accounts (%d)\n",
-				*accountIndex, len(client.Accounts))
+				opts.accountIndex, len(client.Accounts))
 			return
 		}
 
-		client.ActiveAccount = client.Accounts[*accountIndex]
-		c.Printf("Active account is now #%d - %q\n", *accountIndex, client.ActiveAccount.ID)
+		client.ActiveAccount = client.Accounts[opts.accountIndex]
+		c.Printf("Active account is now #%d - %q\n", opts.accountIndex, client.ActiveAccount.ID)
 		return
 	}
 

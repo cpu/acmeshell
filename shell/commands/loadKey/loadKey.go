@@ -8,53 +8,48 @@ import (
 	"strings"
 
 	"github.com/abiosoft/ishell"
-	acmeclient "github.com/cpu/acmeshell/acme/client"
 	"github.com/cpu/acmeshell/shell/commands"
 )
-
-type loadKeyCmd struct {
-	commands.BaseCmd
-}
 
 type loadKeyOptions struct {
 	id string
 }
 
-var LoadKeyCommand = loadKeyCmd{
-	commands.BaseCmd{
-		Cmd: &ishell.Cmd{
-			Name:     "loadKey",
-			Aliases:  []string{"loadPrivateKey"},
-			Func:     loadKeyHandler,
-			Help:     "Load an existing PEM ECDSA private key from disk",
-			LongHelp: `TODO(@cpu): Write this!`,
-		},
-	},
+var (
+	opts = loadKeyOptions{}
+)
+
+func init() {
+	registerLoadKeyCmd()
 }
 
-func (lk loadKeyCmd) Setup(client *acmeclient.Client) (*ishell.Cmd, error) {
-	return LoadKeyCommand.Cmd, nil
-}
-
-func loadKeyHandler(c *ishell.Context) {
-	opts := loadKeyOptions{}
+func registerLoadKeyCmd() {
 	loadKeyFlags := flag.NewFlagSet("loadKey", flag.ContinueOnError)
 	loadKeyFlags.StringVar(&opts.id, "id", "", "ID for the key")
 
-	err := loadKeyFlags.Parse(c.Args)
-	if err != nil && err != flag.ErrHelp {
-		c.Printf("loadKeys: error parsing input flags: %s\n", err.Error())
-		return
-	} else if err == flag.ErrHelp {
-		return
-	}
+	commands.RegisterCommand(
+		&ishell.Cmd{
+			Name:     "loadKey",
+			Aliases:  []string{"loadPrivateKey"},
+			Help:     "Load an existing PEM ECDSA private key from disk",
+			LongHelp: `TODO(@cpu): Write this!`,
+		},
+		nil,
+		loadKeyHandler,
+		loadKeyFlags)
+}
 
-	if loadKeyFlags.NArg() != 1 {
+func loadKeyHandler(c *ishell.Context, leftovers []string) {
+	defer func() {
+		opts = loadKeyOptions{}
+	}()
+
+	if len(leftovers) < 1 {
 		c.Printf("loadKey: you must specify a PEM filepath to load from\n")
 		return
 	}
 
-	argument := strings.TrimSpace(loadKeyFlags.Arg(0))
+	argument := strings.TrimSpace(leftovers[0])
 	client := commands.GetClient(c)
 
 	if opts.id == "" {
