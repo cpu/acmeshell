@@ -134,7 +134,7 @@ func wrapHandler(name string, handler NewCommandHandler, flags *flag.FlagSet) fu
 	return func(c *ishell.Context) {
 		// Parse the command's flags with the context args.
 		err := flags.Parse(c.Args)
-		// If it was an error adn not the -h error, print a message and return early.
+		// If it was an error and not the -h error, print a message and return early.
 		if err != nil && err != flag.ErrHelp {
 			c.Printf("%s: error parsing input flags: %v\n", name, err)
 			return
