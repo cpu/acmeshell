@@ -9,7 +9,7 @@
 #   pebble -dnsserver 127.0.0.1:5252
 #
 # Usage:
-#  acmeshell -pebble < docs/example.script.txt
+#  acmeshell -pebble -in docs/example.script.txt
 #
 
 echo
@@ -77,7 +77,7 @@ getChall -order 0 -identifier example.com -type tls-alpn-01
 echo
 echo Post the TLS-ALPN-01 challenge of the first order\'s \'example.com\' authz. This will of course fail since we don\'t have a challenge response setup!
 echo
-post -status -body='{}' {{ chal (authz (order 0 ) \"example.com\") \"tls-alpn-01\" }}
+post -body='{}' {{ chal (authz (order 0 ) \"example.com\") \"tls-alpn-01\" }}
 
 echo
 echo Poll the authz until it is invalid from the failed tls-alpn-01 attempt
@@ -157,7 +157,7 @@ poll -sleep=1 -maxTries=10 -status=valid -order=2
 echo
 echo Get the certificate. This would be easier using the getCert command :-)
 echo
-get -status {{ (order 2).Certificate }}
+get {{ (order 2).Certificate }}
 
 echo
 echo Create an account with a random account key and switch to it
@@ -197,7 +197,7 @@ poll -sleep=1 -maxTries=10 -status=deactivated -order=0
 echo
 echo Deactivate the account
 echo
-post -status -body='{"status":"deactivated"}' {{ account }}
+post -body='{"status":"deactivated"}' {{ account }}
 
 echo
 echo Switch back to the other account
@@ -212,7 +212,7 @@ sign -data="this is my last farewell before deactivation" -embedKey=true https:/
 echo
 echo Deactivate the account
 echo
-post -status -body='{"status":"deactivated"}' {{ account }}
+post -body='{"status":"deactivated"}' {{ account }}
 
 echo
 echo All done!

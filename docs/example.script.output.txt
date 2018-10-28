@@ -1,150 +1,299 @@
-2018/08/23 21:25:08 Creating HTTP-01 challenge server on :5002
-2018/08/23 21:25:08 Creating TCP and UDP DNS-01 challenge server on :5252
-2018/08/23 21:25:08 Creating TLS-ALPN-01 challenge server on :5001
-2018/08/23 21:25:08 Starting challenge servers
+Replaced stdin with file
+challRespSrv: 2018/10/27 19:57:04 Creating HTTP-01 challenge server on :5002
+challRespSrv: 2018/10/27 19:57:04 Creating TCP and UDP DNS-01 challenge server on :5252
+challRespSrv: 2018/10/27 19:57:04 Creating TLS-ALPN-01 challenge server on :5001
 Welcome to ACME Shell
+challRespSrv: 2018/10/27 19:57:04 Starting challenge servers
 # 
 # Get the ACME server directory
 # 
+{
+   "keyChange": "https://localhost:14000/rollover-account-key",
+   "meta": {
+      "termsOfService": "data:text/plain,Do%20what%20thou%20wilt"
+   },
+   "newAccount": "https://localhost:14000/sign-me-up",
+   "newNonce": "https://localhost:14000/nonce-plz",
+   "newOrder": "https://localhost:14000/order-plz",
+   "revokeCert": "https://localhost:14000/revoke-cert"
+}
 # 
 # See the JWK for the autoregistered account
 # 
 JWK:
-{"kty":"EC","crv":"P-256","alg":"ECDSA","x":"DFUaO7mjMZzXovskRhvpgBAWUFjyaEt_anpX_oI2f3Y","y":"IWS-6aARQhb2oFZzez_A_3XAZUakh1QFWcUr8gosD5Y"}
+{"kty":"EC","crv":"P-256","alg":"ECDSA","x":"b00YUF5dyNQcJMqvXpBSB7OEIHEkf43ZRIiab8Gs2aw","y":"5ifYxMnN-cgvFPw95eh_G8fYd1X6MokehNjsiiEMYsI"}
 Thumbprint:
-0x1781c8a3500d90701a7ba4d8748214a99d92d7b68670ab081ce3affa0e9645ba
+0xb6c420e03855c5a9495b65c51667fb6241b974becaa0f0abaafb17baaf6e5406
 # 
 # Add a new key we can use for order CSR's
 # 
 JWK:
-{"kty":"EC","crv":"P-256","alg":"ECDSA","x":"rqwIbII7wCG4IjcAC5sGLnG_V2IF2PZv9_TF9h4tl9M","y":"cYBTZWFDfs2v-xm53eMlvVK94vu-x6fKE0xuIUgD7FM"}
+{"kty":"EC","crv":"P-256","alg":"ECDSA","x":"7uD8Jg-05Kh_paB5Jl9ssOtE2MLkvMGhYRp3BHNxMaY","y":"rFIvurN9-mxQnOdigoswFHnCk8ms812zhT2wA8uZPdE"}
 # 
 # View the server key's PEM
 # 
 PEM:
 -----BEGIN EC PRIVATE KEY-----
-MHcCAQEEIMnY6o5JyknXXRCg4Bf7DeJ8X4lvDa+HLuRg5iXzPSRToAoGCCqGSM49
-AwEHoUQDQgAErqwIbII7wCG4IjcAC5sGLnG/V2IF2PZv9/TF9h4tl9NxgFNlYUN+
-za/7Gbnd4yW9Ur3i+77Hp8oTTG4hSAPsUw==
+MHcCAQEEIN+r1vn9iqY+uQ+yJgNaHpfzWPqgOwl8dRWlO5NqZS7KoAoGCCqGSM49
+AwEHoUQDQgAE7uD8Jg+05Kh/paB5Jl9ssOtE2MLkvMGhYRp3BHNxMaasUi+6s336
+bFCc52KCizAUecKTyazzXbOFPbADy5k90Q==
 -----END EC PRIVATE KEY-----
 
 # 
 # Create a new key to use as an updated ACME account key
 # 
 JWK:
-{"kty":"EC","crv":"P-256","alg":"ECDSA","x":"pu6GP2eVPCikMxM-nmlwLgYEt03olDgOOtwLoQr_daI","y":"BpRMZFpKKx-pltrWt2H0Z5gmZ7EyywnnxDGzcXrwLwA"}
+{"kty":"EC","crv":"P-256","alg":"ECDSA","x":"57whmCgT2JGHs1vXBczaV2U2If5owkcr99pE6gZGRF4","y":"KnBsFVE8sgvzqqn4e9NvZ9fHjJo_hZL2ow3vqPDmZQ0"}
 # 
 # Rollover to the new ACME account key
 # 
-keyRollover completed
+Rolling over account "https://localhost:14000/my-account/5" to use specified key
+keyRollover for account "https://localhost:14000/my-account/5" completed
 # 
 # Check the JWK for the autoregistered account was updated
 # 
 JWK:
-{"kty":"EC","crv":"P-256","alg":"ECDSA","x":"pu6GP2eVPCikMxM-nmlwLgYEt03olDgOOtwLoQr_daI","y":"BpRMZFpKKx-pltrWt2H0Z5gmZ7EyywnnxDGzcXrwLwA"}
+{"kty":"EC","crv":"P-256","alg":"ECDSA","x":"57whmCgT2JGHs1vXBczaV2U2If5owkcr99pE6gZGRF4","y":"KnBsFVE8sgvzqqn4e9NvZ9fHjJo_hZL2ow3vqPDmZQ0"}
 Thumbprint:
-0x00b2f406a8a944dc33cc7dd334ab15df552cb213da76edf41885489d6eaca5ac
+0xfd154a40e6d1bf263c55f3a7b4de8c97dcf9ba7ae11e884c61ec869c9d1742a4
 # 
 # Check the server account was updated
 # 
+{
+   "status": "valid",
+   "contact": null,
+   "key": {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "57whmCgT2JGHs1vXBczaV2U2If5owkcr99pE6gZGRF4",
+      "y": "KnBsFVE8sgvzqqn4e9NvZ9fHjJo_hZL2ow3vqPDmZQ0"
+   },
+   "ID": "5"
+}
 # 
 # Update the auto-registered account to use the specified contact addresses
 # 
-POSTing: 
-{"contact":["mailto:test@example.com","mailto:another-test@example.com"]}
+{
+   "status": "valid",
+   "contact": [
+      "mailto:test@example.com",
+      "mailto:another-test@example.com"
+   ],
+   "key": {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "57whmCgT2JGHs1vXBczaV2U2If5owkcr99pE6gZGRF4",
+      "y": "KnBsFVE8sgvzqqn4e9NvZ9fHjJo_hZL2ow3vqPDmZQ0"
+   },
+   "ID": "5"
+}
 # 
 # Create two new orders
 # 
 # 
 # Get the authz details for both identifiers in the first order. The easy way, and the hard way
 # 
+{
+  "ID": "https://localhost:14000/authZ/RVTiIEwNg5equk_MyohkqMM1Epq9NA3u5vtPX2uCQKU",
+  "Status": "pending",
+  "Identifier": {
+    "Type": "dns",
+    "Value": "www.example.com"
+  },
+  "Challenges": [
+    {
+      "Type": "http-01",
+      "URL": "https://localhost:14000/chalZ/5vqMWaF3rXpWTVXpP9PE7tmDPa9ext6GyECC7T_V7Ls",
+      "Token": "u8oKwNWFcaCePP5UBjPm2poR00trhoFh6ar12rGNX3w",
+      "Status": "pending"
+    },
+    {
+      "Type": "tls-alpn-01",
+      "URL": "https://localhost:14000/chalZ/bUX-fRImMif4SQL5hOBl8jk4I_xGNMDQH4xRtFLftZM",
+      "Token": "SZCCcu8FddN_1ajc9GmrF_u1vJeMjndJK0bYNmDWtPg",
+      "Status": "pending"
+    },
+    {
+      "Type": "dns-01",
+      "URL": "https://localhost:14000/chalZ/QmzvBGY2BbtD7ZEwv95Rs8i_-Wrh01GVurZv56_FqPs",
+      "Token": "pNQfx48jmWFLyre4j6tGf3k_K-5qZ-4GA-2ueE25iPA",
+      "Status": "pending"
+    }
+  ],
+  "Expires": "2018-10-28T00:57:04Z",
+  "Wildcard": false
+}
+{
+   "status": "pending",
+   "identifier": {
+      "type": "dns",
+      "value": "example.com"
+   },
+   "challenges": [
+      {
+         "type": "tls-alpn-01",
+         "url": "https://localhost:14000/chalZ/oRsu0Lo2QUxNXbwrbU1ZIMG62Y5UTJaiwtCEOJVOnQI",
+         "token": "YAc_TiRE4khuIWN49Q7dKgZwh4cWvK-_XtDNo3iuFu8",
+         "status": "pending"
+      },
+      {
+         "type": "dns-01",
+         "url": "https://localhost:14000/chalZ/EWHcYfF7a43ANScLPjGRf3vU15cKQ42hK1BZ34UC1XM",
+         "token": "aPqWT54MgwvZ84ysVd0tNMrK2KScsiyVGBpzWAeABqY",
+         "status": "pending"
+      },
+      {
+         "type": "http-01",
+         "url": "https://localhost:14000/chalZ/6dFGnIrWFjXKev2_7Or6nAAof6mO6QUinfR3q-4bxPU",
+         "token": "InEswX_XDjVF-KnbJGne7bcGQiCB0G0dUsC5gFNIhQQ",
+         "status": "pending"
+      }
+   ],
+   "expires": "2018-10-28T00:57:04Z"
+}
 # 
 # Get the TLS-ALPN-01 challenge of the first order's 'example.com' authz to see the token
 # 
+{
+  "Type": "tls-alpn-01",
+  "URL": "https://localhost:14000/chalZ/oRsu0Lo2QUxNXbwrbU1ZIMG62Y5UTJaiwtCEOJVOnQI",
+  "Token": "YAc_TiRE4khuIWN49Q7dKgZwh4cWvK-_XtDNo3iuFu8",
+  "Status": "pending"
+}
 # 
 # Post the TLS-ALPN-01 challenge of the first order's 'example.com' authz. This will of course fail since we don't have a challenge response setup!
 # 
-POSTing: 
-{}
+{
+   "type": "tls-alpn-01",
+   "url": "https://localhost:14000/chalZ/oRsu0Lo2QUxNXbwrbU1ZIMG62Y5UTJaiwtCEOJVOnQI",
+   "token": "YAc_TiRE4khuIWN49Q7dKgZwh4cWvK-_XtDNo3iuFu8",
+   "status": "pending"
+}
 # 
 # Poll the authz until it is invalid from the failed tls-alpn-01 attempt
 # 
-poll: try 0. "https://localhost:14000/authZ/FeqTfKf5dL9VOd-dSJCk2ux_XoDpJUCD0ekDxpX_9hE" is status "pending"
-poll: polling done. "https://localhost:14000/authZ/FeqTfKf5dL9VOd-dSJCk2ux_XoDpJUCD0ekDxpX_9hE" is status "invalid"
+poll: polling done. "https://localhost:14000/authZ/3bp9SA-HQnm-oZXw4LnvuPIXFQsxjcN3itbyzPCSFzY" is status "invalid"
 # 
 # Get the failed order to see that the error is properly reported
 # 
+{
+  "ID": "https://localhost:14000/my-order/Cv3GbAipTTSXncIhTlChyauCCPlM-3W_43nh1tGxmsU",
+  "Status": "invalid",
+  "Identifiers": [
+    {
+      "Type": "dns",
+      "Value": "example.com"
+    },
+    {
+      "Type": "dns",
+      "Value": "www.example.com"
+    }
+  ],
+  "Authorizations": [
+    "https://localhost:14000/authZ/3bp9SA-HQnm-oZXw4LnvuPIXFQsxjcN3itbyzPCSFzY",
+    "https://localhost:14000/authZ/RVTiIEwNg5equk_MyohkqMM1Epq9NA3u5vtPX2uCQKU"
+  ],
+  "Finalize": "https://localhost:14000/finalize-order/Cv3GbAipTTSXncIhTlChyauCCPlM-3W_43nh1tGxmsU"
+}
 # 
 # Get the failed authz to see full details
 # 
+{
+  "ID": "https://localhost:14000/authZ/3bp9SA-HQnm-oZXw4LnvuPIXFQsxjcN3itbyzPCSFzY",
+  "Status": "invalid",
+  "Identifier": {
+    "Type": "dns",
+    "Value": "example.com"
+  },
+  "Challenges": [
+    {
+      "Type": "tls-alpn-01",
+      "URL": "https://localhost:14000/chalZ/oRsu0Lo2QUxNXbwrbU1ZIMG62Y5UTJaiwtCEOJVOnQI",
+      "Token": "YAc_TiRE4khuIWN49Q7dKgZwh4cWvK-_XtDNo3iuFu8",
+      "Status": "invalid"
+    }
+  ],
+  "Expires": "2018-10-28T00:57:04Z",
+  "Wildcard": false
+}
 # 
 # Solve the HTTP-01 challenge of the second order's 'http01.example.com' authz
 # 
 Challenge response ready
-solve: "http-01" challenge for identifier "http01.example.com" ("https://localhost:14000/chalZ/ueClamLi8E9OAdPtgJdZ7QoDWqgfFLxqE5e4wyVVz3I") started
+solve: "http-01" challenge for identifier "http01.example.com" ("https://localhost:14000/chalZ/kbmde25eHImG6H9zjlOznLtSy3fLNMitZhprE9M2JBQ") started
 # 
 # Poll the second order waiting for the status to be ready
-2018/08/23 21:25:09 Query -- [http01.example.com.] AAAA
 # 
-2018/08/23 21:25:09 Query -- [http01.example.com.] A
-2018/08/23 21:25:09 Query -- [http01.example.com.] AAAA
-poll: try 0. "https://localhost:14000/my-order/js9-vL6j_RAM5UccaievpDuzhBqysRBajaCdUWJBkII" is status "pending"
-poll: try 1. "https://localhost:14000/my-order/js9-vL6j_RAM5UccaievpDuzhBqysRBajaCdUWJBkII" is status "pending"
-poll: try 2. "https://localhost:14000/my-order/js9-vL6j_RAM5UccaievpDuzhBqysRBajaCdUWJBkII" is status "pending"
-poll: try 3. "https://localhost:14000/my-order/js9-vL6j_RAM5UccaievpDuzhBqysRBajaCdUWJBkII" is status "pending"
-poll: try 4. "https://localhost:14000/my-order/js9-vL6j_RAM5UccaievpDuzhBqysRBajaCdUWJBkII" is status "pending"
-poll: try 5. "https://localhost:14000/my-order/js9-vL6j_RAM5UccaievpDuzhBqysRBajaCdUWJBkII" is status "pending"
-poll: try 6. "https://localhost:14000/my-order/js9-vL6j_RAM5UccaievpDuzhBqysRBajaCdUWJBkII" is status "pending"
-2018/08/23 21:25:16 Query -- [http01.example.com.] A
-2018/08/23 21:25:16 Query -- [http01.example.com.] AAAA
-2018/08/23 21:25:16 Query -- [http01.example.com.] AAAA
-poll: polling done. "https://localhost:14000/my-order/js9-vL6j_RAM5UccaievpDuzhBqysRBajaCdUWJBkII" is status "ready"
+poll: try 0. "https://localhost:14000/my-order/xMa9ph8f7kNm3MgQjdguhyt2JH3C7_MEjB5bOl0YPBk" is status "pending"
+poll: try 1. "https://localhost:14000/my-order/xMa9ph8f7kNm3MgQjdguhyt2JH3C7_MEjB5bOl0YPBk" is status "pending"
+poll: try 2. "https://localhost:14000/my-order/xMa9ph8f7kNm3MgQjdguhyt2JH3C7_MEjB5bOl0YPBk" is status "pending"
+poll: try 3. "https://localhost:14000/my-order/xMa9ph8f7kNm3MgQjdguhyt2JH3C7_MEjB5bOl0YPBk" is status "pending"
+challRespSrv: 2018/10/27 19:57:08 Query -- [http01.example.com.] AAAA
+challRespSrv: 2018/10/27 19:57:08 Query -- [http01.example.com.] A
+challRespSrv: 2018/10/27 19:57:08 Query -- [http01.example.com.] AAAA
+poll: try 4. "https://localhost:14000/my-order/xMa9ph8f7kNm3MgQjdguhyt2JH3C7_MEjB5bOl0YPBk" is status "pending"
+challRespSrv: 2018/10/27 19:57:09 Query -- [http01.example.com.] AAAA
+challRespSrv: 2018/10/27 19:57:09 Query -- [http01.example.com.] A
+challRespSrv: 2018/10/27 19:57:09 Query -- [http01.example.com.] AAAA
+poll: polling done. "https://localhost:14000/my-order/xMa9ph8f7kNm3MgQjdguhyt2JH3C7_MEjB5bOl0YPBk" is status "ready"
 # 
 # Post the finalization endpoint of the second order with a CSR using example.server.key It would be easier to do this with the finalize command :-)
 # 
-POSTing: 
-{"csr":"MIHrMIGSAgEAMAAwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASurAhsgjvAIbgiNwALmwYucb9XYgXY9m_39MX2Hi2X03GAU2VhQ37Nr_sZud3jJb1SveL7vsenyhNMbiFIA-xToDAwLgYJKoZIhvcNAQkOMSEwHzAdBgNVHREEFjAUghJodHRwMDEuZXhhbXBsZS5jb20wCgYIKoZIzj0EAwIDSAAwRQIgCC0Hlb6V4TW0e1A-WPo7QlXaC1KD2u-MLzcrrM0ir84CIQDA_ncHZYQPFh2_7-npOn2VMG4LLSF4XREZA221ksX6bQ"}
+{
+   "status": "processing",
+   "expires": "2018-10-28T23:57:04Z",
+   "identifiers": [
+      {
+         "type": "dns",
+         "value": "http01.example.com"
+      }
+   ],
+   "finalize": "https://localhost:14000/finalize-order/xMa9ph8f7kNm3MgQjdguhyt2JH3C7_MEjB5bOl0YPBk",
+   "authorizations": [
+      "https://localhost:14000/authZ/WacjywMoj3wzXBA8J58743xEe2yHEVfu9TB5liV3--M"
+   ]
+}
 # 
 # Poll the second order waiting for the status to be valid
 # 
-poll: try 0. "https://localhost:14000/my-order/js9-vL6j_RAM5UccaievpDuzhBqysRBajaCdUWJBkII" is status "processing"
-poll: polling done. "https://localhost:14000/my-order/js9-vL6j_RAM5UccaievpDuzhBqysRBajaCdUWJBkII" is status "valid"
+poll: try 0. "https://localhost:14000/my-order/xMa9ph8f7kNm3MgQjdguhyt2JH3C7_MEjB5bOl0YPBk" is status "processing"
+poll: polling done. "https://localhost:14000/my-order/xMa9ph8f7kNm3MgQjdguhyt2JH3C7_MEjB5bOl0YPBk" is status "valid"
 # 
 # Get the second order's certificate, save a copy in /tmp/example.com.pem
 # 
 -----BEGIN CERTIFICATE-----
-MIICWjCCAUKgAwIBAgIIOPx4S0cE/uYwDQYJKoZIhvcNAQELBQAwKDEmMCQGA1UE
-AxMdUGViYmxlIEludGVybWVkaWF0ZSBDQSA3YjliY2YwHhcNMTgwODI0MDEyNTE2
-WhcNMjMwODI0MDEyNTE2WjAdMRswGQYDVQQDExJodHRwMDEuZXhhbXBsZS5jb20w
-WTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASurAhsgjvAIbgiNwALmwYucb9XYgXY
-9m/39MX2Hi2X03GAU2VhQ37Nr/sZud3jJb1SveL7vsenyhNMbiFIA+xTo14wXDAO
+MIICWjCCAUKgAwIBAgIIb+FbEXglvVkwDQYJKoZIhvcNAQELBQAwKDEmMCQGA1UE
+AxMdUGViYmxlIEludGVybWVkaWF0ZSBDQSAyYWU0NTcwHhcNMTgxMDI3MjM1NzA5
+WhcNMjMxMDI3MjM1NzA5WjAdMRswGQYDVQQDExJodHRwMDEuZXhhbXBsZS5jb20w
+WTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAATu4PwmD7TkqH+loHkmX2yw60TYwuS8
+waFhGncEc3ExpqxSL7qzffpsUJznYoKLMBR5wpPJrPNds4U9sAPLmT3Ro14wXDAO
 BgNVHQ8BAf8EBAMCBaAwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMAwG
 A1UdEwEB/wQCMAAwHQYDVR0RBBYwFIISaHR0cDAxLmV4YW1wbGUuY29tMA0GCSqG
-SIb3DQEBCwUAA4IBAQC1gDkTAaX3OdCMjYKXDURus3YLoAvWKXzf1VCLjSsTiwlx
-JP5+WfSULYmWxRUoDurYtqSfwOEpqGpJUQitwB1UkXBgwXbUE9r9ndXlFQ+N2lg+
-Ppkiuw78kC4D8bgCYX5aVuBwnMAfrZEHApJBH9PtC59At3ZgR0SUcBE91atC7EWu
-tO13GSDQUsjw6Z9Y8Bbtrxphvx0yp7635qWLK2x9d1gWag82czzb8fuwQl4Vshu7
-DzSF2LkNLEgyYD9QkqjNpvUDxxrNp0sLqM+4A4l95M29GCbM7LfG4f3VmF7FxcxQ
-32KrzOn06NQc761lgx9t72IgDiombA40p/8Z4hmq
+SIb3DQEBCwUAA4IBAQAzrth4WNZX0PfpORl8hERYPelhkCc7Nk6ce0P4Jovb7Ueo
+z5NRO7cPEgtshNwlYkFsFIfpEQB9hnZm5CaVLq6XKuVA5BKSXsY2WrJc2axplSon
+WYQrPvckciUq77nWByY2u4NLmbjpOshv1HXCn1aRuC9Cd6vBl0RZ8JHUI8EjaTYR
+iP3mEnG55ud3ssIP0W56Ct2aHjGuJLVFMMwsi8tMjCu9NneMlgOF3gI8DUtQI379
++r/18JmO6NiC+NkZw2Z9LLUh7Zob4vGNf8HIXT0XRQR/xLBNx4XtWu3BERwNm0ef
+muOPhQe3M/seOblDQ5o+8tU2E259kXk5guNI5ca5
 -----END CERTIFICATE-----
 -----BEGIN CERTIFICATE-----
-MIIDDDCCAfSgAwIBAgIIe5vPX0Jrh6QwDQYJKoZIhvcNAQELBQAwIDEeMBwGA1UE
-AxMVUGViYmxlIFJvb3QgQ0EgNDI2M2FlMB4XDTE4MDgyMzIxNDYxNFoXDTQ4MDgy
-MzIyNDYxNFowKDEmMCQGA1UEAxMdUGViYmxlIEludGVybWVkaWF0ZSBDQSA3Yjli
-Y2YwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDdtyrAmhGefx2wF5nZ
-hSLMpY3EEpFAc/ywBfP34GsShoq/jPeQGYdSqEgs1D3DKHjnlFyCrwCwJUZIECWL
-8QG1TZb0Pphcgr+TIgQZV+mZQS5UdgMgE6etZm9JVo3GcVrN23rfQoV4asH5Sysp
-sdiYaKSkrAZB4K6liXaQsjO6ysfzJjDZlwRJJKsn/qxFEj7B3vJuWmkWNnHC3faP
-a/YZz869RwDQkyIyGvDI6enXjeLJ73/TFQaTUmbi+x6lz5o4Q3pvCYd2sWxyVw7J
-rg/i5WFduM3k4Cjasn75U07hRoGPbBER2YV2We1P1cAa7zdYwwsH/As0InuKnles
-IBxNAgMBAAGjQjBAMA4GA1UdDwEB/wQEAwIChDAdBgNVHSUEFjAUBggrBgEFBQcD
+MIIDDDCCAfSgAwIBAgIIKuRXPYCHcYEwDQYJKoZIhvcNAQELBQAwIDEeMBwGA1UE
+AxMVUGViYmxlIFJvb3QgQ0EgMGE3NmI1MB4XDTE4MTAyNzIzNTIzOFoXDTQ4MTAy
+ODAwNTIzOFowKDEmMCQGA1UEAxMdUGViYmxlIEludGVybWVkaWF0ZSBDQSAyYWU0
+NTcwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC/AMhIDMwVFQlTi9sf
+jmmufInMFpYgCnP8f6cWuXkCXnj3hFiRqEklkOFSCBqbwNJzJkOHG29rvCvnv7BT
+NyHM6AAnjZ+jM1zYcJJAwXokGEW9sTUcYb/1w6wMi6iHpa6DtyOMDym95SJIoOoE
+EUCNE93ff3vvHZ9FTa/1Xg88ZOT8UHxmWnhflgsRBGUZhD9mNXLlmf6Beci8r68E
+ngSFfFKDQAyPAg0VfznpLHN+gFdONRuCGw/oofjrDUiih7teNgy2FYCR534rgFV9
+mOppflVJ2LNurO6muWbrx9KRQC4oxL/DkMe6+6eTptDuhWLIKVu1I4U+3tDnsXVf
+ReX5AgMBAAGjQjBAMA4GA1UdDwEB/wQEAwIChDAdBgNVHSUEFjAUBggrBgEFBQcD
 AQYIKwYBBQUHAwIwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAAOCAQEA
-mmgc3SYK2KViJacXYJpFAlkd0fipac/eQ0HHNn3xeH0IM1m+1XJPXAAPUt3SmjGl
-LV8NkZxQPDTVYSlsK7BQ+e+PVTMsQ0qi2MjyUVS0d12MH8k5Dpy57HvPXQe29BNJ
-/8H9U3ueaMvHAnJ8A0rJsy+X3jTucp21Cr+TpxwHcQpbdw/HhWtJvfRMq3/37+ba
-Gt8uvOkaYCKXcKljEpPzbVLdKzEmnaI7wOy36CKPyCQNZvdn8QtjLzkp4qA8SNlP
-c2DMbM3yk7vE4ywVezQxcVsBVZM30H1XBGUZl2VSl8NqRKGNl5AdHcW3rc3GlVwV
-VMpYh1SHsXLHAi/sXpSNzg==
+2RHoxOOohTq6zkkOUX1nZTwOblyQPLvo28IwIiBgaXDLPXP5UV9ylF4O1oZuM1wz
+lRdFoPY3bV9BvxOFoIZZVl2m18jKVg0M0LplqdwI+v2YFE31Pjqs4jpCVxD/hy7g
+2bg+1fVoHJO29tr2TyMf5GOsSCn0u7EyQZAVWIrLcYbUlAYaALPYFvWRNVJ4kxdb
+5JtwJNRH+p8XvVVBPf5EYZUycwjAPDKbq9mEUDCID5LfoLj0Wj/mn0OP5fnuKjyy
+sWPPlbo1rh5bzLe5w7f4LfZGnRU/BIbN2osoeD3ki+sHvnxxpU8z5LlAHZnmYFkn
++Qj3eLzCBg4FX8UDBHCMEw==
 -----END CERTIFICATE-----
 getCert: cert chain saved to "/tmp/example.com.pem"
 # 
@@ -155,7 +304,7 @@ PEM encoded private key saved to "/tmp/example.com.key.pem"
 # Create another key
 # 
 JWK:
-{"kty":"EC","crv":"P-256","alg":"ECDSA","x":"kG0609oBPKj2anpcO-nOLazYywy1U7TQ0mLIwssK5Ug","y":"JVo4QcURkhTIQyY0p1f4SYIXlsZnkCy5LDd05DQv73M"}
+{"kty":"EC","crv":"P-256","alg":"ECDSA","x":"_Cn8kQp1m48DO65IIYtfKIDFDtl-jMxfhXrTmQ48z8o","y":"f40KXgDuhM27pdYtFIcAqkBvaiFG18Gk2v-kk2N9YiQ"}
 # 
 # Create another order
 # 
@@ -163,42 +312,77 @@ JWK:
 # Solve the order's TLS-ALPN-01 challenge
 # 
 Challenge response ready
-solve: "tls-alpn-01" challenge for identifier "tlsalpn01.example.com" ("https://localhost:14000/chalZ/h6btuMXFYThOS_GYmv-BCb0k4naSwCRi1S1nxTS5V04") started
+solve: "tls-alpn-01" challenge for identifier "tlsalpn01.example.com" ("https://localhost:14000/chalZ/dj0DIFi3dQhZdlbUjptsUOPDQXST12HJ2pLwlc1bkTE") started
 # 
 # Wait for the order to be ready
-2018/08/23 21:25:17 Query -- [tlsalpn01.example.com.] AAAA
 # 
-2018/08/23 21:25:17 Query -- [tlsalpn01.example.com.] A
-2018/08/23 21:25:17 Query -- [tlsalpn01.example.com.] AAAA
-poll: try 0. "https://localhost:14000/my-order/3A2BA-p7z7wSkuPbBCQ4bCW_B2BZ52B9bZL9qS5s0Xk" is status "pending"
-poll: try 1. "https://localhost:14000/my-order/3A2BA-p7z7wSkuPbBCQ4bCW_B2BZ52B9bZL9qS5s0Xk" is status "pending"
-poll: try 2. "https://localhost:14000/my-order/3A2BA-p7z7wSkuPbBCQ4bCW_B2BZ52B9bZL9qS5s0Xk" is status "pending"
-poll: try 3. "https://localhost:14000/my-order/3A2BA-p7z7wSkuPbBCQ4bCW_B2BZ52B9bZL9qS5s0Xk" is status "pending"
-poll: try 4. "https://localhost:14000/my-order/3A2BA-p7z7wSkuPbBCQ4bCW_B2BZ52B9bZL9qS5s0Xk" is status "pending"
-poll: try 5. "https://localhost:14000/my-order/3A2BA-p7z7wSkuPbBCQ4bCW_B2BZ52B9bZL9qS5s0Xk" is status "pending"
-poll: try 6. "https://localhost:14000/my-order/3A2BA-p7z7wSkuPbBCQ4bCW_B2BZ52B9bZL9qS5s0Xk" is status "pending"
-2018/08/23 21:25:24 Query -- [tlsalpn01.example.com.] AAAA
-2018/08/23 21:25:24 Query -- [tlsalpn01.example.com.] A
-2018/08/23 21:25:24 Query -- [tlsalpn01.example.com.] AAAA
-poll: polling done. "https://localhost:14000/my-order/3A2BA-p7z7wSkuPbBCQ4bCW_B2BZ52B9bZL9qS5s0Xk" is status "ready"
+poll: try 0. "https://localhost:14000/my-order/VI-9KRHZI9f81XG-QW0nJaU9IdgJkggQO3OYW6-r3kQ" is status "pending"
+challRespSrv: 2018/10/27 19:57:11 Query -- [tlsalpn01.example.com.] A
+challRespSrv: 2018/10/27 19:57:11 Query -- [tlsalpn01.example.com.] AAAA
+challRespSrv: 2018/10/27 19:57:11 Query -- [tlsalpn01.example.com.] AAAA
+poll: try 1. "https://localhost:14000/my-order/VI-9KRHZI9f81XG-QW0nJaU9IdgJkggQO3OYW6-r3kQ" is status "pending"
+poll: try 2. "https://localhost:14000/my-order/VI-9KRHZI9f81XG-QW0nJaU9IdgJkggQO3OYW6-r3kQ" is status "pending"
+poll: try 3. "https://localhost:14000/my-order/VI-9KRHZI9f81XG-QW0nJaU9IdgJkggQO3OYW6-r3kQ" is status "pending"
+poll: try 4. "https://localhost:14000/my-order/VI-9KRHZI9f81XG-QW0nJaU9IdgJkggQO3OYW6-r3kQ" is status "pending"
+poll: try 5. "https://localhost:14000/my-order/VI-9KRHZI9f81XG-QW0nJaU9IdgJkggQO3OYW6-r3kQ" is status "pending"
+poll: try 6. "https://localhost:14000/my-order/VI-9KRHZI9f81XG-QW0nJaU9IdgJkggQO3OYW6-r3kQ" is status "pending"
+challRespSrv: 2018/10/27 19:57:17 Query -- [tlsalpn01.example.com.] A
+challRespSrv: 2018/10/27 19:57:17 Query -- [tlsalpn01.example.com.] AAAA
+challRespSrv: 2018/10/27 19:57:17 Query -- [tlsalpn01.example.com.] AAAA
+poll: polling done. "https://localhost:14000/my-order/VI-9KRHZI9f81XG-QW0nJaU9IdgJkggQO3OYW6-r3kQ" is status "ready"
 # 
 # Finalize the order the easy way using the key we created
 # 
-order "https://localhost:14000/my-order/3A2BA-p7z7wSkuPbBCQ4bCW_B2BZ52B9bZL9qS5s0Xk" finalization requested
+order "https://localhost:14000/my-order/VI-9KRHZI9f81XG-QW0nJaU9IdgJkggQO3OYW6-r3kQ" finalization requested
 # 
 # Wait for the order to have a certificate
 # 
-poll: try 0. "https://localhost:14000/my-order/3A2BA-p7z7wSkuPbBCQ4bCW_B2BZ52B9bZL9qS5s0Xk" is status "processing"
-poll: polling done. "https://localhost:14000/my-order/3A2BA-p7z7wSkuPbBCQ4bCW_B2BZ52B9bZL9qS5s0Xk" is status "valid"
+poll: try 0. "https://localhost:14000/my-order/VI-9KRHZI9f81XG-QW0nJaU9IdgJkggQO3OYW6-r3kQ" is status "processing"
+poll: polling done. "https://localhost:14000/my-order/VI-9KRHZI9f81XG-QW0nJaU9IdgJkggQO3OYW6-r3kQ" is status "valid"
 # 
 # Get the certificate. This would be easier using the getCert command :-)
 # 
+-----BEGIN CERTIFICATE-----
+MIICYDCCAUigAwIBAgIIVnCYZOzGslUwDQYJKoZIhvcNAQELBQAwKDEmMCQGA1UE
+AxMdUGViYmxlIEludGVybWVkaWF0ZSBDQSAyYWU0NTcwHhcNMTgxMDI3MjM1NzE3
+WhcNMjMxMDI3MjM1NzE3WjAgMR4wHAYDVQQDExV0bHNhbHBuMDEuZXhhbXBsZS5j
+b20wWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAAT8KfyRCnWbjwM7rkghi18ogMUO
+2X6MzF+FetOZDjzPyn+NCl4A7oTNu6XWLRSHAKpAb2ohRtfBpNr/pJNjfWIko2Ew
+XzAOBgNVHQ8BAf8EBAMCBaAwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMC
+MAwGA1UdEwEB/wQCMAAwIAYDVR0RBBkwF4IVdGxzYWxwbjAxLmV4YW1wbGUuY29t
+MA0GCSqGSIb3DQEBCwUAA4IBAQA84ZJWHIHLjs4KwVILqmQvet+TL9TNUYVLmIyq
+Yyfg19CWbUb8Mxtd3OEfcVu8ho12DgkeOEXkvEoD5WP8JvTJVkoiv6WQPVg69c/i
+oHpfFpMCGhzD77qynXdFErfW4ZBXQAcSC8PIWroogdjjv+7gSySEGpdLvHTJZGOp
+cXD/q/kt2I5wCwJ5zDVfCk9bGAlkElCiO5ib6GX0x2tfcju10jVwuhoGERC3PUo1
+QVhYlt1zt4x2yqokS0GP4p0uXH9UHfS+TwPFNZJBq7KtaKtl0oU031hqHoS87WJ7
+KTBaLqKMdBl4jWr7XOE5zaM4xtLKD8MCTmmGhMkxXUm9pdAa
+-----END CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
+MIIDDDCCAfSgAwIBAgIIKuRXPYCHcYEwDQYJKoZIhvcNAQELBQAwIDEeMBwGA1UE
+AxMVUGViYmxlIFJvb3QgQ0EgMGE3NmI1MB4XDTE4MTAyNzIzNTIzOFoXDTQ4MTAy
+ODAwNTIzOFowKDEmMCQGA1UEAxMdUGViYmxlIEludGVybWVkaWF0ZSBDQSAyYWU0
+NTcwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC/AMhIDMwVFQlTi9sf
+jmmufInMFpYgCnP8f6cWuXkCXnj3hFiRqEklkOFSCBqbwNJzJkOHG29rvCvnv7BT
+NyHM6AAnjZ+jM1zYcJJAwXokGEW9sTUcYb/1w6wMi6iHpa6DtyOMDym95SJIoOoE
+EUCNE93ff3vvHZ9FTa/1Xg88ZOT8UHxmWnhflgsRBGUZhD9mNXLlmf6Beci8r68E
+ngSFfFKDQAyPAg0VfznpLHN+gFdONRuCGw/oofjrDUiih7teNgy2FYCR534rgFV9
+mOppflVJ2LNurO6muWbrx9KRQC4oxL/DkMe6+6eTptDuhWLIKVu1I4U+3tDnsXVf
+ReX5AgMBAAGjQjBAMA4GA1UdDwEB/wQEAwIChDAdBgNVHSUEFjAUBggrBgEFBQcD
+AQYIKwYBBQUHAwIwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAAOCAQEA
+2RHoxOOohTq6zkkOUX1nZTwOblyQPLvo28IwIiBgaXDLPXP5UV9ylF4O1oZuM1wz
+lRdFoPY3bV9BvxOFoIZZVl2m18jKVg0M0LplqdwI+v2YFE31Pjqs4jpCVxD/hy7g
+2bg+1fVoHJO29tr2TyMf5GOsSCn0u7EyQZAVWIrLcYbUlAYaALPYFvWRNVJ4kxdb
+5JtwJNRH+p8XvVVBPf5EYZUycwjAPDKbq9mEUDCID5LfoLj0Wj/mn0OP5fnuKjyy
+sWPPlbo1rh5bzLe5w7f4LfZGnRU/BIbN2osoeD3ki+sHvnxxpU8z5LlAHZnmYFkn
++Qj3eLzCBg4FX8UDBHCMEw==
+-----END CERTIFICATE-----
+
 # 
 # Create an account with a random account key and switch to it
 # 
-Created private key for ID "https://localhost:14000/my-account/31"
-Created account with ID "https://localhost:14000/my-account/31" Contacts []
-Active account is now "https://localhost:14000/my-account/31"
+Created private key for ID "https://localhost:14000/my-account/6"
+Created account with ID "https://localhost:14000/my-account/6" Contacts []
+Active account is now "https://localhost:14000/my-account/6"
 # 
 # Create an order
 # 
@@ -206,61 +390,97 @@ Active account is now "https://localhost:14000/my-account/31"
 # Solve a HTTP-01 challenge for order's 'www.whatever.dude' authorization
 # 
 Challenge response ready
-solve: "http-01" challenge for identifier "www.whatever.dude" ("https://localhost:14000/chalZ/1uaDrj7bdk8jnL8z10gLKNgDUUmtv9Vn0M5_SLLQdW8") started
+solve: "http-01" challenge for identifier "www.whatever.dude" ("https://localhost:14000/chalZ/Fta-ZJgCKJS1EeY8ZnUXDpez68-Z_u65MOW2veAv84Y") started
 # 
 # Wait for the order to be ready
 # 
-poll: try 0. "https://localhost:14000/my-order/e-7TwmmRqzgwVkziGsG42OVkPlCgM4ySJdsIg3atEEs" is status "pending"
-poll: try 1. "https://localhost:14000/my-order/e-7TwmmRqzgwVkziGsG42OVkPlCgM4ySJdsIg3atEEs" is status "pending"
-poll: try 2. "https://localhost:14000/my-order/e-7TwmmRqzgwVkziGsG42OVkPlCgM4ySJdsIg3atEEs" is status "pending"
-poll: try 3. "https://localhost:14000/my-order/e-7TwmmRqzgwVkziGsG42OVkPlCgM4ySJdsIg3atEEs" is status "pending"
-2018/08/23 21:25:29 Query -- [www.whatever.dude.] A
-2018/08/23 21:25:29 Query -- [www.whatever.dude.] AAAA
-2018/08/23 21:25:29 Query -- [www.whatever.dude.] AAAA
-poll: try 4. "https://localhost:14000/my-order/e-7TwmmRqzgwVkziGsG42OVkPlCgM4ySJdsIg3atEEs" is status "pending"
-poll: try 5. "https://localhost:14000/my-order/e-7TwmmRqzgwVkziGsG42OVkPlCgM4ySJdsIg3atEEs" is status "pending"
-2018/08/23 21:25:31 Query -- [www.whatever.dude.] AAAA
-2018/08/23 21:25:31 Query -- [www.whatever.dude.] A
-2018/08/23 21:25:31 Query -- [www.whatever.dude.] AAAA
-poll: try 6. "https://localhost:14000/my-order/e-7TwmmRqzgwVkziGsG42OVkPlCgM4ySJdsIg3atEEs" is status "pending"
-2018/08/23 21:25:32 Query -- [www.whatever.dude.] A
-2018/08/23 21:25:32 Query -- [www.whatever.dude.] AAAA
-2018/08/23 21:25:32 Query -- [www.whatever.dude.] AAAA
-poll: polling done. "https://localhost:14000/my-order/e-7TwmmRqzgwVkziGsG42OVkPlCgM4ySJdsIg3atEEs" is status "ready"
+poll: try 0. "https://localhost:14000/my-order/VDNgwg4wy-77ZCAWQEc23kv1zyZFhi8rtqlVzEtXcIo" is status "pending"
+challRespSrv: 2018/10/27 19:57:19 Query -- [www.whatever.dude.] AAAA
+challRespSrv: 2018/10/27 19:57:19 Query -- [www.whatever.dude.] A
+challRespSrv: 2018/10/27 19:57:19 Query -- [www.whatever.dude.] AAAA
+poll: try 1. "https://localhost:14000/my-order/VDNgwg4wy-77ZCAWQEc23kv1zyZFhi8rtqlVzEtXcIo" is status "pending"
+challRespSrv: 2018/10/27 19:57:20 Query -- [www.whatever.dude.] AAAA
+challRespSrv: 2018/10/27 19:57:20 Query -- [www.whatever.dude.] A
+challRespSrv: 2018/10/27 19:57:20 Query -- [www.whatever.dude.] AAAA
+poll: try 2. "https://localhost:14000/my-order/VDNgwg4wy-77ZCAWQEc23kv1zyZFhi8rtqlVzEtXcIo" is status "pending"
+poll: try 3. "https://localhost:14000/my-order/VDNgwg4wy-77ZCAWQEc23kv1zyZFhi8rtqlVzEtXcIo" is status "pending"
+poll: try 4. "https://localhost:14000/my-order/VDNgwg4wy-77ZCAWQEc23kv1zyZFhi8rtqlVzEtXcIo" is status "pending"
+poll: try 5. "https://localhost:14000/my-order/VDNgwg4wy-77ZCAWQEc23kv1zyZFhi8rtqlVzEtXcIo" is status "pending"
+challRespSrv: 2018/10/27 19:57:24 Query -- [www.whatever.dude.] A
+challRespSrv: 2018/10/27 19:57:24 Query -- [www.whatever.dude.] AAAA
+challRespSrv: 2018/10/27 19:57:24 Query -- [www.whatever.dude.] AAAA
+poll: polling done. "https://localhost:14000/my-order/VDNgwg4wy-77ZCAWQEc23kv1zyZFhi8rtqlVzEtXcIo" is status "ready"
 # 
 # Deactivate the 'www.whatever.dude' authorization
 # 
-POSTing: 
-{"status":"deactivated"}
+{
+   "status": "deactivated",
+   "identifier": {
+      "type": "dns",
+      "value": "www.whatever.dude"
+   },
+   "challenges": [
+      {
+         "type": "http-01",
+         "url": "https://localhost:14000/chalZ/Fta-ZJgCKJS1EeY8ZnUXDpez68-Z_u65MOW2veAv84Y",
+         "token": "67sqC84ZQEPWzj5WLaXWwrOq_VWY-UDrZZ73vgX7y00",
+         "status": "valid",
+         "validated": "2018-10-27T23:57:18Z"
+      }
+   ],
+   "expires": "2018-10-28T00:57:24Z"
+}
 # 
 # Wait for the authz to be deactivated
 # 
-poll: polling done. "https://localhost:14000/authZ/q1Rw3guq_snAE8ayXhwuYgg4xaNz68Gyanpf4zbzAA0" is status "deactivated"
+poll: polling done. "https://localhost:14000/authZ/Sp5L7TG_tt9CHW64q9thnowuY9YmCXLSA3i7R2xMQAQ" is status "deactivated"
 # 
 # Wait for the order to be deactivated
 # 
-poll: polling done. "https://localhost:14000/my-order/e-7TwmmRqzgwVkziGsG42OVkPlCgM4ySJdsIg3atEEs" is status "deactivated"
+poll: polling done. "https://localhost:14000/my-order/VDNgwg4wy-77ZCAWQEc23kv1zyZFhi8rtqlVzEtXcIo" is status "deactivated"
 # 
 # Deactivate the account
 # 
-POSTing: 
-{"status":"deactivated"}
+{
+   "status": "deactivated",
+   "contact": null,
+   "key": {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "Utudl1wsVaiNANmzNAY0EuJoS0STeBppP070I6Gikgo",
+      "y": "Ocn8Gshs_sah_JCl0M9wXkk6bpOQG-8osXmyFKOYV98"
+   },
+   "ID": "6"
+}
 # 
 # Switch back to the other account
 # 
-Active account is now #0 - "https://localhost:14000/my-account/30"
+Active account is now #0 - "https://localhost:14000/my-account/5"
 # 
 # Sign a stupid message for a made-up URL with a nonce from the server
 # 
+sign: Result JWS: 
+{"payload":"dGhpcyBpcyBteSBsYXN0IGZhcmV3ZWxsIGJlZm9yZSBkZWFjdGl2YXRpb24","protected":"eyJhbGciOiJFUzI1NiIsImp3ayI6eyJrdHkiOiJFQyIsImNydiI6IlAtMjU2IiwieCI6IjU3d2htQ2dUMkpHSHMxdlhCY3phVjJVMklmNW93a2NyOTlwRTZnWkdSRjQiLCJ5IjoiS25Cc0ZWRThzZ3Z6cXFuNGU5TnZaOWZIakpvX2haTDJvdzN2cVBEbVpRMCJ9LCJub25jZSI6ImZkcDA5NTg1UWI2eFdqVjlzU1Y5WUEiLCJ1cmwiOiJodHRwczovL3NvbWUudXJsLmZvci50aGUuaGVhZGVyIn0","signature":"zkR_ONm1k7zFB0Bsq3mgISovx_nTrygoRhQDecU18PG3r6plafJO6Wt4IVNzbx7n9VdIkNDtT7-a3NVQJ3MRrA"}
 # 
 # Deactivate the account
 # 
-POSTing: 
-{"status":"deactivated"}
+{
+   "status": "deactivated",
+   "contact": [
+      "mailto:test@example.com",
+      "mailto:another-test@example.com"
+   ],
+   "key": {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "57whmCgT2JGHs1vXBczaV2U2If5owkcr99pE6gZGRF4",
+      "y": "KnBsFVE8sgvzqqn4e9NvZ9fHjJo_hZL2ow3vqPDmZQ0"
+   },
+   "ID": "5"
+}
 # 
 # All done!
 # 
 EOF
 Goodbye!
-2018/08/23 21:25:32 http: Server closed
-2018/08/23 21:25:32 accept tcp [::]:5252: use of closed network connection
+challRespSrv: 2018/10/27 19:57:24 http: Server closed
