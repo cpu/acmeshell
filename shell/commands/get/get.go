@@ -7,8 +7,6 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
-var ()
-
 const (
 	longHelp = `
 	get directory:
