@@ -85,11 +85,12 @@ func rolloverHandler(c *ishell.Context, leftovers []string) {
 		choice := c.MultiChoice(keysList, "Which key would you like to rollover to? ")
 		newKey = client.Keys[keysList[choice]]
 	} else {
-		if k, found := client.Keys[opts.keyID]; !found {
+		if k, found := client.Keys[opts.keyID]; found {
+			newKey = k
+		}
+		if newKey == nil {
 			c.Printf("No key with ID %q known to shell\n", opts.keyID)
 			return
-		} else {
-			newKey = k
 		}
 	}
 
