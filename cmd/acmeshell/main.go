@@ -95,6 +95,11 @@ func main() {
 		"",
 		"Read commands from the specified file instead of stdin")
 
+	postAsGet := flag.Bool(
+		"postAsGet",
+		false,
+		"Use POST-as-GET requests instead of GET requests (requires Pebble -strict or equiv)")
+
 	flag.Parse()
 
 	if *pebble {
@@ -113,7 +118,6 @@ func main() {
 		err = syscall.Dup2(int(f.Fd()), 0)
 		acmecmd.FailOnError(err, fmt.Sprintf(
 			"Error duplicating stdin fd: %v", err))
-		fmt.Printf("Replaced stdin with file\n")
 	}
 
 	config := &acmeshell.ACMEShellOptions{
@@ -123,6 +127,7 @@ func main() {
 			ContactEmail: *email,
 			AccountPath:  *acctPath,
 			AutoRegister: *autoRegister,
+			POSTAsGET:    *postAsGet,
 			InitialOutput: acmeclient.OutputOptions{
 				PrintRequests:   *printRequests,
 				PrintResponses:  *printResponses,

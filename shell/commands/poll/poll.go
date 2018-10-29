@@ -7,6 +7,7 @@ import (
 
 	"github.com/abiosoft/ishell"
 	acmeclient "github.com/cpu/acmeshell/acme/client"
+	"github.com/cpu/acmeshell/net"
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
@@ -87,10 +88,17 @@ type polledOb struct {
 
 func pollObject(client *acmeclient.Client, targetURL string) (polledOb, error) {
 	var ob polledOb
-	resp, err := client.GetURL(targetURL)
+	var resp *net.NetResponse
+	var err error
+	if client.PostAsGet {
+		resp, err = client.PostAsGetURL(targetURL)
+	} else {
+		resp, err = client.GetURL(targetURL)
+	}
 	if err != nil {
 		return ob, err
 	}
+
 	err = json.Unmarshal(resp.RespBody, &ob)
 	if err != nil {
 		return ob, err
@@ -105,6 +113,7 @@ func pollURL(c *ishell.Context, client *acmeclient.Client, targetURL string) {
 		return
 	}
 
+	// TODO(@cpu): There seems to be a bug with poll aborting early.
 	if ob.Status != opts.status {
 		for try := 0; try < opts.maxTries; try++ {
 			ob, err := pollObject(client, targetURL)
