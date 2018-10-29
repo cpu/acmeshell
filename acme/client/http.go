@@ -36,3 +36,13 @@ func (c *Client) PostURL(url string, body []byte) (*net.NetResponse, error) {
 	}
 	return c.handleRequest(req)
 }
+
+func (c *Client) PostAsGetURL(url string) (*net.NetResponse, error) {
+	// Sign the POST-as-GET body
+	signResult, err := c.Sign(url, []byte(""), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.PostURL(url, signResult.SerializedJWS)
+}

@@ -8,6 +8,7 @@ import (
 
 	"github.com/abiosoft/ishell"
 	"github.com/cpu/acmeshell/acme/resources"
+	"github.com/cpu/acmeshell/net"
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
@@ -83,7 +84,12 @@ func getCertHandler(c *ishell.Context, leftovers []string) {
 		return
 	}
 
-	resp, err := client.GetURL(order.Certificate)
+	var resp *net.NetResponse
+	if client.PostAsGet {
+		resp, err = client.PostAsGetURL(order.Certificate)
+	} else {
+		resp, err = client.GetURL(order.Certificate)
+	}
 	if err != nil {
 		c.Printf("getCert: failed to GET order certificate URL %q : %v\n", order.Certificate, err)
 		return
