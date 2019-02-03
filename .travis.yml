@@ -11,11 +11,11 @@ install:
 
 before_script:
   # Start Pebble with the correct env & arguments for our tests
-  - PEBBLE_WFE_NONCEREJECT=0 pebble -dnsserver 127.0.0.1:5252 &
+  - PEBBLE_WFE_NONCEREJECT=0 pebble -strict -dnsserver 127.0.0.1:5252 &
   # Wait for Pebble to become available before proceeding
   - until </dev/tcp/localhost/14000 ; do sleep 0.1 ; done
 
 script:
   - go test -v -mod=vendor ./...
   - go install -v -mod=vendor ./...
-  - acmeshell -pebble -in docs/example.script.txt
+  - acmeshell -pebble -postAsGet -in docs/example.script.txt
