@@ -14,6 +14,7 @@ import (
 	acmecmd "github.com/cpu/acmeshell/cmd"
 	"github.com/cpu/acmeshell/shell/commands"
 	_ "github.com/cpu/acmeshell/shell/commands/accounts"
+	_ "github.com/cpu/acmeshell/shell/commands/b64url"
 	_ "github.com/cpu/acmeshell/shell/commands/challSrv"
 	_ "github.com/cpu/acmeshell/shell/commands/csr"
 	_ "github.com/cpu/acmeshell/shell/commands/echo"
