@@ -96,15 +96,15 @@ type OutputOptions struct {
 // https://ietf-wg-acme.github.io/acme/draft-ietf-acme-acme.html#rfc.section.7.1.1
 // for more information about the ACME directory resource.
 //
-// The CACert field is a string containing a file path to a file containing one
-// or more PEM encoded CA certificate that should be used as trust roots for
-// HTTPS requests to the ACME server. This field is mandatory and must not be
-// empty. For instance, if you are using Pebble as the ACME server, it should be
-// the file path to the "test/certs/pebble.minica.pem" file from the Pebble
-// source directory. If you are using a public ACME server with a trusted HTTPS
-// certificate you should provide the path to a file containing the
-// combination of all of the PEM encoded system trusted root CA certificates.
-// Often this is something like "/etc/ssl/certs.pem".
+// The CACert field is an optional string containing a file path to a file
+// containing one or more PEM encoded CA certificate that should be used as
+// trust roots for HTTPS requests to the ACME server. If empty the default
+// system roots are used.  For example, if you are using Pebble as the ACME
+// server, it should be the file path to the "test/certs/pebble.minica.pem" file
+// from the Pebble source directory. If you are using a public ACME server with
+// a trusted HTTPS certificate you should provide the path to a file containing
+// the combination of all of the PEM encoded system trusted root CA
+// certificates.  Often this is something like "/etc/ssl/certs.pem".
 //
 // The ContactEmail field is a string expected to contain a single email
 // address or to be empty. It will be used as a "mailto://" contact address when
@@ -123,8 +123,8 @@ type ClientConfig struct {
 	// A fully qualified URL for the ACME server's directory resource. Must
 	// include an HTTP/HTTPS protocol prefix.
 	DirectoryURL string
-	// A file path to one or more PEM encoded CA certificates to be used as trust
-	// roots for HTTPS requests to the ACME server.
+	// An optional file path to one or more PEM encoded CA certificates to be used
+	// as trust roots for HTTPS requests to the ACME server.
 	CACert string
 	// An optional email address to use if AutoRegister is true and an Account is
 	// created with the ACME server. It should not have a protocol prefix,
@@ -186,9 +186,7 @@ func NewClient(config ClientConfig) (*Client, error) {
 	}
 
 	// Create the ACME net client
-	net, err := acmenet.New(acmenet.Config{
-		CABundlePath: config.CACert,
-	})
+	net, err := acmenet.New(config.CACert)
 	cmd.FailOnError(err, "Unable to create ACME net client")
 
 	// NOTE(@cpu): Its safe to throw away the returned err here because we check

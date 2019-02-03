@@ -15,7 +15,6 @@ import (
 
 const (
 	DIRECTORY_DEFAULT    = "https://acme-staging-v02.api.letsencrypt.org/directory"
-	CA_DEFAULT           = "/etc/ssl/cert.pem"
 	AUTOREGISTER_DEFAULT = true
 	CONTACT_DEFAULT      = ""
 	ACCOUNT_DEFAULT      = ""
@@ -32,7 +31,7 @@ func main() {
 
 	caCert := flag.String(
 		"ca",
-		CA_DEFAULT,
+		"",
 		"CA certificate(s) for verifying ACME server HTTPS")
 
 	autoRegister := flag.Bool(
