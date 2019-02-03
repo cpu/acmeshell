@@ -17,7 +17,7 @@ const (
 	DIRECTORY_DEFAULT    = "https://acme-staging-v02.api.letsencrypt.org/directory"
 	AUTOREGISTER_DEFAULT = true
 	CONTACT_DEFAULT      = ""
-	ACCOUNT_DEFAULT      = ""
+	ACCOUNT_DEFAULT      = "acmeshell.account.json"
 	HTTP_PORT_DEFAULT    = 5002
 	TLS_PORT_DEFAULT     = 5001
 	DNS_PORT_DEFAULT     = 5252
@@ -47,7 +47,7 @@ func main() {
 	acctPath := flag.String(
 		"account",
 		ACCOUNT_DEFAULT,
-		"Optional JSON filepath to save/restore auto-registered ACME account to")
+		"Optional JSON filepath to use to save/restore auto-registered ACME account")
 
 	httpPort := flag.Int(
 		"httpPort",
