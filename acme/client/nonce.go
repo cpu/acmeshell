@@ -36,7 +36,7 @@ func (c *Client) RefreshNonce() error {
 		return err
 	}
 
-	if resp.StatusCode != http.StatusNoContent {
+	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("%q returned HTTP status %d, expected %d\n",
 			acme.NEW_NONCE_ENDPOINT, resp.StatusCode, http.StatusOK)
 	}
