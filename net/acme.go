@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"runtime"
-	"strings"
 )
 
 const (
@@ -20,38 +19,21 @@ const (
 	locale        = "en-us"
 )
 
-type Config struct {
-	CABundlePath string
-}
-
-func (c *Config) normalize() error {
-	// Strip spaces from both config fields
-	c.CABundlePath = strings.TrimSpace(c.CABundlePath)
-
-	if c.CABundlePath == "" {
-		return fmt.Errorf("CABundlePath must not be empty")
-	}
-
-	// It's good!
-	return nil
-}
-
 type ACMENet struct {
 	httpClient *http.Client
 }
 
-func New(conf Config) (*ACMENet, error) {
-	if err := conf.normalize(); err != nil {
-		return nil, err
-	}
+func New(customCABundle string) (*ACMENet, error) {
+	var caBundle *x509.CertPool
+	if customCABundle != "" {
+		pemBundle, err := ioutil.ReadFile(customCABundle)
+		if err != nil {
+			return nil, err
+		}
 
-	pemBundle, err := ioutil.ReadFile(conf.CABundlePath)
-	if err != nil {
-		return nil, err
+		caBundle = x509.NewCertPool()
+		caBundle.AppendCertsFromPEM(pemBundle)
 	}
-
-	caBundle := x509.NewCertPool()
-	caBundle.AppendCertsFromPEM(pemBundle)
 
 	return &ACMENet{
 		httpClient: &http.Client{
