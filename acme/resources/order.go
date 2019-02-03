@@ -13,6 +13,8 @@ type Order struct {
 	ID string
 	// The Status of the Order.
 	Status string
+	// The Error associated with an invalid order
+	Error *Problem `json:",omitempty"`
 	// The Identifiers the Order wishes to finalize a Certificate for once the
 	// Order is ready.
 	Identifiers []Identifier

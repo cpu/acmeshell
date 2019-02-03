@@ -25,6 +25,8 @@ type Challenge struct {
 	Token string
 	// The Status of the challenge.
 	Status string
+	// The Error associated with an invalid challenge
+	Error *Problem `json:",omitempty"`
 }
 
 // String returns the URL of the Challenge.
