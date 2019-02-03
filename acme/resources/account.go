@@ -11,7 +11,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"os"
 )
 
 // Account holds information related to a single ACME Account resource. If the
