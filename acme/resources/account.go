@@ -117,8 +117,9 @@ func SaveAccount(path string, account *Account) error {
 	if err != nil {
 		return err
 	}
-	// write the serialized data to the provided filepath
-	return ioutil.WriteFile(path, frozenBytes, os.ModePerm)
+	// write the serialized data to the provided filepath using a mode that only
+	// allows access to the current user. This file contains a private key!
+	return ioutil.WriteFile(path, frozenBytes, 0600)
 }
 
 type rawAccount struct {
