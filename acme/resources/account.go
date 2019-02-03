@@ -47,12 +47,18 @@ type Account struct {
 	// If not nil, a slice of URLs for Order resources the Account created with
 	// the ACME server.
 	Orders []string
+	// The JSON path backing the account (if any)
+	jsonPath string
 }
 
 // String returns the Account's ID or an empty string if it has not been created
 // with the ACME server.
 func (a Account) String() string {
 	return a.ID
+}
+
+func (a Account) Path() string {
+	return a.jsonPath
 }
 
 // OrderURL returns the Order URL for the ith Order the Account owns. An error
@@ -116,6 +122,7 @@ func SaveAccount(path string, account *Account) error {
 	if err != nil {
 		return err
 	}
+	account.jsonPath = path
 	// write the serialized data to the provided filepath using a mode that only
 	// allows access to the current user. This file contains a private key!
 	return ioutil.WriteFile(path, frozenBytes, 0600)
@@ -124,6 +131,7 @@ func SaveAccount(path string, account *Account) error {
 type rawAccount struct {
 	ID         string
 	Contact    []string
+	Orders     []string
 	PrivateKey []byte
 }
 
@@ -136,6 +144,7 @@ func (a *Account) save() ([]byte, error) {
 	rawAcct := rawAccount{
 		ID:         a.ID,
 		Contact:    a.Contact,
+		Orders:     a.Orders,
 		PrivateKey: k,
 	}
 	frozenAcct, err := json.MarshalIndent(rawAcct, "", "  ")
@@ -158,6 +167,7 @@ func RestoreAccount(path string) (*Account, error) {
 	}
 
 	err = acct.restore(frozenBytes)
+	acct.jsonPath = path
 	return acct, err
 }
 
@@ -176,6 +186,7 @@ func (a *Account) restore(frozenAcct []byte) error {
 
 	a.ID = rawAcct.ID
 	a.Contact = rawAcct.Contact
+	a.Orders = rawAcct.Orders
 	a.PrivateKey = privKey
 	return nil
 }
