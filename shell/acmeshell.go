@@ -10,7 +10,6 @@ import (
 	"github.com/abiosoft/ishell"
 	"github.com/abiosoft/readline"
 	acmeclient "github.com/cpu/acmeshell/acme/client"
-	"github.com/cpu/acmeshell/challtestsrv"
 	acmecmd "github.com/cpu/acmeshell/cmd"
 	"github.com/cpu/acmeshell/shell/commands"
 	_ "github.com/cpu/acmeshell/shell/commands/accounts"
@@ -40,6 +39,7 @@ import (
 	_ "github.com/cpu/acmeshell/shell/commands/sign"
 	_ "github.com/cpu/acmeshell/shell/commands/solve"
 	_ "github.com/cpu/acmeshell/shell/commands/switchAccount"
+	"github.com/letsencrypt/challtestsrv"
 )
 
 // ACMEShellOptions allows specifying options for creating an ACME shell. This includes
@@ -57,7 +57,7 @@ type ACMEShellOptions struct {
 
 // ACMEShell is an ishell.Shell instance tailored for ACME. At its core an
 // ACMEShell is a github.com/cpu/acmeshell/acme/client.Client instance with an
-// associated github.com/cpu/acmeshell/challtestsrv.ChallengeTestSrv instance.
+// associated github.com/letsencrypt/challtestsrv.ChallengeTestSrv instance.
 type ACMEShell struct {
 	*ishell.Shell
 }

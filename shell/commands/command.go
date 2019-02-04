@@ -13,7 +13,7 @@ import (
 	"github.com/abiosoft/ishell"
 	acmeclient "github.com/cpu/acmeshell/acme/client"
 	"github.com/cpu/acmeshell/acme/resources"
-	"github.com/cpu/acmeshell/challtestsrv"
+	"github.com/letsencrypt/challtestsrv"
 )
 
 const (

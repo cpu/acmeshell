@@ -35,9 +35,7 @@ func (s *ChallSrv) AddTLSALPNChallenge(host, content string) {
 func (s *ChallSrv) DeleteTLSALPNChallenge(host string) {
 	s.challMu.Lock()
 	defer s.challMu.Unlock()
-	if _, ok := s.tlsALPNOne[host]; ok {
-		delete(s.tlsALPNOne, host)
-	}
+	delete(s.tlsALPNOne, host)
 }
 
 // GetTLSALPNChallenge checks the s.tlsALPNOne map for the given host.
@@ -52,8 +50,14 @@ func (s *ChallSrv) GetTLSALPNChallenge(host string) (string, bool) {
 
 func (s *ChallSrv) ServeChallengeCertFunc(k *ecdsa.PrivateKey) func(*tls.ClientHelloInfo) (*tls.Certificate, error) {
 	return func(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
+		s.AddRequestEvent(TLSALPNRequestEvent{
+			ServerName:      hello.ServerName,
+			SupportedProtos: hello.SupportedProtos,
+		})
 		if len(hello.SupportedProtos) != 1 || hello.SupportedProtos[0] != ACMETLS1Protocol {
-			return nil, fmt.Errorf("ALPN failed, ClientHelloInfo.SupportedProtos: %s", hello.SupportedProtos)
+			return nil, fmt.Errorf(
+				"ALPN failed, ClientHelloInfo.SupportedProtos: %s",
+				hello.SupportedProtos)
 		}
 
 		ka, found := s.GetTLSALPNChallenge(hello.ServerName)
@@ -97,9 +101,8 @@ func (c challTLSServer) Shutdown() error {
 }
 
 func (c challTLSServer) ListenAndServe() error {
-	// We never want to serve a plain cert so leave certFile and keyFile
-	// empty. If we don't know the SNI name/ALPN fails the handshake will
-	// fail anyway.
+	// Since we set TLSConfig.GetCertificate, the certfile and keyFile arguments
+	// are ignored and we leave them blank.
 	return c.Server.ListenAndServeTLS("", "")
 }
 
