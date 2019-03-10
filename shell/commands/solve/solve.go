@@ -64,6 +64,10 @@ func solveHandler(c *ishell.Context, leftovers []string) {
 	if len(leftovers) > 0 {
 		templateText := strings.Join(leftovers, " ")
 		targetURL, err = commands.ClientTemplate(client, templateText)
+		if err != nil {
+			c.Printf("solve: error templating order URL: %v\n", err)
+			return
+		}
 	} else {
 		targetURL, err = commands.FindOrderURL(c, nil, opts.orderIndex)
 		if err != nil {
