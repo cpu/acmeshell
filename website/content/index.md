@@ -30,6 +30,10 @@ ACMEShell Supports both interactive and non-interactive usage.
 
 ---
 
+[![asciicast](https://asciinema.org/a/v5vPeGlyp1wHQjs99c945xw69.svg)](https://asciinema.org/a/v5vPeGlyp1wHQjs99c945xw69)
+
+---
+
 ## Warning
 
 ACMEShell is **not** a shell script based ACME client, it's a shell environment
