@@ -30,7 +30,7 @@ ACMEShell Supports both interactive and non-interactive usage.
 
 ---
 
-[![asciicast](https://asciinema.org/a/v5vPeGlyp1wHQjs99c945xw69.svg)](https://asciinema.org/a/v5vPeGlyp1wHQjs99c945xw69)
+<script id="asciicast-v5vPeGlyp1wHQjs99c945xw69" src="https://asciinema.org/a/v5vPeGlyp1wHQjs99c945xw69.js" async></script>
 
 ---
 
