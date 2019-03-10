@@ -1,0 +1,40 @@
+project_name: acmeshell
+builds:
+  - main: ./cmd/acmeshell
+    binary: acmeshell
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - freebsd
+      - linux
+      - darwin
+    goarch:
+      - 386
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - 6
+      - 7
+    ignore:
+      - goos: darwin
+        goarch: 386
+archive:
+  wrap_in_directory: true
+  replacements:
+    linux: Linux
+    386: i386
+    amd64: x86_64
+  files:
+    - LICENSE
+    - README.md
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'
