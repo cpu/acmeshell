@@ -21,6 +21,8 @@ ACMEShell Supports both interactive and non-interactive usage.
   * [Account Management](#account-management)
   * [Key Management](#key-management)
   * [Workflow](#workflow)
+* [Tips and Tricks](#tips-and-tricks)
+* [TODO](#todo)
 
 ---
 
@@ -396,6 +398,31 @@ level commands:
 See `docs/example.script.txt` for a complete non-interactive demo using
 templating.
 
+## Tips and tricks
+
+* Input lines starting with a `#` character are ignored by ACMEShell and can be
+  used to comment output or scripts.
+* ACMEShell supports [many "readline" shortcuts][readline]. (E.g. `CTRL-A` to go
+  to the beginning of the line, `CTRL-L` to clear the screen).
+* ACMEShell can read non-interactive input from STDIN, or from a file using the
+  `-in` argument. This is useful to run `acmeshell` in the [delve
+  debugger][delve]:
+
+       dlv debug github.com/cpu/acmeshell/cmd/acmeshell -- -pebble -in docs/example.script.txt
+
+## TODO
+
+* Support RSA account keys (lol).
+* `revoke` high level command for revocation.
+* `keyAuth` low level command for making key authorizations for a specific
+  challenge with a specific key.
+* support for exiting on a command failure (e.g. for integration tests).
+* so much cleanup...
+* some unit tests would be swell.
+* better docs.
+* polish - checking for consistency between commands (e.g. `-type` vs
+  `-challengeType`).
+
 [acme]: https://tools.ietf.org/html/draft-ietf-acme-acme-18
 [certbot]: https://certbot.org
 [lego]: https://github.com/xenolf/lego
@@ -408,3 +435,5 @@ templating.
 [postasget]: https://community.letsencrypt.org/t/acme-v2-scheduled-deprecation-of-unauthenticated-resource-gets/74380
 [docker]: https://docs.docker.com/install/
 [docker-compose]: https://docs.docker.com/compose/install/
+[readline]: https://github.com/chzyer/readline/blob/master/doc/shortcut.md
+[delve]: https://github.com/go-delve/delve
