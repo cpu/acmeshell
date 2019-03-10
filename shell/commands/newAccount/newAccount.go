@@ -104,6 +104,7 @@ func newAccountHandler(c *ishell.Context, leftovers []string) {
 		err := resources.SaveAccount(opts.jsonPath, acct)
 		if err != nil {
 			c.Printf("error saving account to %q : %s\n", opts.jsonPath, err)
+			return
 		}
 		c.Printf("Saved account data to %q\n", opts.jsonPath)
 	}
