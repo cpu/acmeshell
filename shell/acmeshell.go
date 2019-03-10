@@ -47,6 +47,10 @@ import (
 // response ports for HTTP-01, TLS-ALPN-01 and DNS-01 challenges.
 type ACMEShellOptions struct {
 	acmeclient.ClientConfig
+	// API address for an external pebble-challtestsrv instance. If not-empty this
+	// precludes using the internal challenge test server and the
+	// `HTTPPort`,`TLSPort`, and `DNSPort` options.
+	ChallSrv string
 	// Port number the ACME server validates HTTP-01 challenges over.
 	HTTPPort int
 	// Port number the ACME server validates TLS-ALPN-01 challenges over.
@@ -75,14 +79,26 @@ func NewACMEShell(opts *ACMEShellOptions) *ACMEShell {
 		Prompt: commands.BasePrompt,
 	})
 
-	// Create a challenge response server
-	challSrv, err := challtestsrv.New(challtestsrv.Config{
-		HTTPOneAddrs:    []string{fmt.Sprintf(":%d", opts.HTTPPort)},
-		TLSALPNOneAddrs: []string{fmt.Sprintf(":%d", opts.TLSPort)},
-		DNSOneAddrs:     []string{fmt.Sprintf(":%d", opts.DNSPort)},
-		Log:             log.New(os.Stdout, "challRespSrv: ", log.Ldate|log.Ltime),
-	})
-	acmecmd.FailOnError(err, "Unable to create challenge test server")
+	var challSrv commands.ChallengeServer
+	if opts.ChallSrv != "" {
+		log.Printf("Using an external pebble-challtestsrv instance at %q\n", opts.ChallSrv)
+		// Configure an external pebble-challtestsrv as the challenge response
+		// server
+		srv, err := commands.NewRemoteChallengeServer(opts.ChallSrv)
+		acmecmd.FailOnError(err, "Unable to create remote challenge server")
+		challSrv = srv
+	} else {
+		log.Printf("Creating an internal challtestsrv\n")
+		// Create an internal challenge response server
+		srv, err := challtestsrv.New(challtestsrv.Config{
+			HTTPOneAddrs:    []string{fmt.Sprintf(":%d", opts.HTTPPort)},
+			TLSALPNOneAddrs: []string{fmt.Sprintf(":%d", opts.TLSPort)},
+			DNSOneAddrs:     []string{fmt.Sprintf(":%d", opts.DNSPort)},
+			Log:             log.New(os.Stdout, "challRespSrv: ", log.Ldate|log.Ltime),
+		})
+		acmecmd.FailOnError(err, "Unable to create challenge test server")
+		challSrv = srv
+	}
 	// Stash the challenge server in the shell for commands to access
 	shell.Set(commands.ChallSrvKey, challSrv)
 

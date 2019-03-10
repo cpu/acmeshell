@@ -21,6 +21,7 @@ const (
 	HTTP_PORT_DEFAULT    = 5002
 	TLS_PORT_DEFAULT     = 5001
 	DNS_PORT_DEFAULT     = 5252
+	CHALLSRV_DEFAULT     = ""
 )
 
 func main() {
@@ -49,20 +50,25 @@ func main() {
 		ACCOUNT_DEFAULT,
 		"Optional JSON filepath to use to save/restore auto-registered ACME account")
 
+	challSrv := flag.String(
+		"challsrv",
+		CHALLSRV_DEFAULT,
+		"Optional API address for an external pebble-challtestsrv instance to use")
+
 	httpPort := flag.Int(
 		"httpPort",
 		HTTP_PORT_DEFAULT,
-		"HTTP-01 challenge server port")
+		"HTTP-01 challenge server port for internal challtestsrv")
 
 	tlsPort := flag.Int(
 		"tlsPort",
 		TLS_PORT_DEFAULT,
-		"TLS-ALPN-01 challenge server port")
+		"TLS-ALPN-01 challenge server port for internal challtestsrv")
 
 	dnsPort := flag.Int(
 		"dnsPort",
 		DNS_PORT_DEFAULT,
-		"DNS-01 challenge server port")
+		"DNS-01 challenge server port for internal challtestsrv")
 
 	pebble := flag.Bool(
 		"pebble",
@@ -134,6 +140,7 @@ func main() {
 				PrintJWS:        *printJWS,
 			},
 		},
+		ChallSrv: *challSrv,
 		HTTPPort: *httpPort,
 		TLSPort:  *tlsPort,
 		DNSPort:  *dnsPort,

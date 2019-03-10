@@ -13,7 +13,6 @@ import (
 	"github.com/abiosoft/ishell"
 	acmeclient "github.com/cpu/acmeshell/acme/client"
 	"github.com/cpu/acmeshell/acme/resources"
-	"github.com/letsencrypt/challtestsrv"
 )
 
 const (
@@ -60,20 +59,20 @@ func GetClient(c shellContext) *acmeclient.Client {
 		ClientKey))
 }
 
-// GetChallSrv reads a *challtestsrv.ChallSrv from the shellContext or panics.
-func GetChallSrv(c shellContext) *challtestsrv.ChallSrv {
+// GetChallSrv reads a challengeServer from the shellContext or panics.
+func GetChallSrv(c shellContext) ChallengeServer {
 	if c.Get(ChallSrvKey) == nil {
 		panic(fmt.Sprintf("nil %q value in shellContext", ChallSrvKey))
 	}
 
 	rawSrv := c.Get(ChallSrvKey)
 	switch c := rawSrv.(type) {
-	case *challtestsrv.ChallSrv:
+	case ChallengeServer:
 		return c
 	}
 
 	panic(fmt.Sprintf(
-		"%q value in shellContext was not a *challtestsrv.ChallSrv",
+		"%q value in shellContext was not a ChallengeServer",
 		ChallSrvKey))
 }
 

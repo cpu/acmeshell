@@ -207,7 +207,7 @@ func NewClient(config ClientConfig) (*Client, error) {
 
 	// If requested, try to load an existing account from disk
 	if config.AccountPath != "" {
-		log.Printf("Restoring account from %q\n", config.AccountPath)
+		log.Printf("Trying to restore account from %q\n", config.AccountPath)
 		acct, err := resources.RestoreAccount(config.AccountPath)
 
 		// if there was an error loading the account and auto-register is not
@@ -215,6 +215,8 @@ func NewClient(config ClientConfig) (*Client, error) {
 		if err != nil && !config.AutoRegister {
 			return nil, fmt.Errorf("error restoring account from %q : %s",
 				config.AccountPath, err)
+		} else if err != nil && config.AutoRegister {
+			log.Printf("No account restored\n")
 		}
 
 		// If there was no error, populate the active account
