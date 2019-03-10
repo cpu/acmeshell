@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"syscall"
 
 	acmeclient "github.com/cpu/acmeshell/acme/client"
 	acmecmd "github.com/cpu/acmeshell/cmd"
@@ -120,7 +119,8 @@ func main() {
 		acmecmd.FailOnError(err, fmt.Sprintf(
 			"Error opening -in file %q: %v", *commandFile, err))
 		defer f.Close()
-		err = syscall.Dup2(int(f.Fd()), 0)
+		err = redirectStdin(int(f.Fd()))
+		//err = syscall.Dup3(int(f.Fd()), 0, 0)
 		acmecmd.FailOnError(err, fmt.Sprintf(
 			"Error duplicating stdin fd: %v", err))
 	}

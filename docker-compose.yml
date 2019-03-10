@@ -1,0 +1,30 @@
+version: '3'
+services:
+  pebble:
+    image: letsencrypt/pebble:v2.0.0
+    command: pebble -config /test/config/pebble-config.json -strict -dnsserver 10.50.50.3:8053
+    ports:
+      # HTTPS ACME API
+      - 14000:14000
+    environment:
+      - PEBBLE_WFE_NONCEREJECT=0
+    networks:
+      acmeshellnet:
+        ipv4_address: 10.50.50.2
+  challtestsrv:
+    image: letsencrypt/pebble-challtestsrv:v2.0.0
+    command: pebble-challtestsrv -defaultIPv6 "" -defaultIPv4 10.50.50.3
+    ports:
+      # HTTP Management Interface
+      - 8055:8055
+    networks:
+      acmeshellnet:
+        ipv4_address: 10.50.50.3
+
+networks:
+  acmeshellnet:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.50.50.0/24
