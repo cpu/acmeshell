@@ -1,8 +1,6 @@
 language: go
 go:
-  - "latest"
-env:
-  - GO111MODULE=on
+  - "stable"
 
 install:
   # Install `golangci-lint` using their installer script
