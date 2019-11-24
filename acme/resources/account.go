@@ -31,6 +31,9 @@ import (
 // The Orders field is either nil or a slice of one or more Order resource URLs.
 // These URLs correspond to Orders that the Account created with the ACME
 // server.
+//
+// For information about the Account resource see
+// https://tools.ietf.org/html/rfc8555#section-7.1.2
 type Account struct {
 	// The server assigned Account ID. This is used for the JWS KeyID when
 	// authenticating ACME requests using the Account's registered keypair.
@@ -136,6 +139,8 @@ type rawAccount struct {
 }
 
 func (a *Account) save() ([]byte, error) {
+	// TODO(@cpu): This will need to be updated when the private key is a generic
+	// interface.
 	k, err := x509.MarshalECPrivateKey(a.PrivateKey)
 	if err != nil {
 		return nil, err
@@ -179,6 +184,8 @@ func (a *Account) restore(frozenAcct []byte) error {
 		return err
 	}
 
+	// TODO(@cpu): This will need to be updated when the private key is a more
+	// generic interface.
 	privKey, err := x509.ParseECPrivateKey(rawAcct.PrivateKey)
 	if err != nil {
 		return err

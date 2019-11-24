@@ -451,6 +451,7 @@ ACMEShell supports some handy tricks that may be useful to you:
 * `revoke` high level command for revocation.
 * `keyAuth` low level command for making key authorizations for a specific
   challenge with a specific key.
+* RFC 8555 subproblem support
 * support for exiting on a command failure (e.g. for integration tests).
 * so much cleanup...
 * some unit tests would be swell.

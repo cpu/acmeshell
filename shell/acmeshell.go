@@ -43,7 +43,7 @@ import (
 )
 
 // ACMEShellOptions allows specifying options for creating an ACME shell. This includes
-// all of the acmeclient.ClientConfig options in addition challenge server
+// all of the acmeclient.ClientConfig options in addition to challenge server
 // response ports for HTTP-01, TLS-ALPN-01 and DNS-01 challenges.
 type ACMEShellOptions struct {
 	acmeclient.ClientConfig

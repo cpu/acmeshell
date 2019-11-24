@@ -120,9 +120,8 @@ func main() {
 			"Error opening -in file %q: %v", *commandFile, err))
 		defer f.Close()
 		err = redirectStdin(int(f.Fd()))
-		//err = syscall.Dup3(int(f.Fd()), 0, 0)
 		acmecmd.FailOnError(err, fmt.Sprintf(
-			"Error duplicating stdin fd: %v", err))
+			"Error redirecting stdin fd: %v", err))
 	}
 
 	config := &acmeshell.ACMEShellOptions{

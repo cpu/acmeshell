@@ -3,7 +3,9 @@ package resources
 // The Identifier resource represents a subject identifier that can be included
 // in a certificate.
 //
-// See https://ietf-wg-acme.github.io/acme/draft-ietf-acme-acme.html#iana-identifier
+// See:
+// https://tools.ietf.org/html/rfc8555#section-7.5
+// https://tools.ietf.org/html/rfc8555#section-9.7.7
 //
 // In practice most ACME servers only support "DNS" type identifiers where the
 // value specifies a fully qualified domain name.
@@ -26,17 +28,17 @@ type Identifier struct {
 // containing that identifier.
 //
 // For information about the Authorization resource see
-// https://ietf-wg-acme.github.io/acme/draft-ietf-acme-acme.html#rfc.section.7.1.4
+// https://tools.ietf.org/html/rfc8555#section-7.1.4
 //
 // To understand the Authorization Status changes specified by ACME see
-// https://ietf-wg-acme.github.io/acme/draft-ietf-acme-acme.html#rfc.section.7.1.6
+// https://tools.ietf.org/html/rfc8555#section-7.1.6
 type Authorization struct {
 	// The server-assigned ID (typically a URL) identifying the Authorization.
 	ID string
 	// The status of this authorization. Possible values are: “pending”, “valid”,
 	// “invalid”, “deactivated”, “expired”, and “revoked”.
 	// See:
-	// https://ietf-wg-acme.github.io/acme/draft-ietf-acme-acme.html#rfc.section.7.1.6
+	// https://tools.ietf.org/html/rfc8555#section-7.1.6
 	Status string
 	// The identifier that the account holding this Authorization is authorized to
 	// represent

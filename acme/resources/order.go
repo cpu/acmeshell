@@ -3,10 +3,10 @@ package resources
 // The Order resource represents a collection of identifiers that an account
 // wishes to create a Certificate for.
 //
-// See https://ietf-wg-acme.github.io/acme/draft-ietf-acme-acme.html#rfc.section.7.1.3
+// See https://tools.ietf.org/html/rfc8555#section-7.1.3
 //
-// To understand the Status changes specified by ACME for the Order resource see
-// https://ietf-wg-acme.github.io/acme/draft-ietf-acme-acme.html#rfc.section.7.1.6
+// To understand the Status changes specified by RFC 8555 for the Order resource
+// see https://tools.ietf.org/html/rfc8555#section-7.1.6
 //
 type Order struct {
 	// The server-assigned ID (a URL) identifying the Order.
