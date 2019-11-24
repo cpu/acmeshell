@@ -4,9 +4,8 @@
 # An example ACME Shell script used by Travis CI.
 #
 # Pebble Setup:
-#   PEBBLE_VA_SLEEPTIME=8 \
-#   PEBBLE_WFE_NONCEREJECT=0 \
-#   pebble -dnsserver 127.0.0.1:5252
+#   PEBBLE_WFE_NONCEREJECT=0 pebble -strict -dnsserver 127.0.0.1:8053 &
+#   pebble-challtestsrv -defaultIPv6 "" -defaultIPv4 127.0.0.1 &
 #
 # Usage:
 #  acmeshell -pebble -autoregister=false -account="" -in test/ci.script.txt
