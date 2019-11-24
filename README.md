@@ -106,7 +106,7 @@ This will start a `pebble` container configured to use a second
 To connect ACMEShell to the Pebble container and use the `pebble-challtestsrv`
 container for challenge responses run:
 
-       acmeshell -pebble -postAsGet=true -challsrv=http://localhost:8055
+       acmeshell -pebble
 
 ## Usage
 
