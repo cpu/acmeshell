@@ -101,8 +101,8 @@ func main() {
 
 	postAsGet := flag.Bool(
 		"postAsGet",
-		false,
-		"Use POST-as-GET requests instead of GET requests (requires Pebble -strict or equiv)")
+		true,
+		"Use POST-as-GET requests instead of GET requests in high level commands")
 
 	flag.Parse()
 

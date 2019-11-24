@@ -135,15 +135,15 @@ do not have Pebble installed in your `$GOPATH` you may need to download the
 `pebble.minica.pem` file from the Pebble repo and specify its location with the
 `-ca` flag.
 
-#### POST-AS-GET
+#### Legacy GET requests
 
-ACMEShell supports using [POST-AS-GET][postasget] to fetch resources, or the
-legacy unauthenticated GET method. By default ACMEShell uses unauthenticated
-GETs but this will likely change in the near future.
+By default ACMEShell's high level commands use [POST-AS-GET][postasget] requests
+to fetch resources for RFC 8555 compliance.
 
-If you are using Pebble or another ACME server that enforces the use of
-authenticated POST-AS-GET requests you will want to specify `-postASGet=true` to
-make ACMEShell always use POST-AS-GET in higher level commands.
+If you want higher level commands to use unauthenticated GET requests like
+earlier pre-RFC 8555 drafts of ACME provide `-postAsGet=false` . Note that
+when using Pebble this will cause many commands to fail because Pebble will
+reject unauthenticated GET requests.
 
 ### Account Management
 
@@ -366,6 +366,10 @@ an order issuance:
        finalize -order=0
        poll -order=0 -status=valid
        getCert -order=0
+
+Note that while the high level commands to fetch resource information have "get"
+in their names POST-as-GET requests will be used internally unless ACMEShell was
+started with `-postAsGet=false`.
 
 #### Low Level Commands
 
