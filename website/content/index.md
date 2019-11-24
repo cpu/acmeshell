@@ -1,10 +1,8 @@
 ---
-title: "ACME Shell"
+title: "About"
 type: "homepage"
 date: 2019-11-24T00:00:00-00:00
 ---
-
-# ACMEShell
 
 An interactive shell designed for [RFC 8555][acme] ACME client/server
 developers to use for tests, day to day tasks, and exploring the protocol.
