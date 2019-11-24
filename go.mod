@@ -16,3 +16,5 @@ require (
 	golang.org/x/tools v0.0.0-20181019201213-3e7aa9e59977 // indirect
 	gopkg.in/square/go-jose.v2 v2.1.9
 )
+
+go 1.13
