@@ -10,15 +10,18 @@ import (
 )
 
 type signCmdOptions struct {
-	embedKey   bool
-	data       []byte
-	noData     bool
-	keyID      string
-	dataString string
+	embedKey    bool
+	data        []byte
+	noData      bool
+	keyID       string
+	dataString  string
+	templateURL bool
 }
 
 var (
-	opts = signCmdOptions{}
+	opts = signCmdOptions{
+		templateURL: true,
+	}
 )
 
 func init() {
@@ -31,6 +34,7 @@ func registerSignCmd() {
 	signFlags.StringVar(&opts.keyID, "keyID", "", "Key ID of existing key to use instead of active account key")
 	signFlags.StringVar(&opts.dataString, "data", "", "Data to sign")
 	signFlags.BoolVar(&opts.noData, "noData", false, "Use an empty byteslice as the data to sign (e.g. POST-as-GET)")
+	signFlags.BoolVar(&opts.templateURL, "templateURL", true, "Evaluate URL as a template")
 
 	commands.RegisterCommand(
 		&ishell.Cmd{
@@ -52,10 +56,21 @@ func signHandler(c *ishell.Context, leftovers []string) {
 		return
 	}
 
-	url := strings.TrimSpace(leftovers[0])
+	client := commands.GetClient(c)
+	url, err := commands.FindURL(client, leftovers)
+	if err != nil {
+		c.Printf("sign: error finding URL: %v", err)
+		return
+	}
 
 	if url == "" {
 		c.Printf("sign: you must specify a non-empty URL for the JWS header\n")
+		return
+	}
+
+	// Check the URL and make sure it is valid-ish
+	if !commands.OkURL(url) {
+		c.Printf("sign: illegal url argument %q\n", url)
 		return
 	}
 
@@ -110,5 +125,5 @@ func signData(c *ishell.Context, targetURL string) {
 		return
 	}
 
-	c.Printf("sign: Result JWS: \n%s\n", signResult.SerializedJWS)
+	c.Printf("signed JWS for URL %q: \n%s\n", targetURL, signResult.SerializedJWS)
 }

@@ -15,10 +15,10 @@ import (
 )
 
 // Client allows interaction with an ACME server. A client may have many
-// Accounts, each corresponding to a keypair and corresponding server-side
+// Accounts, each associated with a keypair and corresponding server-side
 // Account resource. Each client uses the ActiveAccount to authenticate
 // requests to the ACME server. In addition to Accounts a client maintains
-// a map of Keys containing private keys that can be used for signing CSRs
+// a map of Keys holding private keys that can be used for signing CSRs
 // when finalizing orders. Internally the Client uses the
 // https://godoc.org/cpu/acmeshell/net package to perform HTTP requests to the ACME
 // server.
@@ -141,8 +141,9 @@ type ClientConfig struct {
 	// specified it will be used as the new ACME account's Contact mailto address.
 	AutoRegister bool
 	// If POSTAsGET is true then GET requests to Orders, Authorizations,
-	// Challenges and Certificates will be made as POST-as-GET requests. If using
-	// a Pebble server this requires `-strict` be enabled.
+	// Challenges and Certificates will be made as POST-as-GET requests. Using false
+	// is suggested when interacting with legacy pre RFC 8555 ACME servers. It
+	// will cause most requests to fail with modern RFC 8555 compatible servers.
 	POSTAsGET bool
 	// Initial OutputOptions settings
 	InitialOutput OutputOptions

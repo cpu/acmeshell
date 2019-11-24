@@ -6,7 +6,6 @@ import (
 	"crypto/rand"
 	"crypto/x509"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"strings"
 	"text/template"
@@ -53,20 +52,15 @@ func (ctx TemplateCtx) authz(order *resources.Order, identifier string) (*resour
 
 	var match *resources.Authorization
 	for _, authzURL := range order.Authorizations {
-		resp, err := ctx.Client.GetURL(authzURL)
-		if err != nil {
+		var authz = &resources.Authorization{
+			ID: authzURL,
+		}
+		if err := ctx.Client.UpdateAuthz(authz); err != nil {
 			return nil, err
 		}
-
-		var authz resources.Authorization
-		err = json.Unmarshal(resp.RespBody, &authz)
-		if err != nil {
-			return nil, err
-		}
-		authz.ID = authzURL
 
 		if authz.Identifier.Value == identifier {
-			match = &authz
+			match = authz
 			break
 		}
 	}

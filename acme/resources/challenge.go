@@ -5,13 +5,13 @@ package resources
 // a certificate containing that identifier.
 //
 // For information about the Challenge resource see
-// https://ietf-wg-acme.github.io/acme/draft-ietf-acme-acme.html#rfc.section.7.1.5
+// https://tools.ietf.org/html/rfc8555#section-7.1.5
 //
-// To understand the Challenge types specified by ACME see
-// https://ietf-wg-acme.github.io/acme/draft-ietf-acme-acme.html#rfc.section.8
+// To understand the Challenge types specified by RFC 8555 see
+// https://tools.ietf.org/html/rfc8555#section-8
 //
-// To understand the Challenge Status changes specified by ACME see
-// https://ietf-wg-acme.github.io/acme/draft-ietf-acme-acme.html#rfc.section.7.1.6
+// To understand the Challenge Status changes specified by RFC 8555 see
+// https://tools.ietf.org/html/rfc8555#section-7.1.6
 type Challenge struct {
 	// The Type of the challenge (expected values include "http-01", "dns-01", "tls-alpn-01")
 	Type string

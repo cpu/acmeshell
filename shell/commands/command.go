@@ -117,9 +117,6 @@ func RegisterCommand(
 	completerFunc NewCommandAutocompleter,
 	handler NewCommandHandler,
 	flags *flag.FlagSet) {
-	if flags == nil {
-		flags = flag.NewFlagSet(cmd.Name, flag.ContinueOnError)
-	}
 	// Stomp the cmd's Func with a wrapped version that will call the
 	// NewCommandHandler to parse the flags.
 	cmd.Func = wrapHandler(cmd.Name, handler, flags)
@@ -131,20 +128,24 @@ func RegisterCommand(
 
 func wrapHandler(name string, handler NewCommandHandler, flags *flag.FlagSet) func(*ishell.Context) {
 	return func(c *ishell.Context) {
-		// Parse the command's flags with the context args.
-		err := flags.Parse(c.Args)
-		// If it was an error and not the -h error, print a message and return early.
-		if err != nil && err != flag.ErrHelp {
-			c.Printf("%s: error parsing input flags: %v\n", name, err)
-			return
-		} else if err == flag.ErrHelp {
-			// If it was the -h err, just return early. The help was already printed.
-			return
+		leftovers := c.Args
+		if flags != nil {
+			// Parse the command's flags with the context args.
+			err := flags.Parse(c.Args)
+			// If it was an error and not the -h error, print a message and return early.
+			if err != nil && err != flag.ErrHelp {
+				c.Printf("%s: error parsing input flags: %v\n", name, err)
+				return
+			} else if err == flag.ErrHelp {
+				// If it was the -h err, just return early. The help was already printed.
+				return
+			}
+			leftovers = flags.Args()
 		}
 
 		// Call the wrapped NewCommandHandler with the leftover args from flag
 		// parsing.
-		handler(c, flags.Args())
+		handler(c, leftovers)
 	}
 }
 

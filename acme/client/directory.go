@@ -25,8 +25,7 @@ func (c *Client) getDirectory() (map[string]interface{}, error) {
 // Directory fetches the ACME Directory resource from the ACME server and
 // returns it deserialized as a map.
 //
-// See
-// https://ietf-wg-acme.github.io/acme/draft-ietf-acme-acme.html#rfc.section.7.1.1
+// See https://tools.ietf.org/html/rfc8555#section-7.1.1
 func (c *Client) Directory() (map[string]interface{}, error) {
 	if c.directory == nil {
 		if err := c.UpdateDirectory(); err != nil {

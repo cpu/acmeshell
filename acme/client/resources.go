@@ -22,9 +22,8 @@ import (
 // creation requests). This is one of MANY reasons why you should not be using
 // ACME Shell for anything except development and testing!
 //
-// See
-// https://ietf-wg-acme.github.io/acme/draft-ietf-acme-acme.html#rfc.section.7.3
-// for more information on account creation.
+// For more information on account creation see
+// https://tools.ietf.org/html/rfc8555#section-7.3
 func (c *Client) CreateAccount(acct *resources.Account) error {
 	if c.nonce == "" {
 		if err := c.RefreshNonce(); err != nil {
@@ -96,8 +95,8 @@ func (c *Client) CreateAccount(acct *resources.Account) error {
 // the server's reply's Location header. Otherwise a non-nil error is returned.
 //
 // For more information on Order creation see "Applying for Certificate
-// Issuance" in the ACME specification:
-// https://ietf-wg-acme.github.io/acme/draft-ietf-acme-acme.html#rfc.section.7.4
+// Issuance" in RFC 8555:
+// https://tools.ietf.org/html/rfc8555#section-7.4
 func (c *Client) CreateOrder(order *resources.Order) error {
 	if c.nonce == "" {
 		if err := c.RefreshNonce(); err != nil {
@@ -286,7 +285,7 @@ func (c *Client) AuthzByIdentifier(order *resources.Order, identifier string) (*
 		return nil, errors.New("AuthzByIdentifier: Order has no authorizations")
 	}
 
-	// Loop through the order's authoriation URLs, fetching the authz object for
+	// Loop through the order's authorization URLs, fetching the authz object for
 	// each. Stop when an authz with the requested identifier is found.
 	for _, authzURL := range order.Authorizations {
 		authz := &resources.Authorization{ID: authzURL}

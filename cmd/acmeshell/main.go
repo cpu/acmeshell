@@ -101,17 +101,19 @@ func main() {
 
 	postAsGet := flag.Bool(
 		"postAsGet",
-		false,
-		"Use POST-as-GET requests instead of GET requests (requires Pebble -strict or equiv)")
+		true,
+		"Use POST-as-GET requests instead of GET requests in high level commands")
 
 	flag.Parse()
 
 	if *pebble {
 		pebbleDirectory := "https://localhost:14000/dir"
+		pebbleChallSrv := "http://localhost:8055"
 		directory = &pebbleDirectory
 		pebbleBaseDir := os.Getenv("GOPATH")
 		pebbleCA := pebbleBaseDir + "/src/github.com/letsencrypt/pebble/test/certs/pebble.minica.pem"
 		caCert = &pebbleCA
+		challSrv = &pebbleChallSrv
 	}
 
 	if *commandFile != "" {
@@ -120,9 +122,8 @@ func main() {
 			"Error opening -in file %q: %v", *commandFile, err))
 		defer f.Close()
 		err = redirectStdin(int(f.Fd()))
-		//err = syscall.Dup3(int(f.Fd()), 0, 0)
 		acmecmd.FailOnError(err, fmt.Sprintf(
-			"Error duplicating stdin fd: %v", err))
+			"Error redirecting stdin fd: %v", err))
 	}
 
 	config := &acmeshell.ACMEShellOptions{

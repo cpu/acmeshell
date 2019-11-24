@@ -24,6 +24,8 @@ func (c *Client) Nonce() (string, error) {
 
 // RefreshNonce fetches a new nonce from the ACME server's NewNonce endpoint and
 // stores it in the client's memory to be used in subsequent Nonce calls.
+//
+// See https://tools.ietf.org/html/rfc8555#section-7.2
 func (c *Client) RefreshNonce() error {
 	nonceURL, ok := c.GetEndpointURL(acme.NEW_NONCE_ENDPOINT)
 	if !ok {
