@@ -1,6 +1,6 @@
 # ACMEShell
 
-An interactive shell designed for [ACME][acme] client/server
+An interactive shell designed for [RFC 8555][acme] ACME client/server
 developers to use for tests, day to day tasks, and exploring the protocol.
 ACMEShell Supports both interactive and non-interactive usage.
 
@@ -12,7 +12,7 @@ ACMEShell Supports both interactive and non-interactive usage.
 
 ---
 
-* [Warning](#warning)
+* [Warnings](#warnings)
 * [Quick-start](#quick-start)
 * [Features](#features)
 * [The ACME Playset](#the-acme-playset)
@@ -24,13 +24,7 @@ ACMEShell Supports both interactive and non-interactive usage.
 * [Tips and Tricks](#tips-and-tricks)
 * [TODO](#todo)
 
----
-
-[![asciicast](https://asciinema.org/a/v5vPeGlyp1wHQjs99c945xw69.svg)](https://asciinema.org/a/v5vPeGlyp1wHQjs99c945xw69)
-
----
-
-## Warning
+## Warnings
 
 ACMEShell is **not** a shell script based ACME client, it's a shell environment
 for ACME. If you're looking for a shell script ACME client you should try
@@ -39,11 +33,11 @@ for ACME. If you're looking for a shell script ACME client you should try
 ACMEShell is designed for **developers** - not server administrators. Do not use
 ACMEShell to issue or renew production certificates. Do not write automation
 around ACMEShell to manage real certificates and keypairs! Instead, use
-a real ACME client (like [Certbot][certbot]) or a real ACME library (like
+a real ACME client (like [Certbot][certbot]) or a production grade library (like
 [Lego][lego]).
 
 ACMEShell was coded in short bursts of infrequent free time. The code quality is
-not my best work. Cleanup pull requests are welcome. If something seems strange
+poor in some areas. Cleanup pull requests are welcome. If something seems strange
 it's probably because I threw it together in a rush while trying to make
 progress on my real task (likely debugging [Boulder][boulder]).
 
@@ -69,19 +63,22 @@ progress on my real task (likely debugging [Boulder][boulder]).
 
 That's it! You should find yourself in an ACMEShell session with the [Let's
 Encrypt][letsencrypt] "ACME v2" [staging environment][staging] ACME server.
-A new ACME account will have automatically been created for your session. You're
-ready to go!
+A new ACME account will have automatically been created for your session and
+saved in the current directory as `acmeshell.account.json`. You're ready to go!
 
 ## Features
 
 * Convenient interactive shell supporting auto-completion of commands and menu
-  selection of ACME objects.
+  selection of ACME objects/URLs.
 * Non-interactive usage suitable for scripts and automated tests.
-* High level commands like `newOrder`, `getAuthz`, `solve` for interacting with
-  an ACME server quickly and easily.
+* High level commands like `newOrder`, `getAuthz`, and `solve` for interacting
+  with an ACME server quickly and easily.
 * Low level commands like `sign`, `post`, and `get` to have fine-grain control
   over protocol messages to exercise new features or reproduce corner-case
   bugs.
+* Supports logging all HTTP requests/responses, JWS objects, and to-be-signed
+  JSON messages to give full protocol visibility.
+* Utility functions for generating CSRs and working with Base64URL encoded data.
 * Powerful templating support for convenient manual construction of
   authenticated protocol messages.
 * Create, save/load and switch between many ACME accounts in one session.
@@ -91,9 +88,6 @@ ready to go!
   responses (also supports using an external `pebble-challtestsrv`).
 * Built-in mock DNS server for DNS-01 challenges and directing
   HTTP-01/TLS-ALPN-01 requests to the built-in challenge server.
-* Supports logging all HTTP requests/responses, JWS objects, and to-be-signed
-  JSON messages to give full protocol visibility.
-* Utility functions for generating CSRs and working with Base64URL encoded data.
 
 ## The ACME Playset
 
@@ -173,7 +167,9 @@ created with `newAccount`.
 
 By default no contact address is provided when automatically creating an account
 at startup. Use `-contact=some-email@address.com` to set a contact address when
-creating an auto-registered account.
+creating an auto-registered account. Providing multiple contact addresses is not
+supported for the automatically registered account. If you require specifying
+multiple contacts use the `newAccount` command.
 
 #### Creating More Accounts
 
@@ -253,26 +249,26 @@ Usage of loadAccount:
 ### Key Management
 
 ACMEShell supports managing multiple private keys and giving them human
-identifiable labels to make it easy to use them for other ACME
+identifiable labels to make it easy to use them with other ACME
 commands/messages.
 
 #### Account keys
 
 By default all accounts that are created by ACMEShell get an account private key
-automatically created for them with a label equal to ID the server gave the
-account.
+automatically created for them with a label equal to account ID the server gave
+the account when it was registered.
 
 For example if my `-autoregister` account was given the ID
 `"https://localhost:14000/my-account/1"` by the ACME server then ACMEShell will
-have created a private key with the label
-`"https://localhost:14000/my-account/1"` with the account private key.
+have given the account private key that was randomly generated when registering
+the account a matching label: `"https://localhost:14000/my-account/1"`.
 
 #### Creating additional keys
 
 Some commands (e.g. `finalize`, `csr`) will automatically generate random
 private keys as required. If you need to control the private key that is used
-you can create additional private keys and reference them by ID in other
-commands.
+you can create private keys with the `newKey` command reference them by ID in
+other commands.
 
 Use the `newKey` command to create a new private key:
 
@@ -290,13 +286,26 @@ Usage of newKey:
 
 #### Viewing a key
 
-Use the `viewKey` command to interactively list keys and display the chosen
-private key's public JWK and Thumbprint.
+Use the `viewKey` command to display key information like the publickey in JWK
+form or the public key JWK thumbprint. It can also be used to export the private
+key out of ACMEShell to a PEM file on disk using the `-path` argument.
+
+```
+Usage of viewKey:
+  -jwk
+    	Display public key in JWK format (default true)
+  -path string
+    	Path to write PEM private key to
+  -pem
+    	Display private key in PEM format
+  -thumbprint
+    	Display hex JWK public key thumbprint (default true)
+```
 
 #### Load keys
 
-Load an existing private key (in PEM representation) from a file using the
-`loadKey` command:
+Load an existing private key from a file containing a PEM encoded ECDSA private
+key using the `loadKey` command. The `-id` argument is used to choose the key ID:
 
 ```
 Usage of loadKey:
@@ -317,6 +326,10 @@ of use:
 * if enough arguments are provided to unambiguously perform the operation it
   will be done non-interactively
 
+While these commands are "high level" they are still lower level than what most
+existing ACME clients expose and allow a great deal of control over the issuance
+process.
+
 #### Order indexes
 
 Each order created with the `newOrder` command is assigned an order index to
@@ -327,6 +340,8 @@ based on the orders that the new account has created.
 
 #### High level commands
 
+While not a complete list (see "help") the most common high-level commands are:
+
 * **newAccount** - create an account with the server.
 * **getAccount** - fetch the active account's details from the server.
 * **rollover** - change the active account's key to a new key.
@@ -335,7 +350,7 @@ based on the orders that the new account has created.
 * **getAuthz** - fetch an authorization resource.
 * **getChall** - fetch a challenge resource.
 * **solve** - solve a challenge associated with an authz from an order.
-* **poll** - poll a resource until its in a specific state.
+* **poll** - poll a resource until it's in a specific state.
 * **finalize** - finalize an order by POSTing a CSR.
 * **getCert** - get an order's certificate resource.
 
@@ -354,22 +369,27 @@ an order issuance:
 
 #### Low Level Commands
 
-* **b64url** - BASE64URL encoding/decoding utility.
-* **challSrv** - add/remove challenge responses from the built-in challenge
-  server or the `-challsrv` provided on the command line.
-* **csr** - utility for creating a CSR for specified names or for the
-  identifiers in a specified order with a random private key or another
-  ACMEShell key.
-* **get** - HTTP GET an arbitrary URL. E.g. a terms of service URL.
-* **jwsDecode** - Decode a JSON JWS and its BASE64URL encoded fields.
-* **post** - HTTP POST an arbitrary payload to an arbitrary URL.
+While not a complete list (see "help") the most common low-level commands are:
+
 * **sign** - create a JWS for a provided message with the active account key or
   another ACMEShell key.
+* **jwsDecode** - Decode a JSON JWS and its BASE64URL encoded fields.
+* **b64url** - BASE64URL encoding/decode data.
+* **post** - make a HTTP POST an arbitrary payload to an arbitrary URL.
+* **get** - make a HTTP GET request for an arbitrary URL. E.g. a terms of
+  service URL.
+* **csr** - create a CSR for specified names or for the identifiers in
+  a specified order with a specific key or an autogenerated one.
+* **challSrv** - add/remove challenge responses with the built-in challenge
+  server or the external `-challsrv` provided on the command line.
 
 ##### Templating
 
 Many of the low level commands let you template values based on ACMEShell
-objects. There are several templating functions and variables available:
+objects. Templating makes it possible to easily refer to data from ACME
+resources created during a session from within other requests. The syntax is
+a little bit clunky but the results are powerful. There are several templating
+functions and variables available:
 
 * `account` - a variable for the current account ID.
 * `order <order index>` - a function that returns the order with the given
@@ -388,14 +408,19 @@ level commands:
 
        echo See the active account's JWK
        viewKey {{ account }}
+
        echo Change the active account contact info
        post -body='{"contact":["mailto:new@example.com"]}' {{ account }}
-       echo Get an order
+
+       echo Get the first order by URL
        get {{ (order 0) }}
+
        echo Get some authz details
        get {{ (authz (order 0) \"example.com\") }}
+
        echo Get some challenge details
        get {{ (chal (authz (order 0) \"example.com\") \"tls-alpn-01\") }}
+
        echo POST a CSR to the first order finalize URL
        post -body='{"csr":"{{ (csr (order 0) (key "example.key")) }}"}' {{ (order 0).Finalize }}
 
@@ -404,13 +429,15 @@ templating.
 
 ## Tips and tricks
 
+ACMEShell supports some handy tricks that may be useful to you:
+
 * Input lines starting with a `#` character are ignored by ACMEShell and can be
   used to comment output or scripts.
 * ACMEShell supports [many "readline" shortcuts][readline]. (E.g. `CTRL-A` to go
   to the beginning of the line, `CTRL-L` to clear the screen).
 * ACMEShell can read non-interactive input from STDIN, or from a file using the
   `-in` argument. This is useful to run `acmeshell` in the [delve
-  debugger][delve]:
+  debugger][delve] where stdin is used for debugger control:
 
        dlv debug github.com/cpu/acmeshell/cmd/acmeshell -- -pebble -in docs/example.script.txt
 
@@ -427,7 +454,7 @@ templating.
 * polish - checking for consistency between commands (e.g. `-type` vs
   `-challengeType`).
 
-[acme]: https://tools.ietf.org/html/draft-ietf-acme-acme-18
+[acme]: https://tools.ietf.org/html/rfc8555
 [certbot]: https://certbot.org
 [lego]: https://github.com/xenolf/lego
 [acme.sh]: https://github.com/neilpang/acme.sh
