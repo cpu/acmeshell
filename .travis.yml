@@ -13,7 +13,7 @@ before_script:
   # Start Pebble with the correct env & arguments for our tests
   - PEBBLE_WFE_NONCEREJECT=0 pebble -strict -dnsserver 127.0.0.1:8053 &
   # Start a Pebble challtestsrv
-  - pebble-challtestsrv -defaultIPV6 "" -defaultIPv4 127.0.0.1 &
+  - pebble-challtestsrv -defaultIPv6 "" -defaultIPv4 127.0.0.1 &
   # Wait for Pebble to become available before proceeding
   - until </dev/tcp/localhost/14000 ; do sleep 0.1 ; done
   # Wait for Pebble challtestsrv to become available before proceeding
