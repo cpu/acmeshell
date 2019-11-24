@@ -3,7 +3,6 @@
 package post
 
 import (
-	"encoding/json"
 	"flag"
 	"strings"
 
@@ -12,9 +11,10 @@ import (
 )
 
 type postOptions struct {
-	postBody     string
-	templateBody bool
-	sign         bool
+	postBodyString string
+	templateBody   bool
+	sign           bool
+	noData         bool
 }
 
 var (
@@ -52,9 +52,10 @@ func init() {
 
 func registerPostCommand() {
 	postFlags := flag.NewFlagSet("post", flag.ContinueOnError)
-	postFlags.StringVar(&opts.postBody, "body", "", "HTTP POST request body")
+	postFlags.StringVar(&opts.postBodyString, "body", "", "HTTP POST request body")
 	postFlags.BoolVar(&opts.templateBody, "templateBody", true, "Template HTTP POST body")
 	postFlags.BoolVar(&opts.sign, "sign", true, "Sign body with active account key")
+	postFlags.BoolVar(&opts.noData, "noData", false, "Skip -body and assume no data POST-as-GET")
 
 	commands.RegisterCommand(
 		&ishell.Cmd{
@@ -91,61 +92,57 @@ func postHandler(c *ishell.Context, leftovers []string) {
 		return
 	}
 
-	// If the -body flag was specified and after trimming it is a non-empty value
-	// use the trimmed value as the post body
-	if trimmedBody := strings.TrimSpace(opts.postBody); trimmedBody != "" {
-		opts.postBody = trimmedBody
-	} else {
+	trimmedBodyArg := strings.TrimSpace(opts.postBodyString)
+	var body []byte
+
+	if len(trimmedBodyArg) > 0 && opts.noData {
+		c.Printf("post: -body and -noData are mutually exclusive\n")
+		return
+	} else if len(trimmedBodyArg) > 0 {
+		body = []byte(trimmedBodyArg)
+	} else if !opts.noData {
 		// Otherwise, read the POST body interactively
 		inputJSON := commands.ReadJSON(c)
 		if inputJSON == "" {
 			c.Printf("post: no POST body provided\n")
 			return
 		}
-		opts.postBody = inputJSON
+		body = []byte(inputJSON)
+	} else {
+		body = []byte("")
 	}
 
 	if opts.templateBody {
 		// Render the body input as a template
-		rendered, err := commands.ClientTemplate(client, opts.postBody)
+		rendered, err := commands.ClientTemplate(client, string(body))
 		if err != nil {
 			c.Printf("post: warning: target URL templating error: %s\n", err.Error())
 			return
 		}
-		opts.postBody = rendered
+		body = []byte(rendered)
 	}
 
-	var testOb interface{}
-	// Trick the Go compiler into thinking we're using testOb. We deliberately
-	// aren't but Go is too smart for that and throws a build err.
-	_ = testOb
-	if err := json.Unmarshal([]byte(opts.postBody), &testOb); err != nil {
-		c.Printf("post: POST body was not legal JSON: %s\n", err)
-		return
-	}
-
-	postURL(c, targetURL)
+	postURL(c, targetURL, body, opts.sign)
 }
 
-func postURL(c *ishell.Context, targetURL string) {
+func postURL(c *ishell.Context, targetURL string, body []byte, sign bool) {
 	client := commands.GetClient(c)
 	account := client.ActiveAccount
 
-	postBody := []byte(opts.postBody)
-	if opts.sign {
+	if sign {
 		if account == nil {
 			c.Printf("post: no active ACME account to authenticate POST requests\n")
 			return
 		}
-		signResult, err := client.Sign(targetURL, postBody, nil)
+		signResult, err := client.Sign(targetURL, body, nil)
 		if err != nil {
 			c.Printf("post: error signing POST request body: %s\n", err)
 			return
 		}
-		postBody = signResult.SerializedJWS
+		body = signResult.SerializedJWS
 	}
 
-	resp, err := client.PostURL(targetURL, postBody)
+	resp, err := client.PostURL(targetURL, body)
 	if err != nil {
 		c.Printf("post: error POSTing signed request body to URL: %v\n", err)
 		return

@@ -97,7 +97,6 @@ func (srv remoteChallengeServer) DeleteHTTPOneChallenge(token string) {
 }
 
 func (srv remoteChallengeServer) AddDNSOneChallenge(host string, keyAuth string) {
-	fmt.Printf("Adding DNS-01 challenge for %q - %q\n", host, keyAuth)
 	path := "set-txt"
 	req := struct {
 		Host  string
@@ -107,8 +106,7 @@ func (srv remoteChallengeServer) AddDNSOneChallenge(host string, keyAuth string)
 		Value: keyAuth,
 	}
 	r, _ := srv.net.PostRequest(srv.url(path), mustMarshal(req))
-	resp, err := srv.net.Do(r)
-	fmt.Printf("Resp: \n%s\n Err: %#v\n", string(resp.RespDump), err)
+	_, _ = srv.net.Do(r)
 }
 
 func (srv remoteChallengeServer) DeleteDNSOneChallenge(host string) {
@@ -123,7 +121,7 @@ func (srv remoteChallengeServer) DeleteDNSOneChallenge(host string) {
 }
 
 func (srv remoteChallengeServer) AddTLSALPNChallenge(host string, keyAuth string) {
-	path := "add-tls-alpn-01"
+	path := "add-tlsalpn01"
 	req := struct {
 		Host    string
 		Content string
@@ -136,7 +134,7 @@ func (srv remoteChallengeServer) AddTLSALPNChallenge(host string, keyAuth string
 }
 
 func (srv remoteChallengeServer) DeleteTLSALPNChallenge(host string) {
-	path := "del-tls-alpn-01"
+	path := "del-tlsalpn01"
 	req := struct {
 		Host string
 	}{

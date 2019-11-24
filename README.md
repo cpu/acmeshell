@@ -430,8 +430,7 @@ level commands:
        echo POST a CSR to the first order finalize URL
        post -body='{"csr":"{{ (csr (order 0) (key "example.key")) }}"}' {{ (order 0).Finalize }}
 
-See `docs/example.script.txt` for a complete non-interactive demo using
-templating.
+See `test/ci.script.txt` for a complete non-interactive demo using templating.
 
 ## Tips and tricks
 

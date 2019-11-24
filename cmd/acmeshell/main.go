@@ -108,10 +108,12 @@ func main() {
 
 	if *pebble {
 		pebbleDirectory := "https://localhost:14000/dir"
+		pebbleChallSrv := "http://localhost:8055"
 		directory = &pebbleDirectory
 		pebbleBaseDir := os.Getenv("GOPATH")
 		pebbleCA := pebbleBaseDir + "/src/github.com/letsencrypt/pebble/test/certs/pebble.minica.pem"
 		caCert = &pebbleCA
+		challSrv = &pebbleChallSrv
 	}
 
 	if *commandFile != "" {
