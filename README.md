@@ -156,14 +156,16 @@ By default without changing any command line flags `acmeshell` will try to load
 an active ACME account at startup from `acmeshell.account.json` in the current
 directory.
 
-If that file doesn't, ACMEShell will create a new account with the ACME server
-and save it to `acmeshell.account.json` to use the next time `acmeshell` starts.
+If that file doesn't exist, ACMEShell will create a new account with the ACME
+server and save it to `acmeshell.account.json` to load the next time `acmeshell`
+starts. If you would prefer ACMEShell exit if an existing
+`acmeshell.account.json` account doesn't exist rather than creating it provide
+`-autoregister=false`.
 
-You can disable `acmeshell` automatically creating an account if one doesn't
-exist by using `-autoregister=false`. In this case if the
-`acmeshell.account.json` file doesn't exist `acmeshell` will still startup but
-there will be no active account and many commands will not work until one is
-created with `newAccount`.
+If you want ACMEShell to startup without loading or creating an account you can
+specify both `-autoregister=false` and `-account=""`. Afterwards ACMEShell will
+start with no active account and many commands will not work until one is
+created and switched to with `newAccount`.
 
 By default no contact address is provided when automatically creating an account
 at startup. Use `-contact=some-email@address.com` to set a contact address when
