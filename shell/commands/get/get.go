@@ -2,6 +2,7 @@ package get
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/abiosoft/ishell"
 	"github.com/cpu/acmeshell/shell/commands"
@@ -56,6 +57,7 @@ func getHandler(c *ishell.Context) {
 		return
 	}
 
+	log.Printf("Sending HTTP GET request to URL %q\n", targetURL)
 	resp, err := client.GetURL(targetURL)
 	if err != nil {
 		c.Printf("get: error getting URL: %v\n", err)

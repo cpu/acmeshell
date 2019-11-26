@@ -4,6 +4,7 @@ package post
 
 import (
 	"flag"
+	"log"
 	"strings"
 
 	"github.com/abiosoft/ishell"
@@ -131,6 +132,7 @@ func postURL(c *ishell.Context, targetURL string, body []byte, sign bool) {
 		body = signResult.SerializedJWS
 	}
 
+	log.Printf("Sending HTTP POST request to %q", targetURL)
 	resp, err := client.PostURL(targetURL, body)
 	if err != nil {
 		c.Printf("post: error POSTing signed request body to URL: %v\n", err)

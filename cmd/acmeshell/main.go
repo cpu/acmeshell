@@ -74,6 +74,11 @@ func main() {
 		false,
 		"Use Pebble defaults")
 
+	printNonceUpdates := flag.Bool(
+		"printNonces",
+		false,
+		"Print all nonce updates and HEAD requests")
+
 	printRequests := flag.Bool(
 		"printRequests",
 		false,
@@ -135,10 +140,11 @@ func main() {
 			AutoRegister: *autoRegister,
 			POSTAsGET:    *postAsGet,
 			InitialOutput: acmeclient.OutputOptions{
-				PrintRequests:   *printRequests,
-				PrintResponses:  *printResponses,
-				PrintSignedData: *printSignedData,
-				PrintJWS:        *printJWS,
+				PrintRequests:     *printRequests,
+				PrintResponses:    *printResponses,
+				PrintSignedData:   *printSignedData,
+				PrintJWS:          *printJWS,
+				PrintNonceUpdates: *printNonceUpdates,
 			},
 		},
 		ChallSrv: *challSrv,

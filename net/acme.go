@@ -7,7 +7,6 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httputil"
 	"runtime"
@@ -102,7 +101,6 @@ func (c *ACMENet) httpRequest(req *http.Request) (*NetResponse, error) {
 }
 
 func (c *ACMENet) HeadURL(url string) (*http.Response, error) {
-	log.Printf("Sending HEAD request to URL %q\n", url)
 	return c.httpClient.Head(url)
 }
 
@@ -120,7 +118,6 @@ func (c *ACMENet) PostRequest(url string, body []byte) (*http.Request, error) {
 // Convenience function to POST the given URL with the given body. This is
 // a wrapper combining PostRequest and Do.
 func (c *ACMENet) PostURL(url string, body []byte) (*NetResponse, error) {
-	log.Printf("Sending POST request to URL %q\n", url)
 	req, err := c.PostRequest(url, body)
 	if err != nil {
 		return nil, err
@@ -138,7 +135,6 @@ func (c *ACMENet) GetRequest(url string) (*http.Request, error) {
 // Convenience function to GET the given URL. This is a wrapper combining
 // GetRequest and Do.
 func (c *ACMENet) GetURL(url string) (*NetResponse, error) {
-	log.Printf("Sending GET request to URL %q\n", url)
 	req, err := c.GetRequest(url)
 	if err != nil {
 		return nil, err
