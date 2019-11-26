@@ -13,10 +13,6 @@ type accountsOptions struct {
 	printContact bool
 }
 
-var (
-	opts accountsOptions
-)
-
 const (
 	longHelp = `
 	accounts:

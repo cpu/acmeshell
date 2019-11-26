@@ -9,10 +9,6 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
-var (
-	opts = switchAccountOptions{}
-)
-
 func init() {
 	commands.RegisterCommand(
 		&ishell.Cmd{
