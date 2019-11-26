@@ -15,9 +15,8 @@ func init() {
 			Name:     "csr",
 			Help:     "Generate a CSR",
 			LongHelp: `TODO(@cpu): write this`,
+			Func:     csrHandler,
 		},
-		nil,
-		csrHandler,
 		nil)
 }
 
@@ -30,7 +29,7 @@ type csrOptions struct {
 	orderIndex     int
 }
 
-func csrHandler(c *ishell.Context, args []string) {
+func csrHandler(c *ishell.Context) {
 	opts := csrOptions{}
 	csrFlags := flag.NewFlagSet("csr", flag.ContinueOnError)
 	csrFlags.StringVar(&opts.commonName, "cn", "", "CSR Subject Common Name (CN)")
@@ -40,7 +39,7 @@ func csrHandler(c *ishell.Context, args []string) {
 	csrFlags.StringVar(&opts.rawIdentifiers, "identifiers", "", "Comma separated list of DNS identifiers")
 	csrFlags.IntVar(&opts.orderIndex, "order", -1, "index of existing order")
 
-	leftovers, err := commands.ParseFlagSetArgs(args, csrFlags)
+	leftovers, err := commands.ParseFlagSetArgs(c.Args, csrFlags)
 	if err != nil {
 		return
 	}

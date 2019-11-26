@@ -18,9 +18,8 @@ func init() {
 			Aliases:  []string{"loadPrivateKey"},
 			Help:     "Load an existing PEM ECDSA private key from disk",
 			LongHelp: `TODO(@cpu): Write this!`,
+			Func:     loadKeyHandler,
 		},
-		nil,
-		loadKeyHandler,
 		nil)
 }
 
@@ -28,12 +27,12 @@ type loadKeyOptions struct {
 	id string
 }
 
-func loadKeyHandler(c *ishell.Context, args []string) {
+func loadKeyHandler(c *ishell.Context) {
 	opts := loadKeyOptions{}
 	loadKeyFlags := flag.NewFlagSet("loadKey", flag.ContinueOnError)
 	loadKeyFlags.StringVar(&opts.id, "id", "", "ID for the key")
 
-	leftovers, err := commands.ParseFlagSetArgs(args, loadKeyFlags)
+	leftovers, err := commands.ParseFlagSetArgs(c.Args, loadKeyFlags)
 	if err != nil {
 		return
 	}

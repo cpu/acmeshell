@@ -18,9 +18,8 @@ func init() {
 			Aliases:  []string{"jws"},
 			Help:     "Decode a JWS and its raw Base64URL encoded fields",
 			LongHelp: `TODO(@cpu): Write this!`,
+			Func:     jwsDecodeHandler,
 		},
-		nil,
-		jwsDecodeHandler,
 		nil)
 }
 
@@ -28,11 +27,11 @@ type jwsDecodeOptions struct {
 	data string
 }
 
-func jwsDecodeHandler(c *ishell.Context, args []string) {
+func jwsDecodeHandler(c *ishell.Context) {
 	opts := jwsDecodeOptions{}
 	jwsDecodeFlags := flag.NewFlagSet("jwsDecode", flag.ContinueOnError)
 
-	if _, err := commands.ParseFlagSetArgs(args, jwsDecodeFlags); err != nil {
+	if _, err := commands.ParseFlagSetArgs(c.Args, jwsDecodeFlags); err != nil {
 		return
 	}
 

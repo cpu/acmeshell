@@ -36,19 +36,18 @@ func init() {
 			Name:     "accounts",
 			Help:     "Show available ACME accounts",
 			LongHelp: longHelp,
+			Func:     accountsHandler,
 		},
-		nil,
-		accountsHandler,
 		nil)
 }
 
-func accountsHandler(c *ishell.Context, args []string) {
+func accountsHandler(c *ishell.Context) {
 	opts := accountsOptions{}
 	accountsFlags := flag.NewFlagSet("accounts", flag.ContinueOnError)
 	accountsFlags.BoolVar(&opts.printID, "showID", true, "Print ACME account IDs")
 	accountsFlags.BoolVar(&opts.printContact, "showContact", true, "Print ACME account contact info")
 
-	if _, err := commands.ParseFlagSetArgs(args, accountsFlags); err != nil {
+	if _, err := commands.ParseFlagSetArgs(c.Args, accountsFlags); err != nil {
 		return
 	}
 

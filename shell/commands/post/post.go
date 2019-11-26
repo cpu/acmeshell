@@ -42,10 +42,9 @@ func init() {
 			Aliases:  []string{"postURL"},
 			Help:     "Send an HTTP POST to a ACME endpoint or a URL",
 			LongHelp: longHelp,
+			Func:     postHandler,
 		},
-		commands.DirectoryAutocompleter,
-		postHandler,
-		nil)
+		commands.DirectoryAutocompleter)
 }
 
 type postOptions struct {
@@ -55,7 +54,7 @@ type postOptions struct {
 	noData         bool
 }
 
-func postHandler(c *ishell.Context, args []string) {
+func postHandler(c *ishell.Context) {
 	opts := postOptions{}
 	postFlags := flag.NewFlagSet("post", flag.ContinueOnError)
 	postFlags.StringVar(&opts.postBodyString, "body", "", "HTTP POST request body")
@@ -63,7 +62,7 @@ func postHandler(c *ishell.Context, args []string) {
 	postFlags.BoolVar(&opts.sign, "sign", true, "Sign body with active account key")
 	postFlags.BoolVar(&opts.noData, "noData", false, "Skip -body and assume no data POST-as-GET")
 
-	leftovers, err := commands.ParseFlagSetArgs(args, postFlags)
+	leftovers, err := commands.ParseFlagSetArgs(c.Args, postFlags)
 	if err != nil {
 		return
 	}

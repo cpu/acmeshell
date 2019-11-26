@@ -15,9 +15,8 @@ func init() {
 			Name:     "newOrder",
 			Help:     "Create a new ACME order",
 			LongHelp: `TODO(@cpu): Write this!`,
+			Func:     newOrderHandler,
 		},
-		nil,
-		newOrderHandler,
 		nil)
 }
 
@@ -25,12 +24,12 @@ type newOrderOptions struct {
 	rawIdentifiers string
 }
 
-func newOrderHandler(c *ishell.Context, args []string) {
+func newOrderHandler(c *ishell.Context) {
 	opts := newOrderOptions{}
 	newOrderFlags := flag.NewFlagSet("newOrder", flag.ContinueOnError)
 	newOrderFlags.StringVar(&opts.rawIdentifiers, "identifiers", "", "Comma separated list of DNS identifiers")
 
-	if _, err := commands.ParseFlagSetArgs(args, newOrderFlags); err != nil {
+	if _, err := commands.ParseFlagSetArgs(c.Args, newOrderFlags); err != nil {
 		return
 	}
 

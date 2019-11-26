@@ -17,9 +17,8 @@ func init() {
 			Name:     "poll",
 			Help:     "Poll an order or authz until it is has the desired status field value",
 			LongHelp: `TODO(@cpu): Write the poll cmd longHelp`,
+			Func:     pollHandler,
 		},
-		nil,
-		pollHandler,
 		nil)
 }
 
@@ -31,7 +30,7 @@ type pollOptions struct {
 	identifier   string
 }
 
-func pollHandler(c *ishell.Context, args []string) {
+func pollHandler(c *ishell.Context) {
 	opts := pollOptions{}
 	pollFlags := flag.NewFlagSet("poll", flag.ContinueOnError)
 	pollFlags.StringVar(&opts.status, "status", "ready", "Poll object until it is the given status")
@@ -40,7 +39,7 @@ func pollHandler(c *ishell.Context, args []string) {
 	pollFlags.IntVar(&opts.orderIndex, "order", -1, "index of order to poll")
 	pollFlags.StringVar(&opts.identifier, "identifier", "", "identifier of authorization")
 
-	leftovers, err := commands.ParseFlagSetArgs(args, pollFlags)
+	leftovers, err := commands.ParseFlagSetArgs(c.Args, pollFlags)
 	if err != nil {
 		return
 	}

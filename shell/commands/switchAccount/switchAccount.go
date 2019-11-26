@@ -20,9 +20,8 @@ func init() {
 			Aliases:  []string{"switch", "switchAcct", "switchReg", "switchRegistration"},
 			Help:     "Switch the active ACME account",
 			LongHelp: `TODO(@cpu): Write this!`,
+			Func:     switchAccountHandler,
 		},
-		nil,
-		switchAccountHandler,
 		nil)
 }
 
@@ -30,12 +29,12 @@ type switchAccountOptions struct {
 	accountIndex int
 }
 
-func switchAccountHandler(c *ishell.Context, args []string) {
+func switchAccountHandler(c *ishell.Context) {
 	opts := switchAccountOptions{}
 	switchAccountFlags := flag.NewFlagSet("switchAccount", flag.ContinueOnError)
 	switchAccountFlags.IntVar(&opts.accountIndex, "account", -1, "account number to switch to. leave blank to pick interactively")
 
-	if _, err := commands.ParseFlagSetArgs(args, switchAccountFlags); err != nil {
+	if _, err := commands.ParseFlagSetArgs(c.Args, switchAccountFlags); err != nil {
 		return
 	}
 

@@ -15,9 +15,8 @@ func init() {
 			Name:     "sign",
 			Help:     "Sign JSON for a URL with the active account key (or a specified key) and a nonce",
 			LongHelp: `TODO(@cpu): write this`,
+			Func:     signHandler,
 		},
-		nil,
-		signHandler,
 		nil)
 }
 
@@ -30,7 +29,7 @@ type signCmdOptions struct {
 	templateURL bool
 }
 
-func signHandler(c *ishell.Context, args []string) {
+func signHandler(c *ishell.Context) {
 	opts := signCmdOptions{}
 	signFlags := flag.NewFlagSet("sign", flag.ContinueOnError)
 	signFlags.BoolVar(&opts.embedKey, "embedKey", false, "Embed JWK in JWS instead of a Key ID Header")
@@ -39,7 +38,7 @@ func signHandler(c *ishell.Context, args []string) {
 	signFlags.BoolVar(&opts.noData, "noData", false, "Use an empty byteslice as the data to sign (e.g. POST-as-GET)")
 	signFlags.BoolVar(&opts.templateURL, "templateURL", true, "Evaluate URL as a template")
 
-	leftovers, err := commands.ParseFlagSetArgs(args, signFlags)
+	leftovers, err := commands.ParseFlagSetArgs(c.Args, signFlags)
 	if err != nil {
 		return
 	}

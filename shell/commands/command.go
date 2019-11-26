@@ -110,19 +110,15 @@ func AddCommands(shell *ishell.Shell, client *acmeclient.Client) {
 	}
 }
 
-type NewCommandHandler func(c *ishell.Context, leftovers []string)
-
 func RegisterCommand(
 	cmd *ishell.Cmd,
-	completerFunc NewCommandAutocompleter,
-	handler NewCommandHandler,
-	_ interface{}) {
-	if cmd.Func != nil {
-		panic("RegisterCommand called with a non-nil ishell.Cmd.Func. It would have been overwritten.\n")
+	completerFunc NewCommandAutocompleter) {
+	if cmd.Func == nil {
+		panic(fmt.Sprintf(
+			"Trying to RegisterCommand %q with nil handler Func\n",
+			cmd.Name,
+		))
 	}
-	// Stomp the cmd's Func with a wrapped version that will call the
-	// NewCommandHandler to parse the flags.
-	cmd.Func = wrapHandler(cmd.Name, handler, nil)
 	commands = append(commands, commandRegistry{
 		Cmd:           cmd,
 		Autocompleter: completerFunc,
@@ -145,30 +141,6 @@ func ParseFlagSetArgs(args []string, flagSet *flag.FlagSet) ([]string, error) {
 	}
 
 	return flagSet.Args(), nil
-}
-
-// TODO(@cpu): Delete this shit
-func wrapHandler(name string, handler NewCommandHandler, flags *flag.FlagSet) func(*ishell.Context) {
-	return func(c *ishell.Context) {
-		leftovers := c.Args
-		if flags != nil {
-			// Parse the command's flags with the context args.
-			err := flags.Parse(c.Args)
-			// If it was an error and not the -h error, print a message and return early.
-			if err != nil && err != flag.ErrHelp {
-				c.Printf("%s: error parsing input flags: %v\n", name, err)
-				return
-			} else if err == flag.ErrHelp {
-				// If it was the -h err, just return early. The help was already printed.
-				return
-			}
-			leftovers = flags.Args()
-		}
-
-		// Call the wrapped NewCommandHandler with the leftover args from flag
-		// parsing.
-		handler(c, leftovers)
-	}
 }
 
 func DirectoryAutocompleter(c *acmeclient.Client) func(args []string) []string {

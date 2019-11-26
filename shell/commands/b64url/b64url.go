@@ -34,13 +34,11 @@ func init() {
 			Aliases:  []string{"base64url", "base64"},
 			Help:     "Base64URL encode/decode utility",
 			LongHelp: `TODO(@cpu): Write this!`,
-		},
-		nil,
-		b64urlHandler,
-		nil)
+			Func:     b64urlHandler,
+		}, nil)
 }
 
-func b64urlHandler(c *ishell.Context, args []string) {
+func b64urlHandler(c *ishell.Context) {
 	opts := b64urlOptions{}
 	b64urlFlags := flag.NewFlagSet("b64url", flag.ContinueOnError)
 	b64urlFlags.BoolVar(&opts.encode, "encode", false, "Encode the input string as a raw base64 URL encoded string")
@@ -48,7 +46,7 @@ func b64urlHandler(c *ishell.Context, args []string) {
 	b64urlFlags.StringVar(&opts.data, "data", "", "Data to encode/decode")
 	b64urlFlags.BoolVar(&opts.hex, "hex", false, "Output result in hex instead of as a string")
 
-	if _, err := commands.ParseFlagSetArgs(args, b64urlFlags); err != nil {
+	if _, err := commands.ParseFlagSetArgs(c.Args, b64urlFlags); err != nil {
 		return
 	}
 

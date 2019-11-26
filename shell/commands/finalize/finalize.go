@@ -21,9 +21,8 @@ func init() {
 			Aliases:  []string{"finalizeOrder"},
 			Help:     "Finalize an ACME order with a CSR",
 			LongHelp: longHelp,
+			Func:     finalizeHandler,
 		},
-		nil,
-		finalizeHandler,
 		nil)
 }
 
@@ -34,7 +33,7 @@ type finalizeOptions struct {
 	orderIndex int
 }
 
-func finalizeHandler(c *ishell.Context, args []string) {
+func finalizeHandler(c *ishell.Context) {
 	opts := finalizeOptions{}
 	finalizeFlags := flag.NewFlagSet("finalize", flag.ContinueOnError)
 	finalizeFlags.StringVar(&opts.csr, "csr", "", "base64url encoded CSR")
@@ -42,7 +41,7 @@ func finalizeHandler(c *ishell.Context, args []string) {
 	finalizeFlags.StringVar(&opts.commonName, "cn", "", "subject common name (CN) for generated CSR")
 	finalizeFlags.IntVar(&opts.orderIndex, "order", -1, "index of existing order")
 
-	leftovers, err := commands.ParseFlagSetArgs(args, finalizeFlags)
+	leftovers, err := commands.ParseFlagSetArgs(c.Args, finalizeFlags)
 	if err != nil {
 		return
 	}

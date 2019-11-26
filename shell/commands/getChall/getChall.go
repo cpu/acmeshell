@@ -16,9 +16,8 @@ func init() {
 			Aliases:  []string{"challenge", "chall"},
 			Help:     "Get an ACME challenge URL",
 			LongHelp: `TODO(@cpu): Write this!`,
+			Func:     getChallHandler,
 		},
-		nil,
-		getChallHandler,
 		nil)
 }
 
@@ -28,14 +27,14 @@ type getChallOptions struct {
 	challType  string
 }
 
-func getChallHandler(c *ishell.Context, args []string) {
+func getChallHandler(c *ishell.Context) {
 	opts := getChallOptions{}
 	getChallFlags := flag.NewFlagSet("getChall", flag.ContinueOnError)
 	getChallFlags.IntVar(&opts.orderIndex, "order", -1, "index of existing order")
 	getChallFlags.StringVar(&opts.identifier, "identifier", "", "identifier of authorization")
 	getChallFlags.StringVar(&opts.challType, "type", "", "challenge type to get")
 
-	leftovers, err := commands.ParseFlagSetArgs(args, getChallFlags)
+	leftovers, err := commands.ParseFlagSetArgs(c.Args, getChallFlags)
 	if err != nil {
 		return
 	}

@@ -16,9 +16,8 @@ func init() {
 			Aliases:  []string{"authz", "authorization"},
 			Help:     "Get an ACME authz URL",
 			LongHelp: `TODO(@cpu): Write this!`,
+			Func:     getAuthzHandler,
 		},
-		nil,
-		getAuthzHandler,
 		nil)
 }
 
@@ -27,13 +26,13 @@ type getAuthzOptions struct {
 	identifier string
 }
 
-func getAuthzHandler(c *ishell.Context, args []string) {
+func getAuthzHandler(c *ishell.Context) {
 	opts := getAuthzOptions{}
 	getAuthzFlags := flag.NewFlagSet("getAuthz", flag.ContinueOnError)
 	getAuthzFlags.IntVar(&opts.orderIndex, "order", -1, "index of existing order")
 	getAuthzFlags.StringVar(&opts.identifier, "identifier", "", "identifier of authorization")
 
-	leftovers, err := commands.ParseFlagSetArgs(args, getAuthzFlags)
+	leftovers, err := commands.ParseFlagSetArgs(c.Args, getAuthzFlags)
 	if err != nil {
 		return
 	}

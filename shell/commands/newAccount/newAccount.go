@@ -18,9 +18,8 @@ func init() {
 			Aliases:  []string{"newAcct", "newReg", "newRegistration"},
 			Help:     "Create a new ACME account",
 			LongHelp: `TODO(@cpu): Write this!`,
+			Func:     newAccountHandler,
 		},
-		nil,
-		newAccountHandler,
 		nil)
 }
 
@@ -31,7 +30,7 @@ type newAccountOptions struct {
 	keyID    string
 }
 
-func newAccountHandler(c *ishell.Context, args []string) {
+func newAccountHandler(c *ishell.Context) {
 	opts := newAccountOptions{}
 	newAccountFlags := flag.NewFlagSet("newAccount", flag.ContinueOnError)
 	newAccountFlags.StringVar(&opts.contacts, "contacts", "", "Comma separated list of contact emails")
@@ -39,7 +38,7 @@ func newAccountHandler(c *ishell.Context, args []string) {
 	newAccountFlags.StringVar(&opts.jsonPath, "json", "", "Optional filepath to a JSON save file for the account")
 	newAccountFlags.StringVar(&opts.keyID, "keyID", "", "Key ID for existing key (empty to generate new key)")
 
-	if _, err := commands.ParseFlagSetArgs(args, newAccountFlags); err != nil {
+	if _, err := commands.ParseFlagSetArgs(c.Args, newAccountFlags); err != nil {
 		return
 	}
 

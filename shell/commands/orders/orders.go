@@ -15,9 +15,8 @@ func init() {
 			Name:     "orders",
 			Help:     "Show ACME orders created in this session by the active account",
 			LongHelp: `TODO(@cpu): write this`,
+			Func:     ordersHandler,
 		},
-		nil,
-		ordersHandler,
 		nil)
 }
 
@@ -27,14 +26,14 @@ type ordersOptions struct {
 	status           string
 }
 
-func ordersHandler(c *ishell.Context, args []string) {
+func ordersHandler(c *ishell.Context) {
 	opts := ordersOptions{}
 	ordersFlags := flag.NewFlagSet("orders", flag.ContinueOnError)
 	ordersFlags.BoolVar(&opts.printID, "showID", true, "Print order IDs")
 	ordersFlags.BoolVar(&opts.printIdentifiers, "showIdents", true, "Print order identifiers")
 	ordersFlags.StringVar(&opts.status, "status", "", "Print orders only if they are in the given status")
 
-	if _, err := commands.ParseFlagSetArgs(args, ordersFlags); err != nil {
+	if _, err := commands.ParseFlagSetArgs(c.Args, ordersFlags); err != nil {
 		return
 	}
 

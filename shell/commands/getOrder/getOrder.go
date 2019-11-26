@@ -16,9 +16,8 @@ func init() {
 			Aliases:  []string{"order"},
 			Help:     "Get an ACME order URL",
 			LongHelp: `TODO(@cpu): Write this!`,
+			Func:     getOrderHandler,
 		},
-		nil,
-		getOrderHandler,
 		nil)
 }
 
@@ -26,12 +25,12 @@ type getOrderOptions struct {
 	orderIndex int
 }
 
-func getOrderHandler(c *ishell.Context, args []string) {
+func getOrderHandler(c *ishell.Context) {
 	opts := getOrderOptions{}
 	getOrderFlags := flag.NewFlagSet("getOrder", flag.ContinueOnError)
 	getOrderFlags.IntVar(&opts.orderIndex, "order", -1, "index of existing order")
 
-	leftovers, err := commands.ParseFlagSetArgs(args, getOrderFlags)
+	leftovers, err := commands.ParseFlagSetArgs(c.Args, getOrderFlags)
 	if err != nil {
 		return
 	}

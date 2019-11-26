@@ -25,9 +25,8 @@ func init() {
 			Aliases:  []string{"newPrivateKey"},
 			Help:     "Create a new private key for use with newAccount/CSR/sign",
 			LongHelp: `TODO(@cpu): Write this!`,
+			Func:     newKeyHandler,
 		},
-		nil,
-		newKeyHandler,
 		nil)
 }
 
@@ -38,7 +37,7 @@ type newKeyOptions struct {
 	pemPath  string
 }
 
-func newKeyHandler(c *ishell.Context, args []string) {
+func newKeyHandler(c *ishell.Context) {
 	opts := newKeyOptions{}
 	newKeyFlags := flag.NewFlagSet("newKey", flag.ContinueOnError)
 	newKeyFlags.StringVar(&opts.keyID, "id", "", "ID for the new key")
@@ -46,7 +45,7 @@ func newKeyHandler(c *ishell.Context, args []string) {
 	newKeyFlags.BoolVar(&opts.printJWK, "jwk", true, "Print JWK output")
 	newKeyFlags.StringVar(&opts.pemPath, "path", "", "Path to write PEM private key to")
 
-	if _, err := commands.ParseFlagSetArgs(args, newKeyFlags); err != nil {
+	if _, err := commands.ParseFlagSetArgs(c.Args, newKeyFlags); err != nil {
 		return
 	}
 

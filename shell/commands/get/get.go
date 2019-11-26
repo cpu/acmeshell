@@ -37,16 +37,15 @@ func init() {
 			Aliases:  []string{"getURL"},
 			Help:     "Send an HTTP GET to a ACME endpoint or a URL",
 			LongHelp: longHelp,
+			Func:     getHandler,
 		},
-		commands.DirectoryAutocompleter,
-		getHandler,
-		nil)
+		commands.DirectoryAutocompleter)
 }
 
-func getHandler(c *ishell.Context, args []string) {
+func getHandler(c *ishell.Context) {
 	client := commands.GetClient(c)
 
-	targetURL, err := commands.FindURL(client, args)
+	targetURL, err := commands.FindURL(client, c.Args)
 	if err != nil {
 		c.Printf("get: error finding URL: %v\n", err)
 		return

@@ -19,9 +19,8 @@ func init() {
 			Aliases:  []string{"cert", "getCertificate", "certificate"},
 			Help:     "Get an order's certificate",
 			LongHelp: `TODO(@cpu): Write this!`,
+			Func:     getCertHandler,
 		},
-		nil,
-		getCertHandler,
 		nil)
 }
 
@@ -31,14 +30,14 @@ type getCertOptions struct {
 	orderIndex int
 }
 
-func getCertHandler(c *ishell.Context, args []string) {
+func getCertHandler(c *ishell.Context) {
 	opts := getCertOptions{}
 	getCertFlags := flag.NewFlagSet("getCert", flag.ContinueOnError)
 	getCertFlags.BoolVar(&opts.printPEM, "pem", true, "print PEM certificate chain output")
 	getCertFlags.StringVar(&opts.pemPath, "path", "", "file path to save PEM certificate chain output to")
 	getCertFlags.IntVar(&opts.orderIndex, "order", -1, "index of existing order")
 
-	leftovers, err := commands.ParseFlagSetArgs(args, getCertFlags)
+	leftovers, err := commands.ParseFlagSetArgs(c.Args, getCertFlags)
 	if err != nil {
 		return
 	}

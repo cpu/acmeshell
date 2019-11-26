@@ -15,9 +15,8 @@ func init() {
 			Aliases:  []string{"save", "saveReg", "saveRegistration"},
 			Help:     "Save the active ACME account",
 			LongHelp: `TODO(@cpu): Write this!`,
+			Func:     saveAccountHandler,
 		},
-		nil,
-		saveAccountHandler,
 		nil)
 }
 
@@ -25,12 +24,12 @@ type saveAccountOptions struct {
 	jsonPath string
 }
 
-func saveAccountHandler(c *ishell.Context, args []string) {
+func saveAccountHandler(c *ishell.Context) {
 	opts := saveAccountOptions{}
 	saveAccountFlags := flag.NewFlagSet("saveAccount", flag.ContinueOnError)
 	saveAccountFlags.StringVar(&opts.jsonPath, "json", "", "Filepath to a JSON save file for the account. If empty the -account argument is used")
 
-	if _, err := commands.ParseFlagSetArgs(args, saveAccountFlags); err != nil {
+	if _, err := commands.ParseFlagSetArgs(c.Args, saveAccountFlags); err != nil {
 		return
 	}
 

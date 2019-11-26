@@ -25,9 +25,8 @@ func init() {
 			Aliases:  []string{"keys", "viewKeys"},
 			Help:     "View available private keys",
 			LongHelp: `TODO(@cpu): Write keys longhelp`,
+			Func:     keysHandler,
 		},
-		nil,
-		keysHandler,
 		nil)
 }
 
@@ -38,7 +37,7 @@ type viewKeyOptions struct {
 	pemPath    string
 }
 
-func keysHandler(c *ishell.Context, args []string) {
+func keysHandler(c *ishell.Context) {
 	opts := viewKeyOptions{}
 	viewKeyFlags := flag.NewFlagSet("viewKey", flag.ContinueOnError)
 	viewKeyFlags.BoolVar(&opts.pem, "pem", false, "Display private key in PEM format")
@@ -46,7 +45,7 @@ func keysHandler(c *ishell.Context, args []string) {
 	viewKeyFlags.BoolVar(&opts.thumbprint, "thumbprint", true, "Display hex JWK public key thumbprint")
 	viewKeyFlags.StringVar(&opts.pemPath, "path", "", "Path to write PEM private key to")
 
-	leftovers, err := commands.ParseFlagSetArgs(args, viewKeyFlags)
+	leftovers, err := commands.ParseFlagSetArgs(c.Args, viewKeyFlags)
 	if err != nil {
 		return
 	}

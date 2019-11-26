@@ -18,9 +18,8 @@ func init() {
 			Aliases:  []string{"chalSrv", "challengeServer"},
 			Help:     "Add/remove challenge responses from the embedded challenge response server",
 			LongHelp: longHelp,
+			Func:     challSrvHandler,
 		},
-		nil,
-		challSrvHandler,
 		nil)
 }
 
@@ -32,7 +31,7 @@ type challSrvOptions struct {
 	operation     string
 }
 
-func challSrvHandler(c *ishell.Context, args []string) {
+func challSrvHandler(c *ishell.Context) {
 	var opts challSrvOptions
 	challSrvFlags := flag.NewFlagSet("challSrv", flag.ContinueOnError)
 	challSrvFlags.StringVar(&opts.challengeType, "challengeType", "", "Challenge type to add/remove")
@@ -41,7 +40,7 @@ func challSrvHandler(c *ishell.Context, args []string) {
 	challSrvFlags.StringVar(&opts.value, "value", "", "Challenge response value")
 	challSrvFlags.StringVar(&opts.operation, "operation", "add", "'add' to add a challenge, 'del' to remove")
 
-	if _, err := commands.ParseFlagSetArgs(args, challSrvFlags); err != nil {
+	if _, err := commands.ParseFlagSetArgs(c.Args, challSrvFlags); err != nil {
 		return
 	}
 

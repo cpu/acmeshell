@@ -17,14 +17,12 @@ func init() {
 			Aliases:  []string{"account", "getAcct", "registration", "getReg", "getRegistration"},
 			Help:     "Get ACME account details from server",
 			LongHelp: `TODO(@cpu): Write this!`,
+			Func:     getAccountHandler,
 		},
-		nil,
-		getAccountHandler,
-		nil,
-	)
+		nil)
 }
 
-func getAccountHandler(c *ishell.Context, _ []string) {
+func getAccountHandler(c *ishell.Context) {
 	client := commands.GetClient(c)
 
 	getAcctReq := struct {

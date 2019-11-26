@@ -16,9 +16,8 @@ func init() {
 			Aliases:  []string{"loadAcct", "loadReg", "loadRegistration"},
 			Help:     "Load an existing ACME account from JSON",
 			LongHelp: `TODO(@cpu): Write this!`,
+			Func:     loadAccountHandler,
 		},
-		nil,
-		loadAccountHandler,
 		nil)
 }
 
@@ -26,12 +25,12 @@ type loadAccountOptions struct {
 	switchTo bool
 }
 
-func loadAccountHandler(c *ishell.Context, args []string) {
+func loadAccountHandler(c *ishell.Context) {
 	opts := loadAccountOptions{}
 	loadAccountFlags := flag.NewFlagSet("loadAccount", flag.ContinueOnError)
 	loadAccountFlags.BoolVar(&opts.switchTo, "switch", true, "Switch to the account after loading it")
 
-	leftovers, err := commands.ParseFlagSetArgs(args, loadAccountFlags)
+	leftovers, err := commands.ParseFlagSetArgs(c.Args, loadAccountFlags)
 	if err != nil {
 		return
 	}

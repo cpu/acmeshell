@@ -21,9 +21,8 @@ func init() {
 			Aliases:  []string{"keyRollover", "keyChange", "switchKey"},
 			Help:     "Switch active account's key to a different key",
 			LongHelp: `TODO`,
+			Func:     rolloverHandler,
 		},
-		nil,
-		rolloverHandler,
 		nil)
 }
 
@@ -33,14 +32,14 @@ type keyRolloverOptions struct {
 	keyID             string
 }
 
-func rolloverHandler(c *ishell.Context, args []string) {
+func rolloverHandler(c *ishell.Context) {
 	opts := keyRolloverOptions{}
 	keyRolloverFlags := flag.NewFlagSet("keyRollover", flag.ContinueOnError)
 	keyRolloverFlags.BoolVar(&opts.printInnerJWS, "innerJWS", false, "Print inner JWS JSON")
 	keyRolloverFlags.BoolVar(&opts.printInnerJWSBody, "innerJWSBody", false, "Print inner JWS body JSON")
 	keyRolloverFlags.StringVar(&opts.keyID, "keyID", "", "Key ID to rollover to (leave empty to select interactively)")
 
-	if _, err := commands.ParseFlagSetArgs(args, keyRolloverFlags); err != nil {
+	if _, err := commands.ParseFlagSetArgs(c.Args, keyRolloverFlags); err != nil {
 		return
 	}
 

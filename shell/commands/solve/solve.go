@@ -22,9 +22,8 @@ func init() {
 			Aliases:  []string{"solveChallenge"},
 			Help:     "Complete an ACME challenge",
 			LongHelp: `TODO(@cpu): Write this!`,
+			Func:     solveHandler,
 		},
-		nil,
-		solveHandler,
 		nil)
 }
 
@@ -36,7 +35,7 @@ type solveOptions struct {
 	challType             string
 }
 
-func solveHandler(c *ishell.Context, args []string) {
+func solveHandler(c *ishell.Context) {
 	opts := solveOptions{}
 	solveFlags := flag.NewFlagSet("solve", flag.ContinueOnError)
 	solveFlags.BoolVar(&opts.printKeyAuthorization, "printKeyAuth", false, "Print calculated key authorization")
@@ -45,7 +44,7 @@ func solveHandler(c *ishell.Context, args []string) {
 	solveFlags.StringVar(&opts.identifier, "identifier", "", "Authorization identifier to solve for")
 	solveFlags.IntVar(&opts.orderIndex, "order", -1, "index of existing order")
 
-	leftovers, err := commands.ParseFlagSetArgs(args, solveFlags)
+	leftovers, err := commands.ParseFlagSetArgs(c.Args, solveFlags)
 	if err != nil {
 		return
 	}
