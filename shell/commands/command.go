@@ -117,6 +117,9 @@ func RegisterCommand(
 	completerFunc NewCommandAutocompleter,
 	handler NewCommandHandler,
 	flags *flag.FlagSet) {
+	if cmd.Func != nil {
+		panic("RegisterCommand called with a non-nil ishell.Cmd.Func. It would have been overwritten.\n")
+	}
 	// Stomp the cmd's Func with a wrapped version that will call the
 	// NewCommandHandler to parse the flags.
 	cmd.Func = wrapHandler(cmd.Name, handler, flags)
