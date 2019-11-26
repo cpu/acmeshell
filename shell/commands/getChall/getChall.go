@@ -9,26 +9,7 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
-type getChallOptions struct {
-	orderIndex int
-	identifier string
-	challType  string
-}
-
-var (
-	opts = getChallOptions{}
-)
-
 func init() {
-	registerGetChallCmd()
-}
-
-func registerGetChallCmd() {
-	getChallFlags := flag.NewFlagSet("getChall", flag.ContinueOnError)
-	getChallFlags.IntVar(&opts.orderIndex, "order", -1, "index of existing order")
-	getChallFlags.StringVar(&opts.identifier, "identifier", "", "identifier of authorization")
-	getChallFlags.StringVar(&opts.challType, "type", "", "challenge type to get")
-
 	commands.RegisterCommand(
 		&ishell.Cmd{
 			Name:     "getChall",
@@ -38,20 +19,30 @@ func registerGetChallCmd() {
 		},
 		nil,
 		getChallHandler,
-		getChallFlags)
+		nil)
 }
 
-func getChallHandler(c *ishell.Context, leftovers []string) {
-	defer func() {
-		opts = getChallOptions{
-			orderIndex: -1,
-		}
-	}()
+type getChallOptions struct {
+	orderIndex int
+	identifier string
+	challType  string
+}
+
+func getChallHandler(c *ishell.Context, args []string) {
+	opts := getChallOptions{}
+	getChallFlags := flag.NewFlagSet("getChall", flag.ContinueOnError)
+	getChallFlags.IntVar(&opts.orderIndex, "order", -1, "index of existing order")
+	getChallFlags.StringVar(&opts.identifier, "identifier", "", "identifier of authorization")
+	getChallFlags.StringVar(&opts.challType, "type", "", "challenge type to get")
+
+	leftovers, err := commands.ParseFlagSetArgs(args, getChallFlags)
+	if err != nil {
+		return
+	}
 
 	client := commands.GetClient(c)
 
 	var targetURL string
-	var err error
 	if len(leftovers) > 0 {
 		templateText := strings.Join(leftovers, " ")
 		targetURL, err = commands.ClientTemplate(client, templateText)

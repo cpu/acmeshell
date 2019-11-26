@@ -8,10 +8,6 @@ import (
 )
 
 func init() {
-	registerEchoCmd()
-}
-
-func registerEchoCmd() {
 	commands.RegisterCommand(
 		&ishell.Cmd{
 			Name:     "echo",
@@ -23,6 +19,6 @@ func registerEchoCmd() {
 		nil)
 }
 
-func echoHandler(c *ishell.Context, leftovers []string) {
-	c.Printf("# %s\n", strings.Join(leftovers, " "))
+func echoHandler(c *ishell.Context, args []string) {
+	c.Printf("# %s\n", strings.Join(args, " "))
 }

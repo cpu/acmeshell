@@ -9,26 +9,7 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
-type ordersOptions struct {
-	printID          bool
-	printIdentifiers bool
-	status           string
-}
-
-var (
-	opts = ordersOptions{}
-)
-
 func init() {
-	registerOrdersCmd()
-}
-
-func registerOrdersCmd() {
-	ordersFlags := flag.NewFlagSet("orders", flag.ContinueOnError)
-	ordersFlags.BoolVar(&opts.printID, "showID", true, "Print order IDs")
-	ordersFlags.BoolVar(&opts.printIdentifiers, "showIdents", true, "Print order identifiers")
-	ordersFlags.StringVar(&opts.status, "status", "", "Print orders only if they are in the given status")
-
 	commands.RegisterCommand(
 		&ishell.Cmd{
 			Name:     "orders",
@@ -37,16 +18,25 @@ func registerOrdersCmd() {
 		},
 		nil,
 		ordersHandler,
-		ordersFlags)
+		nil)
 }
 
-func ordersHandler(c *ishell.Context, leftovers []string) {
-	defer func() {
-		opts = ordersOptions{
-			printID:          true,
-			printIdentifiers: true,
-		}
-	}()
+type ordersOptions struct {
+	printID          bool
+	printIdentifiers bool
+	status           string
+}
+
+func ordersHandler(c *ishell.Context, args []string) {
+	opts := ordersOptions{}
+	ordersFlags := flag.NewFlagSet("orders", flag.ContinueOnError)
+	ordersFlags.BoolVar(&opts.printID, "showID", true, "Print order IDs")
+	ordersFlags.BoolVar(&opts.printIdentifiers, "showIdents", true, "Print order identifiers")
+	ordersFlags.StringVar(&opts.status, "status", "", "Print orders only if they are in the given status")
+
+	if _, err := commands.ParseFlagSetArgs(args, ordersFlags); err != nil {
+		return
+	}
 
 	if !opts.printID && !opts.printIdentifiers {
 		c.Printf("orders: -showID and -showIdents can not both be false\n")

@@ -31,14 +31,6 @@ const (
 )
 
 func init() {
-	registerAccountsCmd()
-}
-
-func registerAccountsCmd() {
-	accountsFlags := flag.NewFlagSet("accounts", flag.ContinueOnError)
-	accountsFlags.BoolVar(&opts.printID, "showID", true, "Print ACME account IDs")
-	accountsFlags.BoolVar(&opts.printContact, "showContact", true, "Print ACME account contact info")
-
 	commands.RegisterCommand(
 		&ishell.Cmd{
 			Name:     "accounts",
@@ -47,16 +39,19 @@ func registerAccountsCmd() {
 		},
 		nil,
 		accountsHandler,
-		accountsFlags)
+		nil)
 }
 
-func accountsHandler(c *ishell.Context, leftovers []string) {
-	defer func() {
-		opts = accountsOptions{
-			printID:      true,
-			printContact: true,
-		}
-	}()
+func accountsHandler(c *ishell.Context, args []string) {
+	opts := accountsOptions{}
+	accountsFlags := flag.NewFlagSet("accounts", flag.ContinueOnError)
+	accountsFlags.BoolVar(&opts.printID, "showID", true, "Print ACME account IDs")
+	accountsFlags.BoolVar(&opts.printContact, "showContact", true, "Print ACME account contact info")
+
+	if _, err := commands.ParseFlagSetArgs(args, accountsFlags); err != nil {
+		return
+	}
+
 	if !opts.printID && !opts.printContact {
 		c.Printf("accounts: -showID and -showContact can not both be false\n")
 		return

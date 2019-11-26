@@ -11,10 +11,6 @@ import (
 )
 
 func init() {
-	registerGetAccountCmd()
-}
-
-func registerGetAccountCmd() {
 	commands.RegisterCommand(
 		&ishell.Cmd{
 			Name:     "getAccount",
@@ -28,7 +24,7 @@ func registerGetAccountCmd() {
 	)
 }
 
-func getAccountHandler(c *ishell.Context, leftovers []string) {
+func getAccountHandler(c *ishell.Context, _ []string) {
 	client := commands.GetClient(c)
 
 	getAcctReq := struct {

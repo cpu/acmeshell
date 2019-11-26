@@ -11,19 +11,7 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
-type pollOptions struct {
-	maxTries     int
-	sleepSeconds int
-	status       string
-	orderIndex   int
-	identifier   string
-}
-
 func init() {
-	registerPollCommand()
-}
-
-func registerPollCommand() {
 	commands.RegisterCommand(
 		&ishell.Cmd{
 			Name:     "poll",
@@ -35,37 +23,38 @@ func registerPollCommand() {
 		nil)
 }
 
+type pollOptions struct {
+	maxTries     int
+	sleepSeconds int
+	status       string
+	orderIndex   int
+	identifier   string
+}
+
 func pollHandler(c *ishell.Context, args []string) {
-	newOpts := pollOptions{}
-	newFlags := flag.NewFlagSet("poll", flag.ContinueOnError)
-	newFlags.StringVar(&newOpts.status, "status", "ready", "Poll object until it is the given status")
-	newFlags.IntVar(&newOpts.maxTries, "maxTries", 5, "Number of times to poll before giving up")
-	newFlags.IntVar(&newOpts.sleepSeconds, "sleep", 5, "Number of seconds to sleep between poll attempts")
-	newFlags.IntVar(&newOpts.orderIndex, "order", -1, "index of order to poll")
-	newFlags.StringVar(&newOpts.identifier, "identifier", "", "identifier of authorization")
+	opts := pollOptions{}
+	pollFlags := flag.NewFlagSet("poll", flag.ContinueOnError)
+	pollFlags.StringVar(&opts.status, "status", "ready", "Poll object until it is the given status")
+	pollFlags.IntVar(&opts.maxTries, "maxTries", 5, "Number of times to poll before giving up")
+	pollFlags.IntVar(&opts.sleepSeconds, "sleep", 5, "Number of seconds to sleep between poll attempts")
+	pollFlags.IntVar(&opts.orderIndex, "order", -1, "index of order to poll")
+	pollFlags.StringVar(&opts.identifier, "identifier", "", "identifier of authorization")
 
-	err := newFlags.Parse(args)
-
-	// If it was an error and not the -h error, print a message and return early.
-	if err != nil && err != flag.ErrHelp {
-		c.Printf("poll: error parsing input flags: %v\n", err)
-		return
-	} else if err == flag.ErrHelp {
-		// If it was the -h err, just return early. The help was already printed.
+	leftovers, err := commands.ParseFlagSetArgs(args, pollFlags)
+	if err != nil {
 		return
 	}
-	leftovers := newFlags.Args()
 
 	client := commands.GetClient(c)
 
-	targetURL, err := commands.FindOrderURL(c, leftovers, newOpts.orderIndex)
+	targetURL, err := commands.FindOrderURL(c, leftovers, opts.orderIndex)
 	if err != nil {
 		c.Printf("poll: error getting order URL: %v\n", err)
 		return
 	}
 
-	if newOpts.identifier != "" {
-		targetURL, err = commands.FindAuthzURL(c, targetURL, newOpts.identifier)
+	if opts.identifier != "" {
+		targetURL, err = commands.FindAuthzURL(c, targetURL, opts.identifier)
 		if err != nil {
 			c.Printf("poll: error getting order URL: %v\n", err)
 			return
@@ -78,14 +67,14 @@ func pollHandler(c *ishell.Context, args []string) {
 		return
 	}
 
-	pollURL(c, client, targetURL, newOpts)
+	pollURL(c, client, targetURL, opts)
 }
 
 type polledOb struct {
 	Status string
 }
 
-func pollObject(client *acmeclient.Client, targetURL string, newOpts pollOptions) (polledOb, error) {
+func pollObject(client *acmeclient.Client, targetURL string, opts pollOptions) (polledOb, error) {
 	var ob polledOb
 	var resp *net.NetResponse
 	var err error
@@ -105,36 +94,36 @@ func pollObject(client *acmeclient.Client, targetURL string, newOpts pollOptions
 	return ob, nil
 }
 
-func pollURL(c *ishell.Context, client *acmeclient.Client, targetURL string, newOpts pollOptions) {
-	ob, err := pollObject(client, targetURL, newOpts)
+func pollURL(c *ishell.Context, client *acmeclient.Client, targetURL string, opts pollOptions) {
+	ob, err := pollObject(client, targetURL, opts)
 	if err != nil {
 		c.Printf("poll: error polling object at %q: %v\n", targetURL, err)
 		return
 	}
 
-	if ob.Status != newOpts.status {
-		for try := 0; try < newOpts.maxTries; try++ {
-			ob, err = pollObject(client, targetURL, newOpts)
+	if ob.Status != opts.status {
+		for try := 0; try < opts.maxTries; try++ {
+			ob, err = pollObject(client, targetURL, opts)
 			if err != nil {
 				c.Printf("poll: error polling object at %q: %v\n", targetURL, err)
 				return
 			}
-			if ob.Status == newOpts.status {
+			if ob.Status == opts.status {
 				break
 			}
 
 			c.Printf("poll: try %d. %q is status %q\n", try, targetURL, ob.Status)
-			time.Sleep(time.Duration(newOpts.sleepSeconds) * time.Second)
+			time.Sleep(time.Duration(opts.sleepSeconds) * time.Second)
 		}
 	}
 
-	if ob.Status == newOpts.status {
+	if ob.Status == opts.status {
 		c.Printf("poll: polling done. %q is status %q\n",
 			targetURL,
 			ob.Status)
 	} else {
 		c.Printf("poll: polling failed. reached %d tries. %q is status %q\n",
-			newOpts.maxTries,
+			opts.maxTries,
 			targetURL,
 			ob.Status)
 	}

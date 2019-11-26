@@ -116,19 +116,38 @@ func RegisterCommand(
 	cmd *ishell.Cmd,
 	completerFunc NewCommandAutocompleter,
 	handler NewCommandHandler,
-	flags *flag.FlagSet) {
+	_ interface{}) {
 	if cmd.Func != nil {
 		panic("RegisterCommand called with a non-nil ishell.Cmd.Func. It would have been overwritten.\n")
 	}
 	// Stomp the cmd's Func with a wrapped version that will call the
 	// NewCommandHandler to parse the flags.
-	cmd.Func = wrapHandler(cmd.Name, handler, flags)
+	cmd.Func = wrapHandler(cmd.Name, handler, nil)
 	commands = append(commands, commandRegistry{
 		Cmd:           cmd,
 		Autocompleter: completerFunc,
 	})
 }
 
+// ParseFlagSetArgs parses the given args with the flagSet. If there is no error
+// then (leftovers []string, nil) is returned where "leftovers" is the
+// result of flagSet.Args() after parsing. If there is an err (including
+// flag.ErrHelp) then (nil, err) is returned. Most callers will want to simply
+// bail out of the command if there is an error because the flag package will
+// have already printed the cause to stdout.
+func ParseFlagSetArgs(args []string, flagSet *flag.FlagSet) ([]string, error) {
+	if flagSet == nil {
+		return nil, errors.New("flagSet argument was nil")
+	}
+
+	if err := flagSet.Parse(args); err != nil {
+		return nil, err
+	}
+
+	return flagSet.Args(), nil
+}
+
+// TODO(@cpu): Delete this shit
 func wrapHandler(name string, handler NewCommandHandler, flags *flag.FlagSet) func(*ishell.Context) {
 	return func(c *ishell.Context) {
 		leftovers := c.Args

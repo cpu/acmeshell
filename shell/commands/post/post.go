@@ -10,17 +10,6 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
-type postOptions struct {
-	postBodyString string
-	templateBody   bool
-	sign           bool
-	noData         bool
-}
-
-var (
-	opts = postOptions{}
-)
-
 const (
 	longHelp = `
 	post [acme endpoint]:
@@ -47,16 +36,6 @@ const (
 )
 
 func init() {
-	registerPostCommand()
-}
-
-func registerPostCommand() {
-	postFlags := flag.NewFlagSet("post", flag.ContinueOnError)
-	postFlags.StringVar(&opts.postBodyString, "body", "", "HTTP POST request body")
-	postFlags.BoolVar(&opts.templateBody, "templateBody", true, "Template HTTP POST body")
-	postFlags.BoolVar(&opts.sign, "sign", true, "Sign body with active account key")
-	postFlags.BoolVar(&opts.noData, "noData", false, "Skip -body and assume no data POST-as-GET")
-
 	commands.RegisterCommand(
 		&ishell.Cmd{
 			Name:     "post",
@@ -66,17 +45,28 @@ func registerPostCommand() {
 		},
 		commands.DirectoryAutocompleter,
 		postHandler,
-		postFlags)
+		nil)
 }
 
-func postHandler(c *ishell.Context, leftovers []string) {
-	// Reset options to default after handling
-	defer func() {
-		opts = postOptions{
-			templateBody: true,
-			sign:         true,
-		}
-	}()
+type postOptions struct {
+	postBodyString string
+	templateBody   bool
+	sign           bool
+	noData         bool
+}
+
+func postHandler(c *ishell.Context, args []string) {
+	opts := postOptions{}
+	postFlags := flag.NewFlagSet("post", flag.ContinueOnError)
+	postFlags.StringVar(&opts.postBodyString, "body", "", "HTTP POST request body")
+	postFlags.BoolVar(&opts.templateBody, "templateBody", true, "Template HTTP POST body")
+	postFlags.BoolVar(&opts.sign, "sign", true, "Sign body with active account key")
+	postFlags.BoolVar(&opts.noData, "noData", false, "Skip -body and assume no data POST-as-GET")
+
+	leftovers, err := commands.ParseFlagSetArgs(args, postFlags)
+	if err != nil {
+		return
+	}
 
 	client := commands.GetClient(c)
 

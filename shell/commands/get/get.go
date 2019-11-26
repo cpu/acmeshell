@@ -31,10 +31,6 @@ const (
 )
 
 func init() {
-	registerGetCommand()
-}
-
-func registerGetCommand() {
 	commands.RegisterCommand(
 		&ishell.Cmd{
 			Name:     "get",
@@ -47,10 +43,10 @@ func registerGetCommand() {
 		nil)
 }
 
-func getHandler(c *ishell.Context, leftovers []string) {
+func getHandler(c *ishell.Context, args []string) {
 	client := commands.GetClient(c)
 
-	targetURL, err := commands.FindURL(client, leftovers)
+	targetURL, err := commands.FindURL(client, args)
 	if err != nil {
 		c.Printf("get: error finding URL: %v\n", err)
 		return

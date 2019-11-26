@@ -18,28 +18,7 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
-type newKeyOptions struct {
-	keyID    string
-	printPEM bool
-	printJWK bool
-	pemPath  string
-}
-
-var (
-	opts = newKeyOptions{}
-)
-
 func init() {
-	registerNewKeyCmd()
-}
-
-func registerNewKeyCmd() {
-	newKeyFlags := flag.NewFlagSet("newKey", flag.ContinueOnError)
-	newKeyFlags.StringVar(&opts.keyID, "id", "", "ID for the new key")
-	newKeyFlags.BoolVar(&opts.printPEM, "pem", false, "Print PEM output")
-	newKeyFlags.BoolVar(&opts.printJWK, "jwk", true, "Print JWK output")
-	newKeyFlags.StringVar(&opts.pemPath, "path", "", "Path to write PEM private key to")
-
 	commands.RegisterCommand(
 		&ishell.Cmd{
 			Name:     "newKey",
@@ -49,15 +28,27 @@ func registerNewKeyCmd() {
 		},
 		nil,
 		newKeyHandler,
-		newKeyFlags)
+		nil)
 }
 
-func newKeyHandler(c *ishell.Context, leftovers []string) {
-	defer func() {
-		opts = newKeyOptions{
-			printJWK: true,
-		}
-	}()
+type newKeyOptions struct {
+	keyID    string
+	printPEM bool
+	printJWK bool
+	pemPath  string
+}
+
+func newKeyHandler(c *ishell.Context, args []string) {
+	opts := newKeyOptions{}
+	newKeyFlags := flag.NewFlagSet("newKey", flag.ContinueOnError)
+	newKeyFlags.StringVar(&opts.keyID, "id", "", "ID for the new key")
+	newKeyFlags.BoolVar(&opts.printPEM, "pem", false, "Print PEM output")
+	newKeyFlags.BoolVar(&opts.printJWK, "jwk", true, "Print JWK output")
+	newKeyFlags.StringVar(&opts.pemPath, "path", "", "Path to write PEM private key to")
+
+	if _, err := commands.ParseFlagSetArgs(args, newKeyFlags); err != nil {
+		return
+	}
 
 	if opts.keyID == "" {
 		c.Printf("newKey: -id must not be empty\n")

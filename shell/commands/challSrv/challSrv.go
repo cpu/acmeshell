@@ -7,34 +7,11 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
-type challSrvOptions struct {
-	challengeType string
-	token         string
-	host          string
-	value         string
-	operation     string
-}
-
-var (
-	opts challSrvOptions
-)
-
 const (
 	longHelp = `TODO(@cpu): write challSrv LongHelp`
 )
 
 func init() {
-	registerChallSrvCmd()
-}
-
-func registerChallSrvCmd() {
-	challSrvFlags := flag.NewFlagSet("challSrv", flag.ContinueOnError)
-	challSrvFlags.StringVar(&opts.challengeType, "challengeType", "", "Challenge type to add/remove")
-	challSrvFlags.StringVar(&opts.token, "token", "", "Challenge token (HTTP-01 only)")
-	challSrvFlags.StringVar(&opts.host, "host", "", "Challenge response host (DNS-01/TLS-ALPN-01 only)")
-	challSrvFlags.StringVar(&opts.value, "value", "", "Challenge response value")
-	challSrvFlags.StringVar(&opts.operation, "operation", "add", "'add' to add a challenge, 'del' to remove")
-
 	commands.RegisterCommand(
 		&ishell.Cmd{
 			Name:     "challSrv",
@@ -44,15 +21,30 @@ func registerChallSrvCmd() {
 		},
 		nil,
 		challSrvHandler,
-		challSrvFlags)
+		nil)
 }
 
-func challSrvHandler(c *ishell.Context, leftovers []string) {
-	defer func() {
-		opts = challSrvOptions{
-			operation: "add",
-		}
-	}()
+type challSrvOptions struct {
+	challengeType string
+	token         string
+	host          string
+	value         string
+	operation     string
+}
+
+func challSrvHandler(c *ishell.Context, args []string) {
+	var opts challSrvOptions
+	challSrvFlags := flag.NewFlagSet("challSrv", flag.ContinueOnError)
+	challSrvFlags.StringVar(&opts.challengeType, "challengeType", "", "Challenge type to add/remove")
+	challSrvFlags.StringVar(&opts.token, "token", "", "Challenge token (HTTP-01 only)")
+	challSrvFlags.StringVar(&opts.host, "host", "", "Challenge response host (DNS-01/TLS-ALPN-01 only)")
+	challSrvFlags.StringVar(&opts.value, "value", "", "Challenge response value")
+	challSrvFlags.StringVar(&opts.operation, "operation", "add", "'add' to add a challenge, 'del' to remove")
+
+	if _, err := commands.ParseFlagSetArgs(args, challSrvFlags); err != nil {
+		return
+	}
+
 	if opts.operation != "add" && opts.operation != "delete" {
 		c.Printf("challSrv: -operation must be \"add\" or \"delete\"\n")
 		return

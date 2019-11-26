@@ -11,28 +11,7 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
-type newAccountOptions struct {
-	contacts string
-	switchTo bool
-	jsonPath string
-	keyID    string
-}
-
-var (
-	opts = newAccountOptions{}
-)
-
 func init() {
-	registerNewAccountCmd()
-}
-
-func registerNewAccountCmd() {
-	newAccountFlags := flag.NewFlagSet("newAccount", flag.ContinueOnError)
-	newAccountFlags.StringVar(&opts.contacts, "contacts", "", "Comma separated list of contact emails")
-	newAccountFlags.BoolVar(&opts.switchTo, "switch", true, "Switch to the new account after creating it")
-	newAccountFlags.StringVar(&opts.jsonPath, "json", "", "Optional filepath to a JSON save file for the account")
-	newAccountFlags.StringVar(&opts.keyID, "keyID", "", "Key ID for existing key (empty to generate new key)")
-
 	commands.RegisterCommand(
 		&ishell.Cmd{
 			Name:     "newAccount",
@@ -42,15 +21,27 @@ func registerNewAccountCmd() {
 		},
 		nil,
 		newAccountHandler,
-		newAccountFlags)
+		nil)
 }
 
-func newAccountHandler(c *ishell.Context, leftovers []string) {
-	defer func() {
-		opts = newAccountOptions{
-			switchTo: true,
-		}
-	}()
+type newAccountOptions struct {
+	contacts string
+	switchTo bool
+	jsonPath string
+	keyID    string
+}
+
+func newAccountHandler(c *ishell.Context, args []string) {
+	opts := newAccountOptions{}
+	newAccountFlags := flag.NewFlagSet("newAccount", flag.ContinueOnError)
+	newAccountFlags.StringVar(&opts.contacts, "contacts", "", "Comma separated list of contact emails")
+	newAccountFlags.BoolVar(&opts.switchTo, "switch", true, "Switch to the new account after creating it")
+	newAccountFlags.StringVar(&opts.jsonPath, "json", "", "Optional filepath to a JSON save file for the account")
+	newAccountFlags.StringVar(&opts.keyID, "keyID", "", "Key ID for existing key (empty to generate new key)")
+
+	if _, err := commands.ParseFlagSetArgs(args, newAccountFlags); err != nil {
+		return
+	}
 
 	rawEmails := strings.Split(opts.contacts, ",")
 	var emails []string

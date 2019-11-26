@@ -11,22 +11,7 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
-type loadKeyOptions struct {
-	id string
-}
-
-var (
-	opts = loadKeyOptions{}
-)
-
 func init() {
-	registerLoadKeyCmd()
-}
-
-func registerLoadKeyCmd() {
-	loadKeyFlags := flag.NewFlagSet("loadKey", flag.ContinueOnError)
-	loadKeyFlags.StringVar(&opts.id, "id", "", "ID for the key")
-
 	commands.RegisterCommand(
 		&ishell.Cmd{
 			Name:     "loadKey",
@@ -36,13 +21,22 @@ func registerLoadKeyCmd() {
 		},
 		nil,
 		loadKeyHandler,
-		loadKeyFlags)
+		nil)
 }
 
-func loadKeyHandler(c *ishell.Context, leftovers []string) {
-	defer func() {
-		opts = loadKeyOptions{}
-	}()
+type loadKeyOptions struct {
+	id string
+}
+
+func loadKeyHandler(c *ishell.Context, args []string) {
+	opts := loadKeyOptions{}
+	loadKeyFlags := flag.NewFlagSet("loadKey", flag.ContinueOnError)
+	loadKeyFlags.StringVar(&opts.id, "id", "", "ID for the key")
+
+	leftovers, err := commands.ParseFlagSetArgs(args, loadKeyFlags)
+	if err != nil {
+		return
+	}
 
 	if len(leftovers) < 1 {
 		c.Printf("loadKey: you must specify a PEM filepath to load from\n")

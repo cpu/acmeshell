@@ -9,22 +9,7 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
-type loadAccountOptions struct {
-	switchTo bool
-}
-
-var (
-	opts = loadAccountOptions{}
-)
-
 func init() {
-	registerLoadAccountCmd()
-}
-
-func registerLoadAccountCmd() {
-	loadAccountFlags := flag.NewFlagSet("loadAccount", flag.ContinueOnError)
-	loadAccountFlags.BoolVar(&opts.switchTo, "switch", true, "Switch to the account after loading it")
-
 	commands.RegisterCommand(
 		&ishell.Cmd{
 			Name:     "loadAccount",
@@ -34,15 +19,23 @@ func registerLoadAccountCmd() {
 		},
 		nil,
 		loadAccountHandler,
-		loadAccountFlags)
+		nil)
 }
 
-func loadAccountHandler(c *ishell.Context, leftovers []string) {
-	defer func() {
-		opts = loadAccountOptions{
-			switchTo: true,
-		}
-	}()
+type loadAccountOptions struct {
+	switchTo bool
+}
+
+func loadAccountHandler(c *ishell.Context, args []string) {
+	opts := loadAccountOptions{}
+	loadAccountFlags := flag.NewFlagSet("loadAccount", flag.ContinueOnError)
+	loadAccountFlags.BoolVar(&opts.switchTo, "switch", true, "Switch to the account after loading it")
+
+	leftovers, err := commands.ParseFlagSetArgs(args, loadAccountFlags)
+	if err != nil {
+		return
+	}
+
 	if len(leftovers) < 1 {
 		c.Printf("loadAccount: you must specify a JSON filepath to load from\n")
 		return

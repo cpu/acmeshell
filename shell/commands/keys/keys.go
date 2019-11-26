@@ -18,28 +18,7 @@ import (
 	jose "gopkg.in/square/go-jose.v2"
 )
 
-type viewKeyOptions struct {
-	pem        bool
-	jwk        bool
-	thumbprint bool
-	pemPath    string
-}
-
-var (
-	opts = viewKeyOptions{}
-)
-
 func init() {
-	registerKeysCmd()
-}
-
-func registerKeysCmd() {
-	viewKeyFlags := flag.NewFlagSet("viewKey", flag.ContinueOnError)
-	viewKeyFlags.BoolVar(&opts.pem, "pem", false, "Display private key in PEM format")
-	viewKeyFlags.BoolVar(&opts.jwk, "jwk", true, "Display public key in JWK format")
-	viewKeyFlags.BoolVar(&opts.thumbprint, "thumbprint", true, "Display hex JWK public key thumbprint")
-	viewKeyFlags.StringVar(&opts.pemPath, "path", "", "Path to write PEM private key to")
-
 	commands.RegisterCommand(
 		&ishell.Cmd{
 			Name:     "viewKey",
@@ -49,16 +28,29 @@ func registerKeysCmd() {
 		},
 		nil,
 		keysHandler,
-		viewKeyFlags)
+		nil)
 }
 
-func keysHandler(c *ishell.Context, leftovers []string) {
-	defer func() {
-		opts = viewKeyOptions{
-			jwk:        true,
-			thumbprint: true,
-		}
-	}()
+type viewKeyOptions struct {
+	pem        bool
+	jwk        bool
+	thumbprint bool
+	pemPath    string
+}
+
+func keysHandler(c *ishell.Context, args []string) {
+	opts := viewKeyOptions{}
+	viewKeyFlags := flag.NewFlagSet("viewKey", flag.ContinueOnError)
+	viewKeyFlags.BoolVar(&opts.pem, "pem", false, "Display private key in PEM format")
+	viewKeyFlags.BoolVar(&opts.jwk, "jwk", true, "Display public key in JWK format")
+	viewKeyFlags.BoolVar(&opts.thumbprint, "thumbprint", true, "Display hex JWK public key thumbprint")
+	viewKeyFlags.StringVar(&opts.pemPath, "path", "", "Path to write PEM private key to")
+
+	leftovers, err := commands.ParseFlagSetArgs(args, viewKeyFlags)
+	if err != nil {
+		return
+	}
+
 	client := commands.GetClient(c)
 
 	if len(client.Keys) == 0 {
