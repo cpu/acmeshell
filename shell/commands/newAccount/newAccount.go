@@ -11,6 +11,18 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
+func init() {
+	commands.RegisterCommand(
+		&ishell.Cmd{
+			Name:     "newAccount",
+			Aliases:  []string{"newAcct", "newReg", "newRegistration"},
+			Help:     "Create a new ACME account",
+			LongHelp: `TODO(@cpu): Write this!`,
+			Func:     newAccountHandler,
+		},
+		nil)
+}
+
 type newAccountOptions struct {
 	contacts string
 	switchTo bool
@@ -18,39 +30,17 @@ type newAccountOptions struct {
 	keyID    string
 }
 
-var (
-	opts = newAccountOptions{}
-)
-
-func init() {
-	registerNewAccountCmd()
-}
-
-func registerNewAccountCmd() {
+func newAccountHandler(c *ishell.Context) {
+	opts := newAccountOptions{}
 	newAccountFlags := flag.NewFlagSet("newAccount", flag.ContinueOnError)
 	newAccountFlags.StringVar(&opts.contacts, "contacts", "", "Comma separated list of contact emails")
 	newAccountFlags.BoolVar(&opts.switchTo, "switch", true, "Switch to the new account after creating it")
 	newAccountFlags.StringVar(&opts.jsonPath, "json", "", "Optional filepath to a JSON save file for the account")
 	newAccountFlags.StringVar(&opts.keyID, "keyID", "", "Key ID for existing key (empty to generate new key)")
 
-	commands.RegisterCommand(
-		&ishell.Cmd{
-			Name:     "newAccount",
-			Aliases:  []string{"newAcct", "newReg", "newRegistration"},
-			Help:     "Create a new ACME account",
-			LongHelp: `TODO(@cpu): Write this!`,
-		},
-		nil,
-		newAccountHandler,
-		newAccountFlags)
-}
-
-func newAccountHandler(c *ishell.Context, leftovers []string) {
-	defer func() {
-		opts = newAccountOptions{
-			switchTo: true,
-		}
-	}()
+	if _, err := commands.ParseFlagSetArgs(c.Args, newAccountFlags); err != nil {
+		return
+	}
 
 	rawEmails := strings.Split(opts.contacts, ",")
 	var emails []string

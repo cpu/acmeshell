@@ -11,68 +11,29 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
-type jwsDecodeOptions struct {
-	data string
-}
-
-var (
-	opts = jwsDecodeOptions{}
-)
-
 func init() {
-	registerJWSDecodeCommand()
-}
-
-func registerJWSDecodeCommand() {
-	jwsDecodeFlags := flag.NewFlagSet("jwsDecode", flag.ContinueOnError)
-
 	commands.RegisterCommand(
 		&ishell.Cmd{
 			Name:     "jwsDecode",
 			Aliases:  []string{"jws"},
 			Help:     "Decode a JWS and its raw Base64URL encoded fields",
 			LongHelp: `TODO(@cpu): Write this!`,
+			Func:     jwsDecodeHandler,
 		},
-		nil,
-		jwsDecodeHandler,
-		jwsDecodeFlags)
+		nil)
 }
 
-func readData(c *ishell.Context) string {
-	c.SetPrompt(commands.BasePrompt + "JWS > ")
-	defer c.SetPrompt(commands.BasePrompt)
-	terminator := "."
-	c.Printf("Input JWS to decode. "+
-		" End by sending '%s'\n", terminator)
-	return strings.TrimSuffix(c.ReadMultiLines(terminator), terminator)
+type jwsDecodeOptions struct {
+	data string
 }
 
-func decode(data string, hex bool) (string, error) {
-	result, err := base64.RawURLEncoding.DecodeString(data)
-	if err != nil {
-		return "", err
+func jwsDecodeHandler(c *ishell.Context) {
+	opts := jwsDecodeOptions{}
+	jwsDecodeFlags := flag.NewFlagSet("jwsDecode", flag.ContinueOnError)
+
+	if _, err := commands.ParseFlagSetArgs(c.Args, jwsDecodeFlags); err != nil {
+		return
 	}
-	resultString := string(result)
-
-	if hex {
-		var buff strings.Builder
-		for {
-			if len(result) == 0 {
-				break
-			}
-			b := result[0]
-			fmt.Fprintf(&buff, "0x%X ", b)
-			result = result[1:]
-		}
-		resultString = buff.String()
-	}
-	return resultString, nil
-}
-
-func jwsDecodeHandler(c *ishell.Context, leftovers []string) {
-	defer func() {
-		opts = jwsDecodeOptions{}
-	}()
 
 	var input string
 	if opts.data == "" {
@@ -113,4 +74,35 @@ func jwsDecodeHandler(c *ishell.Context, leftovers []string) {
 	c.Printf("Payload: %s\n", decodedPayload)
 	c.Printf("Protected: %s\n", decodedProtected)
 	c.Printf("Signature: %s\n", decodedSignature)
+}
+
+func readData(c *ishell.Context) string {
+	c.SetPrompt(commands.BasePrompt + "JWS > ")
+	defer c.SetPrompt(commands.BasePrompt)
+	terminator := "."
+	c.Printf("Input JWS to decode. "+
+		" End by sending '%s'\n", terminator)
+	return strings.TrimSuffix(c.ReadMultiLines(terminator), terminator)
+}
+
+func decode(data string, hex bool) (string, error) {
+	result, err := base64.RawURLEncoding.DecodeString(data)
+	if err != nil {
+		return "", err
+	}
+	resultString := string(result)
+
+	if hex {
+		var buff strings.Builder
+		for {
+			if len(result) == 0 {
+				break
+			}
+			b := result[0]
+			fmt.Fprintf(&buff, "0x%X ", b)
+			result = result[1:]
+		}
+		resultString = buff.String()
+	}
+	return resultString, nil
 }

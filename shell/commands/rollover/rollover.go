@@ -14,42 +14,34 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
-type keyRolloverOptions struct {
-	printInnerJWS     bool
-	printInnerJWSBody bool
-	keyID             string
-}
-
-var (
-	opts = keyRolloverOptions{}
-)
-
 func init() {
-	registerRolloverCmd()
-}
-
-func registerRolloverCmd() {
-	keyRolloverFlags := flag.NewFlagSet("keyRollover", flag.ContinueOnError)
-	keyRolloverFlags.BoolVar(&opts.printInnerJWS, "innerJWS", false, "Print inner JWS JSON")
-	keyRolloverFlags.BoolVar(&opts.printInnerJWSBody, "innerJWSBody", false, "Print inner JWS body JSON")
-	keyRolloverFlags.StringVar(&opts.keyID, "keyID", "", "Key ID to rollover to (leave empty to select interactively)")
-
 	commands.RegisterCommand(
 		&ishell.Cmd{
 			Name:     "rollover",
 			Aliases:  []string{"keyRollover", "keyChange", "switchKey"},
 			Help:     "Switch active account's key to a different key",
 			LongHelp: `TODO`,
+			Func:     rolloverHandler,
 		},
-		nil,
-		rolloverHandler,
-		keyRolloverFlags)
+		nil)
 }
 
-func rolloverHandler(c *ishell.Context, leftovers []string) {
-	defer func() {
-		opts = keyRolloverOptions{}
-	}()
+type keyRolloverOptions struct {
+	printInnerJWS     bool
+	printInnerJWSBody bool
+	keyID             string
+}
+
+func rolloverHandler(c *ishell.Context) {
+	opts := keyRolloverOptions{}
+	keyRolloverFlags := flag.NewFlagSet("keyRollover", flag.ContinueOnError)
+	keyRolloverFlags.BoolVar(&opts.printInnerJWS, "innerJWS", false, "Print inner JWS JSON")
+	keyRolloverFlags.BoolVar(&opts.printInnerJWSBody, "innerJWSBody", false, "Print inner JWS body JSON")
+	keyRolloverFlags.StringVar(&opts.keyID, "keyID", "", "Key ID to rollover to (leave empty to select interactively)")
+
+	if _, err := commands.ParseFlagSetArgs(c.Args, keyRolloverFlags); err != nil {
+		return
+	}
 
 	client := commands.GetClient(c)
 	account := client.ActiveAccount

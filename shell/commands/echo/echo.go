@@ -8,21 +8,16 @@ import (
 )
 
 func init() {
-	registerEchoCmd()
-}
-
-func registerEchoCmd() {
 	commands.RegisterCommand(
 		&ishell.Cmd{
 			Name:     "echo",
 			Help:     "Output a message",
 			LongHelp: "Useful for non-interactive scripts (must escape all special characters)",
+			Func:     echoHandler,
 		},
-		nil,
-		echoHandler,
 		nil)
 }
 
-func echoHandler(c *ishell.Context, leftovers []string) {
-	c.Printf("# %s\n", strings.Join(leftovers, " "))
+func echoHandler(c *ishell.Context) {
+	c.Printf("# %s\n", strings.Join(c.Args, " "))
 }

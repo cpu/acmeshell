@@ -33,6 +33,10 @@ func (c *Client) RefreshNonce() error {
 			"Missing %q entry in ACME server directory", acme.NEW_NONCE_ENDPOINT)
 	}
 
+	if c.Output.PrintNonceUpdates {
+		log.Printf("Sending HTTP HEAD request to %q\n", nonceURL)
+	}
+
 	resp, err := c.net.HeadURL(nonceURL)
 	if err != nil {
 		return err
@@ -55,6 +59,8 @@ func (c *Client) RefreshNonce() error {
 	}
 
 	c.nonce = nonce
-	log.Printf("Updated nonce to %q", nonce)
+	if c.Output.PrintNonceUpdates {
+		log.Printf("Updated nonce to %q", nonce)
+	}
 	return nil
 }

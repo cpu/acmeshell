@@ -7,6 +7,22 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
+const (
+	longHelp = `TODO(@cpu): write challSrv LongHelp`
+)
+
+func init() {
+	commands.RegisterCommand(
+		&ishell.Cmd{
+			Name:     "challSrv",
+			Aliases:  []string{"chalSrv", "challengeServer"},
+			Help:     "Add/remove challenge responses from the embedded challenge response server",
+			LongHelp: longHelp,
+			Func:     challSrvHandler,
+		},
+		nil)
+}
+
 type challSrvOptions struct {
 	challengeType string
 	token         string
@@ -15,19 +31,8 @@ type challSrvOptions struct {
 	operation     string
 }
 
-var (
-	opts challSrvOptions
-)
-
-const (
-	longHelp = `TODO(@cpu): write challSrv LongHelp`
-)
-
-func init() {
-	registerChallSrvCmd()
-}
-
-func registerChallSrvCmd() {
+func challSrvHandler(c *ishell.Context) {
+	var opts challSrvOptions
 	challSrvFlags := flag.NewFlagSet("challSrv", flag.ContinueOnError)
 	challSrvFlags.StringVar(&opts.challengeType, "challengeType", "", "Challenge type to add/remove")
 	challSrvFlags.StringVar(&opts.token, "token", "", "Challenge token (HTTP-01 only)")
@@ -35,24 +40,10 @@ func registerChallSrvCmd() {
 	challSrvFlags.StringVar(&opts.value, "value", "", "Challenge response value")
 	challSrvFlags.StringVar(&opts.operation, "operation", "add", "'add' to add a challenge, 'del' to remove")
 
-	commands.RegisterCommand(
-		&ishell.Cmd{
-			Name:     "challSrv",
-			Aliases:  []string{"chalSrv", "challengeServer"},
-			Help:     "Add/remove challenge responses from the embedded challenge response server",
-			LongHelp: longHelp,
-		},
-		nil,
-		challSrvHandler,
-		challSrvFlags)
-}
+	if _, err := commands.ParseFlagSetArgs(c.Args, challSrvFlags); err != nil {
+		return
+	}
 
-func challSrvHandler(c *ishell.Context, leftovers []string) {
-	defer func() {
-		opts = challSrvOptions{
-			operation: "add",
-		}
-	}()
 	if opts.operation != "add" && opts.operation != "delete" {
 		c.Printf("challSrv: -operation must be \"add\" or \"delete\"\n")
 		return

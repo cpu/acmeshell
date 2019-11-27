@@ -18,6 +18,18 @@ import (
 	jose "gopkg.in/square/go-jose.v2"
 )
 
+func init() {
+	commands.RegisterCommand(
+		&ishell.Cmd{
+			Name:     "viewKey",
+			Aliases:  []string{"keys", "viewKeys"},
+			Help:     "View available private keys",
+			LongHelp: `TODO(@cpu): Write keys longhelp`,
+			Func:     keysHandler,
+		},
+		nil)
+}
+
 type viewKeyOptions struct {
 	pem        bool
 	jwk        bool
@@ -25,40 +37,19 @@ type viewKeyOptions struct {
 	pemPath    string
 }
 
-var (
-	opts = viewKeyOptions{}
-)
-
-func init() {
-	registerKeysCmd()
-}
-
-func registerKeysCmd() {
+func keysHandler(c *ishell.Context) {
+	opts := viewKeyOptions{}
 	viewKeyFlags := flag.NewFlagSet("viewKey", flag.ContinueOnError)
 	viewKeyFlags.BoolVar(&opts.pem, "pem", false, "Display private key in PEM format")
 	viewKeyFlags.BoolVar(&opts.jwk, "jwk", true, "Display public key in JWK format")
 	viewKeyFlags.BoolVar(&opts.thumbprint, "thumbprint", true, "Display hex JWK public key thumbprint")
 	viewKeyFlags.StringVar(&opts.pemPath, "path", "", "Path to write PEM private key to")
 
-	commands.RegisterCommand(
-		&ishell.Cmd{
-			Name:     "viewKey",
-			Aliases:  []string{"keys", "viewKeys"},
-			Help:     "View available private keys",
-			LongHelp: `TODO(@cpu): Write keys longhelp`,
-		},
-		nil,
-		keysHandler,
-		viewKeyFlags)
-}
+	leftovers, err := commands.ParseFlagSetArgs(c.Args, viewKeyFlags)
+	if err != nil {
+		return
+	}
 
-func keysHandler(c *ishell.Context, leftovers []string) {
-	defer func() {
-		opts = viewKeyOptions{
-			jwk:        true,
-			thumbprint: true,
-		}
-	}()
 	client := commands.GetClient(c)
 
 	if len(client.Keys) == 0 {

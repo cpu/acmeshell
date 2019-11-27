@@ -84,6 +84,8 @@ type OutputOptions struct {
 	PrintSignedData bool
 	// Print the JSON serialization of all JWS produced.
 	PrintJWS bool
+	// Print HEAD requests to newNonce and the updated Replay-Nonce value.
+	PrintNonceUpdates bool
 }
 
 // ClientConfig contains configuration options provided to NewClient when

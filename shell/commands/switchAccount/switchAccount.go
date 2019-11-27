@@ -9,41 +9,31 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
-type switchAccountOptions struct {
-	accountIndex int
-}
-
-var (
-	opts = switchAccountOptions{}
-)
-
 func init() {
-	registerSwitchAccountCmd()
-}
-
-func registerSwitchAccountCmd() {
-	switchAccountFlags := flag.NewFlagSet("switchAccount", flag.ContinueOnError)
-	switchAccountFlags.IntVar(&opts.accountIndex, "account", -1, "account number to switch to. "+
-		"leave blank to pick interactively")
-
 	commands.RegisterCommand(
 		&ishell.Cmd{
 			Name:     "switchAccount",
 			Aliases:  []string{"switch", "switchAcct", "switchReg", "switchRegistration"},
 			Help:     "Switch the active ACME account",
 			LongHelp: `TODO(@cpu): Write this!`,
+			Func:     switchAccountHandler,
 		},
-		nil,
-		switchAccountHandler,
-		switchAccountFlags)
+		nil)
 }
 
-func switchAccountHandler(c *ishell.Context, leftovers []string) {
-	defer func() {
-		opts = switchAccountOptions{
-			accountIndex: -1,
-		}
-	}()
+type switchAccountOptions struct {
+	accountIndex int
+}
+
+func switchAccountHandler(c *ishell.Context) {
+	opts := switchAccountOptions{}
+	switchAccountFlags := flag.NewFlagSet("switchAccount", flag.ContinueOnError)
+	switchAccountFlags.IntVar(&opts.accountIndex, "account", -1, "account number to switch to. leave blank to pick interactively")
+
+	if _, err := commands.ParseFlagSetArgs(c.Args, switchAccountFlags); err != nil {
+		return
+	}
+
 	client := commands.GetClient(c)
 
 	if opts.accountIndex >= 0 {

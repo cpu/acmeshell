@@ -9,42 +9,33 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
-type getAuthzOptions struct {
-	orderIndex int
-	identifier string
-}
-
-var (
-	opts getAuthzOptions
-)
-
 func init() {
-	registerGetAuthzCmd()
-}
-
-func registerGetAuthzCmd() {
-	getAuthzFlags := flag.NewFlagSet("getAuthz", flag.ContinueOnError)
-	getAuthzFlags.IntVar(&opts.orderIndex, "order", -1, "index of existing order")
-	getAuthzFlags.StringVar(&opts.identifier, "identifier", "", "identifier of authorization")
-
 	commands.RegisterCommand(
 		&ishell.Cmd{
 			Name:     "getAuthz",
 			Aliases:  []string{"authz", "authorization"},
 			Help:     "Get an ACME authz URL",
 			LongHelp: `TODO(@cpu): Write this!`,
+			Func:     getAuthzHandler,
 		},
-		nil,
-		getAuthzHandler,
-		getAuthzFlags)
+		nil)
 }
 
-func getAuthzHandler(c *ishell.Context, leftovers []string) {
-	defer func() {
-		opts = getAuthzOptions{
-			orderIndex: -1,
-		}
-	}()
+type getAuthzOptions struct {
+	orderIndex int
+	identifier string
+}
+
+func getAuthzHandler(c *ishell.Context) {
+	opts := getAuthzOptions{}
+	getAuthzFlags := flag.NewFlagSet("getAuthz", flag.ContinueOnError)
+	getAuthzFlags.IntVar(&opts.orderIndex, "order", -1, "index of existing order")
+	getAuthzFlags.StringVar(&opts.identifier, "identifier", "", "identifier of authorization")
+
+	leftovers, err := commands.ParseFlagSetArgs(c.Args, getAuthzFlags)
+	if err != nil {
+		return
+	}
 
 	if opts.orderIndex != -1 && len(leftovers) > 0 {
 		c.Printf("-order can not be used with an authz URL\n")
@@ -59,7 +50,6 @@ func getAuthzHandler(c *ishell.Context, leftovers []string) {
 	client := commands.GetClient(c)
 
 	var targetURL string
-	var err error
 	if len(leftovers) > 0 {
 		templateText := strings.Join(leftovers, " ")
 		targetURL, err = commands.ClientTemplate(client, templateText)

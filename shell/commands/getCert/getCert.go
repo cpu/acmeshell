@@ -12,45 +12,35 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
-type getCertOptions struct {
-	printPEM   bool
-	pemPath    string
-	orderIndex int
-}
-
-var (
-	opts = getCertOptions{}
-)
-
 func init() {
-	registerGetCertCmd()
-}
-
-func registerGetCertCmd() {
-	getCertFlags := flag.NewFlagSet("getCert", flag.ContinueOnError)
-	getCertFlags.BoolVar(&opts.printPEM, "pem", true, "print PEM certificate chain output")
-	getCertFlags.StringVar(&opts.pemPath, "path", "", "file path to save PEM certificate chain output to")
-	getCertFlags.IntVar(&opts.orderIndex, "order", -1, "index of existing order")
-
 	commands.RegisterCommand(
 		&ishell.Cmd{
 			Name:     "getCert",
 			Aliases:  []string{"cert", "getCertificate", "certificate"},
 			Help:     "Get an order's certificate",
 			LongHelp: `TODO(@cpu): Write this!`,
+			Func:     getCertHandler,
 		},
-		nil,
-		getCertHandler,
-		getCertFlags)
+		nil)
 }
 
-func getCertHandler(c *ishell.Context, leftovers []string) {
-	defer func() {
-		opts = getCertOptions{
-			printPEM:   true,
-			orderIndex: -1,
-		}
-	}()
+type getCertOptions struct {
+	printPEM   bool
+	pemPath    string
+	orderIndex int
+}
+
+func getCertHandler(c *ishell.Context) {
+	opts := getCertOptions{}
+	getCertFlags := flag.NewFlagSet("getCert", flag.ContinueOnError)
+	getCertFlags.BoolVar(&opts.printPEM, "pem", true, "print PEM certificate chain output")
+	getCertFlags.StringVar(&opts.pemPath, "path", "", "file path to save PEM certificate chain output to")
+	getCertFlags.IntVar(&opts.orderIndex, "order", -1, "index of existing order")
+
+	leftovers, err := commands.ParseFlagSetArgs(c.Args, getCertFlags)
+	if err != nil {
+		return
+	}
 
 	if !opts.printPEM && opts.pemPath == "" {
 		c.Printf("getCert: one of -pem or -path must be provided\n")

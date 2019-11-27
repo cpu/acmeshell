@@ -27,46 +27,28 @@ func (opts b64urlOptions) validate() error {
 	return nil
 }
 
-var (
-	opts = b64urlOptions{}
-)
-
 func init() {
-	registerB64URLCommand()
-}
-
-func registerB64URLCommand() {
-	b64urlFlags := flag.NewFlagSet("b64url", flag.ContinueOnError)
-	b64urlFlags.BoolVar(&opts.encode, "encode", false, "Encode the input string as a raw base64 URL encoded string")
-	b64urlFlags.BoolVar(&opts.decode, "decode", false, "Decode the input string from base64 URL encoding")
-	b64urlFlags.StringVar(&opts.data, "data", "", "Data to encode/decode")
-	b64urlFlags.BoolVar(&opts.hex, "hex", false, "Output result in hex instead of as a string")
-
 	commands.RegisterCommand(
 		&ishell.Cmd{
 			Name:     "b64url",
 			Aliases:  []string{"base64url", "base64"},
 			Help:     "Base64URL encode/decode utility",
 			LongHelp: `TODO(@cpu): Write this!`,
-		},
-		nil,
-		b64urlHandler,
-		b64urlFlags)
+			Func:     b64urlHandler,
+		}, nil)
 }
 
-func readData(c *ishell.Context) string {
-	c.SetPrompt(commands.BasePrompt + "b64url data > ")
-	defer c.SetPrompt(commands.BasePrompt)
-	terminator := "."
-	c.Printf("Input data to encode/decode. "+
-		" End by sending '%s'\n", terminator)
-	return strings.TrimSuffix(c.ReadMultiLines(terminator), terminator)
-}
+func b64urlHandler(c *ishell.Context) {
+	opts := b64urlOptions{}
+	b64urlFlags := flag.NewFlagSet("b64url", flag.ContinueOnError)
+	b64urlFlags.BoolVar(&opts.encode, "encode", false, "Encode the input string as a raw base64 URL encoded string")
+	b64urlFlags.BoolVar(&opts.decode, "decode", false, "Decode the input string from base64 URL encoding")
+	b64urlFlags.StringVar(&opts.data, "data", "", "Data to encode/decode")
+	b64urlFlags.BoolVar(&opts.hex, "hex", false, "Output result in hex instead of as a string")
 
-func b64urlHandler(c *ishell.Context, leftovers []string) {
-	defer func() {
-		opts = b64urlOptions{}
-	}()
+	if _, err := commands.ParseFlagSetArgs(c.Args, b64urlFlags); err != nil {
+		return
+	}
 
 	if err := opts.validate(); err != nil {
 		c.Printf("Invalid options: %s\n", err)
@@ -108,4 +90,13 @@ func b64urlHandler(c *ishell.Context, leftovers []string) {
 	} else {
 		c.Printf("Result: \n%s\n", string(output))
 	}
+}
+
+func readData(c *ishell.Context) string {
+	c.SetPrompt(commands.BasePrompt + "b64url data > ")
+	defer c.SetPrompt(commands.BasePrompt)
+	terminator := "."
+	c.Printf("Input data to encode/decode. "+
+		" End by sending '%s'\n", terminator)
+	return strings.TrimSuffix(c.ReadMultiLines(terminator), terminator)
 }

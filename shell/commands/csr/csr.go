@@ -9,6 +9,17 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
+func init() {
+	commands.RegisterCommand(
+		&ishell.Cmd{
+			Name:     "csr",
+			Help:     "Generate a CSR",
+			LongHelp: `TODO(@cpu): write this`,
+			Func:     csrHandler,
+		},
+		nil)
+}
+
 type csrOptions struct {
 	rawIdentifiers string
 	commonName     string
@@ -18,15 +29,8 @@ type csrOptions struct {
 	orderIndex     int
 }
 
-var (
-	opts = csrOptions{}
-)
-
-func init() {
-	registerCSRCmd()
-}
-
-func registerCSRCmd() {
+func csrHandler(c *ishell.Context) {
+	opts := csrOptions{}
 	csrFlags := flag.NewFlagSet("csr", flag.ContinueOnError)
 	csrFlags.StringVar(&opts.commonName, "cn", "", "CSR Subject Common Name (CN)")
 	csrFlags.BoolVar(&opts.pem, "pem", false, "Output CSR in PEM format")
@@ -34,24 +38,11 @@ func registerCSRCmd() {
 	csrFlags.StringVar(&opts.keyID, "keyID", "", "Existing key ID to use for CSR (Empty to generate and save new key)")
 	csrFlags.StringVar(&opts.rawIdentifiers, "identifiers", "", "Comma separated list of DNS identifiers")
 	csrFlags.IntVar(&opts.orderIndex, "order", -1, "index of existing order")
-	commands.RegisterCommand(
-		&ishell.Cmd{
-			Name:     "csr",
-			Help:     "Generate a CSR",
-			LongHelp: `TODO(@cpu): write this`,
-		},
-		nil,
-		csrHandler,
-		csrFlags)
-}
 
-func csrHandler(c *ishell.Context, leftovers []string) {
-	defer func() {
-		opts = csrOptions{
-			b64url:     true,
-			orderIndex: -1,
-		}
-	}()
+	leftovers, err := commands.ParseFlagSetArgs(c.Args, csrFlags)
+	if err != nil {
+		return
+	}
 
 	if opts.rawIdentifiers != "" && len(leftovers) != 0 {
 		c.Printf("csr: can not specify -identifiers and an order URL\n")

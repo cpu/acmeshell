@@ -15,6 +15,18 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
+func init() {
+	commands.RegisterCommand(
+		&ishell.Cmd{
+			Name:     "solve",
+			Aliases:  []string{"solveChallenge"},
+			Help:     "Complete an ACME challenge",
+			LongHelp: `TODO(@cpu): Write this!`,
+			Func:     solveHandler,
+		},
+		nil)
+}
+
 type solveOptions struct {
 	printKeyAuthorization bool
 	printToken            bool
@@ -23,15 +35,8 @@ type solveOptions struct {
 	challType             string
 }
 
-var (
-	opts = solveOptions{}
-)
-
-func init() {
-	registerSolveCmd()
-}
-
-func registerSolveCmd() {
+func solveHandler(c *ishell.Context) {
+	opts := solveOptions{}
 	solveFlags := flag.NewFlagSet("solve", flag.ContinueOnError)
 	solveFlags.BoolVar(&opts.printKeyAuthorization, "printKeyAuth", false, "Print calculated key authorization")
 	solveFlags.BoolVar(&opts.printToken, "printToken", false, "Print challenge token")
@@ -39,28 +44,15 @@ func registerSolveCmd() {
 	solveFlags.StringVar(&opts.identifier, "identifier", "", "Authorization identifier to solve for")
 	solveFlags.IntVar(&opts.orderIndex, "order", -1, "index of existing order")
 
-	commands.RegisterCommand(
-		&ishell.Cmd{
-			Name:     "solve",
-			Aliases:  []string{"solveChallenge"},
-			Help:     "Complete an ACME challenge",
-			LongHelp: `TODO(@cpu): Write this!`,
-		},
-		nil,
-		solveHandler,
-		solveFlags)
-}
-
-func solveHandler(c *ishell.Context, leftovers []string) {
-	defer func() {
-		opts = solveOptions{}
-	}()
+	leftovers, err := commands.ParseFlagSetArgs(c.Args, solveFlags)
+	if err != nil {
+		return
+	}
 
 	client := commands.GetClient(c)
 	challSrv := commands.GetChallSrv(c)
 
 	var targetURL string
-	var err error
 	if len(leftovers) > 0 {
 		templateText := strings.Join(leftovers, " ")
 		targetURL, err = commands.ClientTemplate(client, templateText)

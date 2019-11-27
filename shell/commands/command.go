@@ -110,43 +110,37 @@ func AddCommands(shell *ishell.Shell, client *acmeclient.Client) {
 	}
 }
 
-type NewCommandHandler func(c *ishell.Context, leftovers []string)
-
 func RegisterCommand(
 	cmd *ishell.Cmd,
-	completerFunc NewCommandAutocompleter,
-	handler NewCommandHandler,
-	flags *flag.FlagSet) {
-	// Stomp the cmd's Func with a wrapped version that will call the
-	// NewCommandHandler to parse the flags.
-	cmd.Func = wrapHandler(cmd.Name, handler, flags)
+	completerFunc NewCommandAutocompleter) {
+	if cmd.Func == nil {
+		panic(fmt.Sprintf(
+			"Trying to RegisterCommand %q with nil handler Func\n",
+			cmd.Name,
+		))
+	}
 	commands = append(commands, commandRegistry{
 		Cmd:           cmd,
 		Autocompleter: completerFunc,
 	})
 }
 
-func wrapHandler(name string, handler NewCommandHandler, flags *flag.FlagSet) func(*ishell.Context) {
-	return func(c *ishell.Context) {
-		leftovers := c.Args
-		if flags != nil {
-			// Parse the command's flags with the context args.
-			err := flags.Parse(c.Args)
-			// If it was an error and not the -h error, print a message and return early.
-			if err != nil && err != flag.ErrHelp {
-				c.Printf("%s: error parsing input flags: %v\n", name, err)
-				return
-			} else if err == flag.ErrHelp {
-				// If it was the -h err, just return early. The help was already printed.
-				return
-			}
-			leftovers = flags.Args()
-		}
-
-		// Call the wrapped NewCommandHandler with the leftover args from flag
-		// parsing.
-		handler(c, leftovers)
+// ParseFlagSetArgs parses the given args with the flagSet. If there is no error
+// then (leftovers []string, nil) is returned where "leftovers" is the
+// result of flagSet.Args() after parsing. If there is an err (including
+// flag.ErrHelp) then (nil, err) is returned. Most callers will want to simply
+// bail out of the command if there is an error because the flag package will
+// have already printed the cause to stdout.
+func ParseFlagSetArgs(args []string, flagSet *flag.FlagSet) ([]string, error) {
+	if flagSet == nil {
+		return nil, errors.New("flagSet argument was nil")
 	}
+
+	if err := flagSet.Parse(args); err != nil {
+		return nil, err
+	}
+
+	return flagSet.Args(), nil
 }
 
 func DirectoryAutocompleter(c *acmeclient.Client) func(args []string) []string {

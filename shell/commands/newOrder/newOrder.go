@@ -9,37 +9,29 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
-type newOrderOptions struct {
-	rawIdentifiers string
-}
-
-var (
-	opts = newOrderOptions{}
-)
-
 func init() {
-	registerNewOrderCmd()
-}
-
-func registerNewOrderCmd() {
-	newOrderFlags := flag.NewFlagSet("newOrder", flag.ContinueOnError)
-	newOrderFlags.StringVar(&opts.rawIdentifiers, "identifiers", "", "Comma separated list of DNS identifiers")
-
 	commands.RegisterCommand(
 		&ishell.Cmd{
 			Name:     "newOrder",
 			Help:     "Create a new ACME order",
 			LongHelp: `TODO(@cpu): Write this!`,
+			Func:     newOrderHandler,
 		},
-		nil,
-		newOrderHandler,
-		newOrderFlags)
+		nil)
 }
 
-func newOrderHandler(c *ishell.Context, leftovers []string) {
-	defer func() {
-		opts = newOrderOptions{}
-	}()
+type newOrderOptions struct {
+	rawIdentifiers string
+}
+
+func newOrderHandler(c *ishell.Context) {
+	opts := newOrderOptions{}
+	newOrderFlags := flag.NewFlagSet("newOrder", flag.ContinueOnError)
+	newOrderFlags.StringVar(&opts.rawIdentifiers, "identifiers", "", "Comma separated list of DNS identifiers")
+
+	if _, err := commands.ParseFlagSetArgs(c.Args, newOrderFlags); err != nil {
+		return
+	}
 
 	if opts.rawIdentifiers != "" {
 		rawIdentifiers := strings.Split(opts.rawIdentifiers, ",")

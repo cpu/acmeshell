@@ -9,6 +9,17 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
+func init() {
+	commands.RegisterCommand(
+		&ishell.Cmd{
+			Name:     "sign",
+			Help:     "Sign JSON for a URL with the active account key (or a specified key) and a nonce",
+			LongHelp: `TODO(@cpu): write this`,
+			Func:     signHandler,
+		},
+		nil)
+}
+
 type signCmdOptions struct {
 	embedKey    bool
 	data        []byte
@@ -18,17 +29,8 @@ type signCmdOptions struct {
 	templateURL bool
 }
 
-var (
-	opts = signCmdOptions{
-		templateURL: true,
-	}
-)
-
-func init() {
-	registerSignCmd()
-}
-
-func registerSignCmd() {
+func signHandler(c *ishell.Context) {
+	opts := signCmdOptions{}
 	signFlags := flag.NewFlagSet("sign", flag.ContinueOnError)
 	signFlags.BoolVar(&opts.embedKey, "embedKey", false, "Embed JWK in JWS instead of a Key ID Header")
 	signFlags.StringVar(&opts.keyID, "keyID", "", "Key ID of existing key to use instead of active account key")
@@ -36,21 +38,11 @@ func registerSignCmd() {
 	signFlags.BoolVar(&opts.noData, "noData", false, "Use an empty byteslice as the data to sign (e.g. POST-as-GET)")
 	signFlags.BoolVar(&opts.templateURL, "templateURL", true, "Evaluate URL as a template")
 
-	commands.RegisterCommand(
-		&ishell.Cmd{
-			Name:     "sign",
-			Help:     "Sign JSON for a URL with the active account key (or a specified key) and a nonce",
-			LongHelp: `TODO(@cpu): write this`,
-		},
-		nil,
-		signHandler,
-		signFlags)
-}
+	leftovers, err := commands.ParseFlagSetArgs(c.Args, signFlags)
+	if err != nil {
+		return
+	}
 
-func signHandler(c *ishell.Context, leftovers []string) {
-	defer func() {
-		opts = signCmdOptions{}
-	}()
 	if len(leftovers) < 1 {
 		c.Printf("sign: you must specify a URL for the JWS header\n")
 		return
@@ -90,10 +82,10 @@ func signHandler(c *ishell.Context, leftovers []string) {
 		opts.data = []byte("")
 	}
 
-	signData(c, url)
+	signData(c, url, opts)
 }
 
-func signData(c *ishell.Context, targetURL string) {
+func signData(c *ishell.Context, targetURL string, opts signCmdOptions) {
 	client := commands.GetClient(c)
 	account := client.ActiveAccount
 

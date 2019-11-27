@@ -11,24 +11,18 @@ import (
 )
 
 func init() {
-	registerGetAccountCmd()
-}
-
-func registerGetAccountCmd() {
 	commands.RegisterCommand(
 		&ishell.Cmd{
 			Name:     "getAccount",
 			Aliases:  []string{"account", "getAcct", "registration", "getReg", "getRegistration"},
 			Help:     "Get ACME account details from server",
 			LongHelp: `TODO(@cpu): Write this!`,
+			Func:     getAccountHandler,
 		},
-		nil,
-		getAccountHandler,
-		nil,
-	)
+		nil)
 }
 
-func getAccountHandler(c *ishell.Context, leftovers []string) {
+func getAccountHandler(c *ishell.Context) {
 	client := commands.GetClient(c)
 
 	getAcctReq := struct {

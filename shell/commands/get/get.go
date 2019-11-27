@@ -2,6 +2,7 @@ package get
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/abiosoft/ishell"
 	"github.com/cpu/acmeshell/shell/commands"
@@ -31,26 +32,21 @@ const (
 )
 
 func init() {
-	registerGetCommand()
-}
-
-func registerGetCommand() {
 	commands.RegisterCommand(
 		&ishell.Cmd{
 			Name:     "get",
 			Aliases:  []string{"getURL"},
 			Help:     "Send an HTTP GET to a ACME endpoint or a URL",
 			LongHelp: longHelp,
+			Func:     getHandler,
 		},
-		commands.DirectoryAutocompleter,
-		getHandler,
-		nil)
+		commands.DirectoryAutocompleter)
 }
 
-func getHandler(c *ishell.Context, leftovers []string) {
+func getHandler(c *ishell.Context) {
 	client := commands.GetClient(c)
 
-	targetURL, err := commands.FindURL(client, leftovers)
+	targetURL, err := commands.FindURL(client, c.Args)
 	if err != nil {
 		c.Printf("get: error finding URL: %v\n", err)
 		return
@@ -61,6 +57,7 @@ func getHandler(c *ishell.Context, leftovers []string) {
 		return
 	}
 
+	log.Printf("Sending HTTP GET request to URL %q\n", targetURL)
 	resp, err := client.GetURL(targetURL)
 	if err != nil {
 		c.Printf("get: error getting URL: %v\n", err)

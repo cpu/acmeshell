@@ -9,44 +9,33 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
+func init() {
+	commands.RegisterCommand(
+		&ishell.Cmd{
+			Name:     "orders",
+			Help:     "Show ACME orders created in this session by the active account",
+			LongHelp: `TODO(@cpu): write this`,
+			Func:     ordersHandler,
+		},
+		nil)
+}
+
 type ordersOptions struct {
 	printID          bool
 	printIdentifiers bool
 	status           string
 }
 
-var (
-	opts = ordersOptions{}
-)
-
-func init() {
-	registerOrdersCmd()
-}
-
-func registerOrdersCmd() {
+func ordersHandler(c *ishell.Context) {
+	opts := ordersOptions{}
 	ordersFlags := flag.NewFlagSet("orders", flag.ContinueOnError)
 	ordersFlags.BoolVar(&opts.printID, "showID", true, "Print order IDs")
 	ordersFlags.BoolVar(&opts.printIdentifiers, "showIdents", true, "Print order identifiers")
 	ordersFlags.StringVar(&opts.status, "status", "", "Print orders only if they are in the given status")
 
-	commands.RegisterCommand(
-		&ishell.Cmd{
-			Name:     "orders",
-			Help:     "Show ACME orders created in this session by the active account",
-			LongHelp: `TODO(@cpu): write this`,
-		},
-		nil,
-		ordersHandler,
-		ordersFlags)
-}
-
-func ordersHandler(c *ishell.Context, leftovers []string) {
-	defer func() {
-		opts = ordersOptions{
-			printID:          true,
-			printIdentifiers: true,
-		}
-	}()
+	if _, err := commands.ParseFlagSetArgs(c.Args, ordersFlags); err != nil {
+		return
+	}
 
 	if !opts.printID && !opts.printIdentifiers {
 		c.Printf("orders: -showID and -showIdents can not both be false\n")

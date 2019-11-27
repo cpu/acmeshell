@@ -9,44 +9,35 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
-type getOrderOptions struct {
-	orderIndex int
-}
-
-var (
-	opts = getOrderOptions{}
-)
-
 func init() {
-	registerGetOrderCmd()
-}
-
-func registerGetOrderCmd() {
-	getOrderFlags := flag.NewFlagSet("getOrder", flag.ContinueOnError)
-	getOrderFlags.IntVar(&opts.orderIndex, "order", -1, "index of existing order")
-
 	commands.RegisterCommand(
 		&ishell.Cmd{
 			Name:     "getOrder",
 			Aliases:  []string{"order"},
 			Help:     "Get an ACME order URL",
 			LongHelp: `TODO(@cpu): Write this!`,
+			Func:     getOrderHandler,
 		},
-		nil,
-		getOrderHandler,
-		getOrderFlags)
+		nil)
 }
 
-func getOrderHandler(c *ishell.Context, leftovers []string) {
-	defer func() {
-		opts = getOrderOptions{
-			orderIndex: -1,
-		}
-	}()
+type getOrderOptions struct {
+	orderIndex int
+}
+
+func getOrderHandler(c *ishell.Context) {
+	opts := getOrderOptions{}
+	getOrderFlags := flag.NewFlagSet("getOrder", flag.ContinueOnError)
+	getOrderFlags.IntVar(&opts.orderIndex, "order", -1, "index of existing order")
+
+	leftovers, err := commands.ParseFlagSetArgs(c.Args, getOrderFlags)
+	if err != nil {
+		return
+	}
+
 	client := commands.GetClient(c)
 
 	var targetURL string
-	var err error
 	if len(leftovers) > 0 {
 		templateText := strings.Join(leftovers, " ")
 		targetURL, err = commands.ClientTemplate(client, templateText)

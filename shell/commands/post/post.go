@@ -4,21 +4,11 @@ package post
 
 import (
 	"flag"
+	"log"
 	"strings"
 
 	"github.com/abiosoft/ishell"
 	"github.com/cpu/acmeshell/shell/commands"
-)
-
-type postOptions struct {
-	postBodyString string
-	templateBody   bool
-	sign           bool
-	noData         bool
-}
-
-var (
-	opts = postOptions{}
 )
 
 const (
@@ -47,36 +37,36 @@ const (
 )
 
 func init() {
-	registerPostCommand()
-}
-
-func registerPostCommand() {
-	postFlags := flag.NewFlagSet("post", flag.ContinueOnError)
-	postFlags.StringVar(&opts.postBodyString, "body", "", "HTTP POST request body")
-	postFlags.BoolVar(&opts.templateBody, "templateBody", true, "Template HTTP POST body")
-	postFlags.BoolVar(&opts.sign, "sign", true, "Sign body with active account key")
-	postFlags.BoolVar(&opts.noData, "noData", false, "Skip -body and assume no data POST-as-GET")
-
 	commands.RegisterCommand(
 		&ishell.Cmd{
 			Name:     "post",
 			Aliases:  []string{"postURL"},
 			Help:     "Send an HTTP POST to a ACME endpoint or a URL",
 			LongHelp: longHelp,
+			Func:     postHandler,
 		},
-		commands.DirectoryAutocompleter,
-		postHandler,
-		postFlags)
+		commands.DirectoryAutocompleter)
 }
 
-func postHandler(c *ishell.Context, leftovers []string) {
-	// Reset options to default after handling
-	defer func() {
-		opts = postOptions{
-			templateBody: true,
-			sign:         true,
-		}
-	}()
+type postOptions struct {
+	postBodyString string
+	templateBody   bool
+	sign           bool
+	noData         bool
+}
+
+func postHandler(c *ishell.Context) {
+	opts := postOptions{}
+	postFlags := flag.NewFlagSet("post", flag.ContinueOnError)
+	postFlags.StringVar(&opts.postBodyString, "body", "", "HTTP POST request body")
+	postFlags.BoolVar(&opts.templateBody, "templateBody", true, "Template HTTP POST body")
+	postFlags.BoolVar(&opts.sign, "sign", true, "Sign body with active account key")
+	postFlags.BoolVar(&opts.noData, "noData", false, "Skip -body and assume no data POST-as-GET")
+
+	leftovers, err := commands.ParseFlagSetArgs(c.Args, postFlags)
+	if err != nil {
+		return
+	}
 
 	client := commands.GetClient(c)
 
@@ -142,6 +132,7 @@ func postURL(c *ishell.Context, targetURL string, body []byte, sign bool) {
 		body = signResult.SerializedJWS
 	}
 
+	log.Printf("Sending HTTP POST request to %q", targetURL)
 	resp, err := client.PostURL(targetURL, body)
 	if err != nil {
 		c.Printf("post: error POSTing signed request body to URL: %v\n", err)

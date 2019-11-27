@@ -10,6 +10,22 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
+const (
+	longHelp = `TODO(@cpu): Write longHelp for finalize cmd`
+)
+
+func init() {
+	commands.RegisterCommand(
+		&ishell.Cmd{
+			Name:     "finalize",
+			Aliases:  []string{"finalizeOrder"},
+			Help:     "Finalize an ACME order with a CSR",
+			LongHelp: longHelp,
+			Func:     finalizeHandler,
+		},
+		nil)
+}
+
 type finalizeOptions struct {
 	csr        string
 	keyID      string
@@ -17,43 +33,18 @@ type finalizeOptions struct {
 	orderIndex int
 }
 
-var (
-	opts finalizeOptions
-)
-
-const (
-	longHelp = `TODO(@cpu): Write longHelp for finalize cmd`
-)
-
-func init() {
-	registerFinalizeCmd()
-}
-
-func registerFinalizeCmd() {
+func finalizeHandler(c *ishell.Context) {
+	opts := finalizeOptions{}
 	finalizeFlags := flag.NewFlagSet("finalize", flag.ContinueOnError)
 	finalizeFlags.StringVar(&opts.csr, "csr", "", "base64url encoded CSR")
 	finalizeFlags.StringVar(&opts.keyID, "keyID", "", "keyID to use for generating a CSR")
 	finalizeFlags.StringVar(&opts.commonName, "cn", "", "subject common name (CN) for generated CSR")
 	finalizeFlags.IntVar(&opts.orderIndex, "order", -1, "index of existing order")
 
-	commands.RegisterCommand(
-		&ishell.Cmd{
-			Name:     "finalize",
-			Aliases:  []string{"finalizeOrder"},
-			Help:     "Finalize an ACME order with a CSR",
-			LongHelp: longHelp,
-		},
-		nil,
-		finalizeHandler,
-		finalizeFlags)
-}
-
-func finalizeHandler(c *ishell.Context, leftovers []string) {
-	defer func() {
-		opts = finalizeOptions{
-			orderIndex: -1,
-		}
-	}()
+	leftovers, err := commands.ParseFlagSetArgs(c.Args, finalizeFlags)
+	if err != nil {
+		return
+	}
 
 	if opts.csr != "" && opts.keyID != "" {
 		c.Printf("finalize: -csr and -keyID are mutually exclusive\n")

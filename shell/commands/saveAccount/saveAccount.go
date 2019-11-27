@@ -8,40 +8,30 @@ import (
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
-type saveAccountOptions struct {
-	jsonPath string
-}
-
-var (
-	opts = saveAccountOptions{}
-)
-
 func init() {
-	registerSaveAccountCmd()
-}
-
-func registerSaveAccountCmd() {
-	saveAccountFlags := flag.NewFlagSet("saveAccount", flag.ContinueOnError)
-	saveAccountFlags.StringVar(&opts.jsonPath, "json", "", "Filepath to a JSON save file for the account. If empty the -account argument is used")
-
 	commands.RegisterCommand(
 		&ishell.Cmd{
 			Name:     "saveAccount",
 			Aliases:  []string{"save", "saveReg", "saveRegistration"},
 			Help:     "Save the active ACME account",
 			LongHelp: `TODO(@cpu): Write this!`,
+			Func:     saveAccountHandler,
 		},
-		nil,
-		saveAccountHandler,
-		saveAccountFlags)
+		nil)
 }
 
-func saveAccountHandler(c *ishell.Context, leftovers []string) {
-	defer func() {
-		opts = saveAccountOptions{
-			jsonPath: "",
-		}
-	}()
+type saveAccountOptions struct {
+	jsonPath string
+}
+
+func saveAccountHandler(c *ishell.Context) {
+	opts := saveAccountOptions{}
+	saveAccountFlags := flag.NewFlagSet("saveAccount", flag.ContinueOnError)
+	saveAccountFlags.StringVar(&opts.jsonPath, "json", "", "Filepath to a JSON save file for the account. If empty the -account argument is used")
+
+	if _, err := commands.ParseFlagSetArgs(c.Args, saveAccountFlags); err != nil {
+		return
+	}
 
 	client := commands.GetClient(c)
 
