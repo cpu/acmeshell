@@ -12,6 +12,12 @@ import (
 	acmeclient "github.com/cpu/acmeshell/acme/client"
 	acmecmd "github.com/cpu/acmeshell/cmd"
 	"github.com/cpu/acmeshell/shell/commands"
+	"github.com/letsencrypt/challtestsrv"
+
+	// All active command packages must be imported here in order to have their
+	// init() handlers run and RegisterCommand invoked.
+	//
+	// Import new commands here:
 	_ "github.com/cpu/acmeshell/shell/commands/accounts"
 	_ "github.com/cpu/acmeshell/shell/commands/b64url"
 	_ "github.com/cpu/acmeshell/shell/commands/challSrv"
@@ -39,7 +45,6 @@ import (
 	_ "github.com/cpu/acmeshell/shell/commands/sign"
 	_ "github.com/cpu/acmeshell/shell/commands/solve"
 	_ "github.com/cpu/acmeshell/shell/commands/switchAccount"
-	"github.com/letsencrypt/challtestsrv"
 )
 
 // ACMEShellOptions allows specifying options for creating an ACME shell. This includes

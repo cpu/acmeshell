@@ -20,7 +20,8 @@ ACMEShell Supports both interactive and non-interactive usage.
 * [Quick-start](#quick-start)
 * [Features](#features)
 * [The ACME Playset](#the-acme-playset)
-* [Usage](#usage)
+* [Command Line Flags](#command-line-flags)
+* [Usage Help](#usage-help)
   * [Server Options](#server-options)
   * [Account Management](#account-management)
   * [Key Management](#key-management)
@@ -112,7 +113,47 @@ container for challenge responses run:
 
        acmeshell -pebble
 
-## Usage
+## Command Line Flags
+
+```
+Usage of acmeshell:
+  -account string
+    	Optional JSON filepath to use to save/restore auto-registered ACME account (default "acmeshell.account.json")
+  -autoregister
+    	Create an ACME account automatically at startup if required (default true)
+  -ca string
+    	CA certificate(s) for verifying ACME server HTTPS
+  -challsrv string
+    	Optional API address for an external pebble-challtestsrv instance to use
+  -contact string
+    	Optional contact email address for auto-registered ACME account
+  -directory string
+    	Directory URL for ACME server (default "https://acme-staging-v02.api.letsencrypt.org/directory")
+  -dnsPort int
+    	DNS-01 challenge server port for internal challtestsrv (default 5252)
+  -httpPort int
+    	HTTP-01 challenge server port for internal challtestsrv (default 5002)
+  -in string
+    	Read commands from the specified file instead of stdin
+  -pebble
+    	Use Pebble defaults
+  -postAsGet
+    	Use POST-as-GET requests instead of GET requests in high level commands (default true)
+  -printJWS
+    	Print all JWS in serialized form to stdout
+  -printNonces
+    	Print all nonce updates and HEAD requests
+  -printRequests
+    	Print all HTTP requests to stdout
+  -printResponses
+    	Print all HTTP responses to stdout
+  -printSignedData
+    	Print request data to stdout before signing
+  -tlsPort int
+    	TLS-ALPN-01 challenge server port for internal challtestsrv (default 5001)
+```
+
+## Usage Help
 
 ### Server Options
 
