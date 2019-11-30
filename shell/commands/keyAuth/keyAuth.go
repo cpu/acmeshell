@@ -33,7 +33,6 @@ type keyAuthOptions struct {
 	keyID      string
 }
 
-// TODO: Implement keyAuthHandler
 func keyAuthHandler(c *ishell.Context) {
 	var opts keyAuthOptions
 	keyAuthFlags := flag.NewFlagSet("keyAuth", flag.ContinueOnError)
