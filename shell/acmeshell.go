@@ -31,6 +31,7 @@ import (
 	_ "github.com/cpu/acmeshell/shell/commands/getChall"
 	_ "github.com/cpu/acmeshell/shell/commands/getOrder"
 	_ "github.com/cpu/acmeshell/shell/commands/jwsDecode"
+	_ "github.com/cpu/acmeshell/shell/commands/keyAuth"
 	_ "github.com/cpu/acmeshell/shell/commands/keys"
 	_ "github.com/cpu/acmeshell/shell/commands/loadAccount"
 	_ "github.com/cpu/acmeshell/shell/commands/loadKey"
