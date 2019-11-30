@@ -424,6 +424,8 @@ While not a complete list (see "help") the most common low-level commands are:
 
 * **sign** - create a JWS for a provided message with the active account key or
   another ACMEShell key.
+* **keyAuth** - create a key authorization for a selected challenge token with
+  a specified ACME account key thumbprint.
 * **jwsDecode** - Decode a JSON JWS and its BASE64URL encoded fields.
 * **b64url** - BASE64URL encoding/decode data.
 * **post** - make an HTTP POST with an arbitrary payload to an arbitrary URL. By
@@ -497,8 +499,6 @@ ACMEShell supports some handy tricks that may be useful to you:
 
 * Support RSA account keys (lol).
 * `revoke` high level command for revocation.
-* `keyAuth` low level command for making key authorizations for a specific
-  challenge with a specific key.
 * high level command to deactivate authorizations
 * RFC 8555 subproblem support
 * support for exiting on a command failure (e.g. for integration tests).
