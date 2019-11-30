@@ -4,6 +4,7 @@ import (
 	"crypto"
 	"crypto/ecdsa"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
 	"flag"
@@ -31,10 +32,11 @@ func init() {
 }
 
 type viewKeyOptions struct {
-	pem        bool
-	jwk        bool
-	thumbprint bool
-	pemPath    string
+	pem           bool
+	jwk           bool
+	hexthumbprint bool
+	b64thumbprint bool
+	pemPath       string
 }
 
 func keysHandler(c *ishell.Context) {
@@ -42,7 +44,8 @@ func keysHandler(c *ishell.Context) {
 	viewKeyFlags := flag.NewFlagSet("viewKey", flag.ContinueOnError)
 	viewKeyFlags.BoolVar(&opts.pem, "pem", false, "Display private key in PEM format")
 	viewKeyFlags.BoolVar(&opts.jwk, "jwk", true, "Display public key in JWK format")
-	viewKeyFlags.BoolVar(&opts.thumbprint, "thumbprint", true, "Display hex JWK public key thumbprint")
+	viewKeyFlags.BoolVar(&opts.b64thumbprint, "b64thumbprint", true, "Display JWK public key thumbprint in base64url encoded form")
+	viewKeyFlags.BoolVar(&opts.hexthumbprint, "hexthumbprint", false, "Display JWK public key thumbprint in hex encoded form")
 	viewKeyFlags.StringVar(&opts.pemPath, "path", "", "Path to write PEM private key to")
 
 	leftovers, err := commands.ParseFlagSetArgs(c.Args, viewKeyFlags)
@@ -129,11 +132,19 @@ func keysHandler(c *ishell.Context) {
 		c.Printf("JWK:\n%s\n", string(jwkJSON))
 	}
 
-	if opts.thumbprint {
-		thumb, err := jwk.Thumbprint(crypto.SHA256)
+	if opts.hexthumbprint || opts.b64thumbprint {
+		thumbBytes, err := jwk.Thumbprint(crypto.SHA256)
 		if err != nil {
 			c.Printf("INVALID-THUMBPRINT")
 		}
-		c.Printf("Thumbprint:\n%#x\n", thumb)
+
+		if opts.hexthumbprint {
+			c.Printf("Hex Thumbprint:\n%#x\n", thumbBytes)
+		}
+		if opts.b64thumbprint {
+			thumbprint := base64.RawURLEncoding.EncodeToString(thumbBytes)
+			c.Printf("b64url Thumbprint:\n%s\n", thumbprint)
+
+		}
 	}
 }
