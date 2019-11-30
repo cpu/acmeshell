@@ -396,6 +396,8 @@ While not a complete list (see "help") the most common high-level commands are:
 * **poll** - poll a resource until it's in a specific state.
 * **finalize** - finalize an order by POSTing a CSR.
 * **getCert** - get an order's certificate resource.
+* **deactivateAuthz** - deactivate an authorization.
+* **deactivateAccount** - deactivate an account.
 
 Here's an example of using the high level commands non-interactively to complete
 an order issuance:
@@ -495,7 +497,6 @@ ACMEShell supports some handy tricks that may be useful to you:
 
 * Support RSA account keys (lol).
 * `revoke` high level command for revocation.
-* high level command to deactivate authorizations
 * RFC 8555 subproblem support
 * support for exiting on a command failure (e.g. for integration tests).
 * so much cleanup...
