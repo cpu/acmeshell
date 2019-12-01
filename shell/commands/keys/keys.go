@@ -5,8 +5,6 @@ import (
 	"crypto/ecdsa"
 	"crypto/rsa"
 	"crypto/x509"
-	"encoding/base64"
-	"encoding/json"
 	"encoding/pem"
 	"flag"
 	"fmt"
@@ -16,9 +14,8 @@ import (
 	"strings"
 
 	"github.com/abiosoft/ishell"
-	acmeclient "github.com/cpu/acmeshell/acme/client"
+	"github.com/cpu/acmeshell/acme/keys"
 	"github.com/cpu/acmeshell/shell/commands"
-	jose "gopkg.in/square/go-jose.v2"
 )
 
 func init() {
@@ -118,10 +115,6 @@ func keysHandler(c *ishell.Context) {
 		Type:  keyHeader,
 		Bytes: keyBytes,
 	})
-	jwk := jose.JSONWebKey{
-		Key:       key.Public(),
-		Algorithm: acmeclient.AlgForKey(key),
-	}
 
 	if opts.pem {
 		c.Printf("PEM:\n%s\n", string(pemBytes))
@@ -137,25 +130,17 @@ func keysHandler(c *ishell.Context) {
 	}
 
 	if opts.jwk {
-		jwkJSON, err := json.Marshal(&jwk)
-		if err != nil {
-			c.Printf("viewKey: failed to marshal JWK: %s\n", err.Error())
-			return
-		}
-		c.Printf("JWK:\n%s\n", string(jwkJSON))
+		c.Printf("JWK:\n%s\n", keys.JWKJSON(key))
 	}
 
 	if opts.hexthumbprint || opts.b64thumbprint {
-		thumbBytes, err := jwk.Thumbprint(crypto.SHA256)
-		if err != nil {
-			c.Printf("INVALID-THUMBPRINT")
-		}
+		thumbBytes := keys.JWKThumbprintBytes(key)
+		thumbprint := keys.JWKThumbprint(key)
 
 		if opts.hexthumbprint {
 			c.Printf("Hex Thumbprint:\n%#x\n", thumbBytes)
 		}
 		if opts.b64thumbprint {
-			thumbprint := base64.RawURLEncoding.EncodeToString(thumbBytes)
 			c.Printf("b64url Thumbprint:\n%s\n", thumbprint)
 		}
 	}

@@ -2,15 +2,10 @@ package rollover
 
 import (
 	"crypto"
-	"encoding/json"
 	"flag"
-	"net/http"
 	"sort"
 
-	jose "gopkg.in/square/go-jose.v2"
-
 	"github.com/abiosoft/ishell"
-	acmeclient "github.com/cpu/acmeshell/acme/client"
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
@@ -27,16 +22,12 @@ func init() {
 }
 
 type keyRolloverOptions struct {
-	printInnerJWS     bool
-	printInnerJWSBody bool
-	keyID             string
+	keyID string
 }
 
 func rolloverHandler(c *ishell.Context) {
 	opts := keyRolloverOptions{}
 	keyRolloverFlags := flag.NewFlagSet("keyRollover", flag.ContinueOnError)
-	keyRolloverFlags.BoolVar(&opts.printInnerJWS, "innerJWS", false, "Print inner JWS JSON")
-	keyRolloverFlags.BoolVar(&opts.printInnerJWSBody, "innerJWSBody", false, "Print inner JWS body JSON")
 	keyRolloverFlags.StringVar(&opts.keyID, "keyID", "", "Key ID to rollover to (leave empty to select interactively)")
 
 	if _, err := commands.ParseFlagSetArgs(c.Args, keyRolloverFlags); err != nil {
@@ -44,7 +35,6 @@ func rolloverHandler(c *ishell.Context) {
 	}
 
 	client := commands.GetClient(c)
-	account := client.ActiveAccount
 
 	if len(client.Keys) == 0 {
 		c.Printf("No keys known to shell to rollover to\n")
@@ -54,13 +44,6 @@ func rolloverHandler(c *ishell.Context) {
 		c.Printf("Only the active key is known to the shell. No other key to rollover to\n")
 		return
 	}
-
-	if _, supported := client.GetEndpointURL("keyChange"); !supported {
-		c.Printf("Server missing \"keyChange\" entry in directory. Key rollover unsupported.\n")
-		return
-	}
-
-	targetURL, _ := client.GetEndpointURL("keyChange")
 
 	var newKey crypto.Signer
 	if opts.keyID == "" {
@@ -86,61 +69,7 @@ func rolloverHandler(c *ishell.Context) {
 		}
 	}
 
-	// TODO(@cpu): Most of this should be hoisted into a client Rollover function
-	// that the command can use for the heavy lifting (ala the newAccount command
-	// and the CreateAccount function).
-
-	oldKey := jose.JSONWebKey{
-		Key:       account.Signer.Public(),
-		Algorithm: acmeclient.AlgForKey(account.Signer),
+	if err := client.Rollover(newKey); err != nil {
+		c.Printf("keyRollover: %v\n", err)
 	}
-
-	rolloverRequest := struct {
-		Account string
-		OldKey  jose.JSONWebKey
-	}{
-		Account: account.ID,
-		OldKey:  oldKey,
-	}
-
-	rolloverRequestJSON, err := json.Marshal(&rolloverRequest)
-	if err != nil {
-		c.Printf("keyRollover: failed to marshal rollover request to JSON: %s\n", err.Error())
-		return
-	}
-
-	innerSignOpts := &acmeclient.SigningOptions{
-		Signer:   newKey,
-		EmbedKey: true,
-	}
-
-	innerSignResult, err := client.Sign(targetURL, rolloverRequestJSON, innerSignOpts)
-	if err != nil {
-		c.Printf("keyRollover: error signing inner JWS: %s\n", err.Error())
-		return
-	}
-
-	outerSignResult, err := client.Sign(targetURL, innerSignResult.SerializedJWS, nil)
-	if err != nil {
-		c.Printf("keyRollover: error signing outer JWS: %s\n", err.Error())
-		return
-	}
-
-	c.Printf("Rolling over account %q to use specified key\n", account.ID)
-	resp, err := client.PostURL(targetURL, outerSignResult.SerializedJWS)
-	if err != nil {
-		c.Printf("keyRollover: keyRollover POST failed: %v\n", err)
-		return
-	}
-
-	respOb := resp.Response
-	if respOb.StatusCode != http.StatusOK {
-		c.Printf("keyRollover: keyRollover POST failed. Status code: %d\n", respOb.StatusCode)
-		c.Printf("Response body: \n%s\n", resp.RespBody)
-		return
-	}
-
-	client.Keys[account.ID] = newKey
-	account.Signer = newKey
-	c.Printf("keyRollover for account %q completed\n", account.ID)
 }

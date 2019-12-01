@@ -1,13 +1,10 @@
 package newKey
 
 import (
-	"encoding/json"
 	"encoding/pem"
 	"flag"
 	"io/ioutil"
 	"os"
-
-	jose "gopkg.in/square/go-jose.v2"
 
 	"crypto/ecdsa"
 	"crypto/elliptic"
@@ -15,6 +12,7 @@ import (
 	"crypto/x509"
 
 	"github.com/abiosoft/ishell"
+	"github.com/cpu/acmeshell/acme/keys"
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
@@ -97,15 +95,6 @@ func newKeyHandler(c *ishell.Context) {
 	}
 
 	if opts.printJWK {
-		jwk := jose.JSONWebKey{
-			Key:       randKey.Public(),
-			Algorithm: "ECDSA",
-		}
-		jwkJSON, err := json.Marshal(&jwk)
-		if err != nil {
-			c.Printf("newKey: failed to marshal JWK: %s\n", err.Error())
-			return
-		}
-		c.Printf("JWK:\n%s\n", string(jwkJSON))
+		c.Printf("JWK:\n%s\n", keys.JWKJSON(randKey))
 	}
 }

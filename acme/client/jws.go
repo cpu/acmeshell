@@ -2,10 +2,10 @@ package client
 
 import (
 	"crypto"
-	"crypto/ecdsa"
-	"crypto/rsa"
 	"errors"
 	"fmt"
+
+	"github.com/cpu/acmeshell/acme/keys"
 
 	jose "gopkg.in/square/go-jose.v2"
 )
@@ -126,36 +126,13 @@ func (c *Client) Sign(url string, data []byte, opts *SigningOptions) (*SignResul
 	return signResult, err
 }
 
-func SigAlgForKey(signer crypto.Signer) jose.SignatureAlgorithm {
-	switch signer.(type) {
-	case *ecdsa.PrivateKey:
-		return jose.ES256
-	case *rsa.PrivateKey:
-		return jose.RS256
-	}
-	return "unknown"
-}
-
-func AlgForKey(signer crypto.Signer) string {
-	switch signer.(type) {
-	case *ecdsa.PrivateKey:
-		return "ECDSA"
-	case *rsa.PrivateKey:
-		return "RSA"
-	}
-	return "unknown"
-}
-
 func signEmbedded(url string, data []byte, opts SigningOptions) (*SignResult, error) {
 	privKey := opts.Signer
 	if privKey == nil {
 		return nil, fmt.Errorf("signEmbedded: account has a nil Signer")
 	}
 
-	signingKey := jose.SigningKey{
-		Key:       privKey,
-		Algorithm: SigAlgForKey(privKey),
-	}
+	signingKey := keys.SigningKeyForSigner(privKey, "")
 
 	signer, err := jose.NewSigner(signingKey, &jose.SignerOptions{
 		NonceSource: opts.NonceSource,
@@ -177,16 +154,7 @@ func signKeyID(url string, data []byte, opts SigningOptions) (*SignResult, error
 		return nil, fmt.Errorf("sign: empty KeyID")
 	}
 
-	jwk := &jose.JSONWebKey{
-		Key:       privKey,
-		Algorithm: AlgForKey(privKey),
-		KeyID:     opts.KeyID,
-	}
-
-	signerKey := jose.SigningKey{
-		Key:       jwk,
-		Algorithm: SigAlgForKey(privKey),
-	}
+	signerKey := keys.SigningKeyForSigner(privKey, opts.KeyID)
 
 	joseOpts := &jose.SignerOptions{
 		NonceSource: opts.NonceSource,
