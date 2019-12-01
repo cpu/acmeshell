@@ -42,9 +42,9 @@ viewKey -jwk=false -thumbprint=false -pem example.server.key
 # TODO(@cpu): Fix account key rollover
 #
 echo
-echo Create a new key to use as an updated ACME account key
+echo Create a new RSA key to use as an updated ACME account key
 echo
-newKey -id=replacement.account.key
+newKey -id=replacement.account.key -type=rsa
 
 echo
 echo Rollover to the new ACME account key
