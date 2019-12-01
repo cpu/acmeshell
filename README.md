@@ -168,13 +168,11 @@ server's HTTPS certificate with the `-ca` flag.
 
 #### Pebble Defaults
 
-If you specify `-pebble` then [Pebble][pebble] defaults are assumed and the
+If you specify `-pebble` then ACMEShell assumes [Pebble][pebble] defaults. The
 `-directory` address will be `https://localhost:14000/dir` to match the Pebble
-default and the `-ca` flag will be
-`$GOPATH/src/github.com/letsencrypt/pebble/test/certs/pebble.minica.pem`. If you
-do not have Pebble installed in your `$GOPATH` you may need to download the
-`pebble.minica.pem` file from the Pebble repo and specify its location with the
-`-ca` flag.
+default and the `-ca` flag will be configured with the default Pebble HTTPS CA.
+The ACMEShell will also be configured to use the default `pebble-challtestsrv`
+address `http://localhost:8055` as the `-challSrv` argument.
 
 #### Legacy GET requests
 
