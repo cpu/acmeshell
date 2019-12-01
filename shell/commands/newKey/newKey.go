@@ -1,7 +1,6 @@
 package newKey
 
 import (
-	"encoding/pem"
 	"flag"
 	"io/ioutil"
 	"os"
@@ -9,7 +8,6 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
-	"crypto/x509"
 
 	"github.com/abiosoft/ishell"
 	"github.com/cpu/acmeshell/acme/keys"
@@ -71,18 +69,15 @@ func newKeyHandler(c *ishell.Context) {
 	}
 
 	client.Keys[opts.keyID] = randKey
-	keyBytes, err := x509.MarshalECPrivateKey(randKey)
+
+	keyPem, err := keys.SignerToPEM(randKey)
 	if err != nil {
-		c.Printf("newKey: failed to marshal EC key bytes: %s\n", err.Error())
+		c.Printf("newKey: error marshaling key to PEM: %v\n", err)
 		return
 	}
-	pemBytes := pem.EncodeToMemory(&pem.Block{
-		Type:  "EC PRIVATE KEY",
-		Bytes: keyBytes,
-	})
 
 	if opts.pemPath != "" {
-		err := ioutil.WriteFile(opts.pemPath, pemBytes, os.ModePerm)
+		err := ioutil.WriteFile(opts.pemPath, []byte(keyPem), os.ModePerm)
 		if err != nil {
 			c.Printf("newKey: error writing pem to %q: %s\n", opts.pemPath, err.Error())
 			return
@@ -91,7 +86,7 @@ func newKeyHandler(c *ishell.Context) {
 	}
 
 	if opts.printPEM {
-		c.Printf("PEM:\n%s\n", string(pemBytes))
+		c.Printf("PEM:\n%s\n", keyPem)
 	}
 
 	if opts.printJWK {

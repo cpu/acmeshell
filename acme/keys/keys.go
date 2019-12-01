@@ -6,8 +6,10 @@ import (
 	"crypto"
 	"crypto/ecdsa"
 	"crypto/rsa"
+	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
+	"encoding/pem"
 	"fmt"
 
 	jose "gopkg.in/square/go-jose.v2"
@@ -74,4 +76,65 @@ func SigningKeyForSigner(signer crypto.Signer, keyID string) jose.SigningKey {
 		Key:       jwk,
 		Algorithm: sigAlgForKey(signer),
 	}
+}
+
+func MarshalSigner(signer crypto.Signer) ([]byte, string, error) {
+	var keyBytes []byte
+	var keyType string
+	var err error
+	switch k := signer.(type) {
+	case *ecdsa.PrivateKey:
+		keyType = "ecdsa"
+		keyBytes, err = x509.MarshalECPrivateKey(k)
+	case *rsa.PrivateKey:
+		keyType = "rsa"
+		keyBytes = x509.MarshalPKCS1PrivateKey(k)
+	default:
+		err = fmt.Errorf("signer was unknown type: %T", k)
+	}
+	if err != nil {
+		return nil, "", err
+	}
+	return keyBytes, keyType, nil
+}
+
+func UnmarshalSigner(keyBytes []byte, keyType string) (crypto.Signer, error) {
+	var privKey crypto.Signer
+	var err error
+	switch keyType {
+	case "ecdsa":
+		privKey, err = x509.ParseECPrivateKey(keyBytes)
+	case "rsa":
+		privKey, err = x509.ParsePKCS1PrivateKey(keyBytes)
+	default:
+		err = fmt.Errorf("unknown key type %q", keyType)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return privKey, nil
+}
+
+func SignerToPEM(signer crypto.Signer) (string, error) {
+	var keyBytes []byte
+	var keyHeader string
+	var err error
+	switch k := signer.(type) {
+	case *ecdsa.PrivateKey:
+		keyBytes, err = x509.MarshalECPrivateKey(k)
+		keyHeader = "EC PRIVATE KEY"
+	case *rsa.PrivateKey:
+		keyBytes = x509.MarshalPKCS1PrivateKey(k)
+		keyHeader = "RSA PRIVATE KEY"
+	default:
+		err = fmt.Errorf("unknown key type: %T", k)
+	}
+	if err != nil {
+		return "", err
+	}
+	pemBytes := pem.EncodeToMemory(&pem.Block{
+		Type:  keyHeader,
+		Bytes: keyBytes,
+	})
+	return string(pemBytes), nil
 }

@@ -2,10 +2,6 @@ package keys
 
 import (
 	"crypto"
-	"crypto/ecdsa"
-	"crypto/rsa"
-	"crypto/x509"
-	"encoding/pem"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -95,33 +91,18 @@ func keysHandler(c *ishell.Context) {
 		}
 	}
 
-	var keyBytes []byte
-	var keyHeader string
-	switch k := key.(type) {
-	case *ecdsa.PrivateKey:
-		keyBytes, err = x509.MarshalECPrivateKey(k)
-		keyHeader = "EC PRIVATE KEY"
-	case *rsa.PrivateKey:
-		keyBytes = x509.MarshalPKCS1PrivateKey(k)
-		keyHeader = "RSA PRIVATE KEY"
-	default:
-		err = fmt.Errorf("unknown key type: %T", k)
-	}
+	pemContent, err := keys.SignerToPEM(key)
 	if err != nil {
 		c.Printf("viewKey: failed to marshal key bytes: %s\n", err.Error())
 		return
 	}
-	pemBytes := pem.EncodeToMemory(&pem.Block{
-		Type:  keyHeader,
-		Bytes: keyBytes,
-	})
 
 	if opts.pem {
-		c.Printf("PEM:\n%s\n", string(pemBytes))
+		c.Printf("PEM:\n%s\n", pemContent)
 	}
 
 	if opts.pemPath != "" {
-		err := ioutil.WriteFile(opts.pemPath, pemBytes, os.ModePerm)
+		err := ioutil.WriteFile(opts.pemPath, []byte(pemContent), os.ModePerm)
 		if err != nil {
 			c.Printf("viewKey: error writing pem to %q: %s\n", opts.pemPath, err.Error())
 			return

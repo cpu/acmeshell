@@ -7,12 +7,12 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
-	"crypto/rsa"
-	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
+
+	"github.com/cpu/acmeshell/acme/keys"
 )
 
 // Account holds information related to a single ACME Account resource. If the
@@ -139,22 +139,7 @@ type rawAccount struct {
 }
 
 func (a *Account) save() ([]byte, error) {
-	// TODO(@cpu): This will need to be updated when the private key is a generic
-	// interface.
-
-	var keyBytes []byte
-	var keyType string
-	var err error
-	switch k := a.Signer.(type) {
-	case *ecdsa.PrivateKey:
-		keyType = "ecdsa"
-		keyBytes, err = x509.MarshalECPrivateKey(k)
-	case *rsa.PrivateKey:
-		keyType = "rsa"
-		keyBytes = x509.MarshalPKCS1PrivateKey(k)
-	default:
-		err = fmt.Errorf("Account Signer was unknown type: %T", k)
-	}
+	keyBytes, keyType, err := keys.MarshalSigner(a.Signer)
 	if err != nil {
 		return nil, err
 	}
@@ -197,16 +182,7 @@ func (a *Account) restore(frozenAcct []byte) error {
 		return err
 	}
 
-	var privKey crypto.Signer
-	var err error
-	switch rawAcct.KeyType {
-	case "ecdsa":
-		privKey, err = x509.ParseECPrivateKey(rawAcct.PrivateKey)
-	case "rsa":
-		privKey, err = x509.ParsePKCS1PrivateKey(rawAcct.PrivateKey)
-	default:
-		err = fmt.Errorf("account has unknown KeyType %q", rawAcct.KeyType)
-	}
+	privKey, err := keys.UnmarshalSigner(rawAcct.PrivateKey, rawAcct.KeyType)
 	if err != nil {
 		return err
 	}
