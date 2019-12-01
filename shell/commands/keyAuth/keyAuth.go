@@ -85,17 +85,15 @@ func keyAuthHandler(c *ishell.Context) {
 	}
 
 	var k crypto.Signer
-	var kID string
 	if opts.keyID != "" {
 		if key, found := client.Keys[opts.keyID]; found {
 			k = key
-			kID = opts.keyID
 		} else {
 			c.Printf("keyAuth: no key with ID %q exists in shell\n", opts.keyID)
 			return
 		}
 	} else {
-		kID = client.ActiveAccountID()
+		kID := client.ActiveAccountID()
 		if kID == "" {
 			c.Printf("keyAuth: no active account and no -keyID provided\n")
 			return
@@ -103,5 +101,5 @@ func keyAuthHandler(c *ishell.Context) {
 		k = client.ActiveAccount.Signer
 	}
 
-	fmt.Printf(keys.KeyAuth(k, token))
+	fmt.Println(keys.KeyAuth(k, token))
 }
