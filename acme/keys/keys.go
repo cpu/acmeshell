@@ -58,7 +58,7 @@ func JWKThumbprint(signer crypto.Signer) string {
 }
 
 func KeyAuth(signer crypto.Signer, token string) string {
-	return fmt.Sprintf("%s.%s", JWKThumbprint(signer), token)
+	return fmt.Sprintf("%s.%s", token, JWKThumbprint(signer))
 }
 
 func JWKForSigner(signer crypto.Signer) jose.JSONWebKey {
