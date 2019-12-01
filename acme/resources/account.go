@@ -4,9 +4,6 @@ package resources
 
 import (
 	"crypto"
-	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -99,7 +96,7 @@ func NewAccount(emails []string, privKey crypto.Signer) (*Account, error) {
 	}
 
 	if privKey == nil {
-		randKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+		randKey, err := keys.NewSigner("ecdsa")
 		if err != nil {
 			return nil, err
 		}

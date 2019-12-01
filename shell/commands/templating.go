@@ -2,8 +2,6 @@ package commands
 
 import (
 	"crypto"
-	"crypto/ecdsa"
-	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/x509"
 	"encoding/base64"
@@ -12,6 +10,7 @@ import (
 	"text/template"
 
 	acmeclient "github.com/cpu/acmeshell/acme/client"
+	"github.com/cpu/acmeshell/acme/keys"
 	"github.com/cpu/acmeshell/acme/resources"
 )
 
@@ -99,7 +98,7 @@ func (ctx TemplateCtx) challenge(authz *resources.Authorization, challType strin
 	return match, nil
 }
 
-func (ctx TemplateCtx) csr(order *resources.Order, privateKey *ecdsa.PrivateKey) (string, error) {
+func (ctx TemplateCtx) csr(order *resources.Order, privateKey crypto.Signer) (string, error) {
 	if order == nil {
 		return "", fmt.Errorf("nil order argument")
 	}
@@ -117,7 +116,7 @@ func (ctx TemplateCtx) csr(order *resources.Order, privateKey *ecdsa.PrivateKey)
 	}
 
 	if privateKey == nil {
-		privateKey, _ = ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+		privateKey, _ = keys.NewSigner("ecdsa")
 	}
 
 	csrBytes, err := x509.CreateCertificateRequest(rand.Reader, &template, privateKey)

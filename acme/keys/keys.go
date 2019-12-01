@@ -5,6 +5,8 @@ package keys
 import (
 	"crypto"
 	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
@@ -137,4 +139,21 @@ func SignerToPEM(signer crypto.Signer) (string, error) {
 		Bytes: keyBytes,
 	})
 	return string(pemBytes), nil
+}
+
+func NewSigner(keyType string) (crypto.Signer, error) {
+	var randKey crypto.Signer
+	var err error
+	switch keyType {
+	case "ecdsa":
+		randKey, err = ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	case "rsa":
+		randKey, err = rsa.GenerateKey(rand.Reader, 2048)
+	default:
+		err = fmt.Errorf("unknown key type: %q", keyType)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return randKey, nil
 }

@@ -5,10 +5,6 @@ import (
 	"io/ioutil"
 	"os"
 
-	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/rand"
-
 	"github.com/abiosoft/ishell"
 	"github.com/cpu/acmeshell/acme/keys"
 	"github.com/cpu/acmeshell/shell/commands"
@@ -31,6 +27,7 @@ type newKeyOptions struct {
 	printPEM bool
 	printJWK bool
 	pemPath  string
+	keyType  string
 }
 
 func newKeyHandler(c *ishell.Context) {
@@ -40,6 +37,7 @@ func newKeyHandler(c *ishell.Context) {
 	newKeyFlags.BoolVar(&opts.printPEM, "pem", false, "Print PEM output")
 	newKeyFlags.BoolVar(&opts.printJWK, "jwk", true, "Print JWK output")
 	newKeyFlags.StringVar(&opts.pemPath, "path", "", "Path to write PEM private key to")
+	newKeyFlags.StringVar(&opts.keyType, "type", "ecdsa", "Type of key to generate rsa or ecdsa")
 
 	if _, err := commands.ParseFlagSetArgs(c.Args, newKeyFlags); err != nil {
 		return
@@ -55,6 +53,11 @@ func newKeyHandler(c *ishell.Context) {
 		return
 	}
 
+	if opts.keyType != "ecdsa" && opts.keyType != "rsa" {
+		c.Printf("newKey: -type must be rsa or ecdsa not %q\n", opts.keyType)
+		return
+	}
+
 	client := commands.GetClient(c)
 
 	if _, found := client.Keys[opts.keyID]; found {
@@ -62,7 +65,7 @@ func newKeyHandler(c *ishell.Context) {
 		return
 	}
 
-	randKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	randKey, err := keys.NewSigner(opts.keyType)
 	if err != nil {
 		c.Printf("newKey: error generating new key: %s\n", err.Error())
 		return
