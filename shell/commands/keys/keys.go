@@ -3,6 +3,7 @@ package keys
 import (
 	"crypto"
 	"crypto/ecdsa"
+	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
@@ -15,6 +16,7 @@ import (
 	"strings"
 
 	"github.com/abiosoft/ishell"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
 	"github.com/cpu/acmeshell/shell/commands"
 	jose "gopkg.in/square/go-jose.v2"
 )
@@ -60,7 +62,7 @@ func keysHandler(c *ishell.Context) {
 		return
 	}
 
-	var key *ecdsa.PrivateKey
+	var key crypto.Signer
 	if len(leftovers) == 0 {
 		var keysList []string
 		for k := range client.Keys {
@@ -96,18 +98,29 @@ func keysHandler(c *ishell.Context) {
 		}
 	}
 
-	keyBytes, err := x509.MarshalECPrivateKey(key)
+	var keyBytes []byte
+	var keyHeader string
+	switch k := key.(type) {
+	case *ecdsa.PrivateKey:
+		keyBytes, err = x509.MarshalECPrivateKey(k)
+		keyHeader = "EC PRIVATE KEY"
+	case *rsa.PrivateKey:
+		keyBytes = x509.MarshalPKCS1PrivateKey(k)
+		keyHeader = "RSA PRIVATE KEY"
+	default:
+		err = fmt.Errorf("unknown key type: %T", k)
+	}
 	if err != nil {
-		c.Printf("viewKey: failed to marshal EC key bytes: %s\n", err.Error())
+		c.Printf("viewKey: failed to marshal key bytes: %s\n", err.Error())
 		return
 	}
 	pemBytes := pem.EncodeToMemory(&pem.Block{
-		Type:  "EC PRIVATE KEY",
+		Type:  keyHeader,
 		Bytes: keyBytes,
 	})
 	jwk := jose.JSONWebKey{
 		Key:       key.Public(),
-		Algorithm: "ECDSA",
+		Algorithm: acmeclient.AlgForKey(key),
 	}
 
 	if opts.pem {
@@ -144,7 +157,6 @@ func keysHandler(c *ishell.Context) {
 		if opts.b64thumbprint {
 			thumbprint := base64.RawURLEncoding.EncodeToString(thumbBytes)
 			c.Printf("b64url Thumbprint:\n%s\n", thumbprint)
-
 		}
 	}
 }

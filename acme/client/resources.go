@@ -60,7 +60,7 @@ func (c *Client) CreateAccount(acct *resources.Account) error {
 		reqBody,
 		&SigningOptions{
 			EmbedKey: true,
-			Key:      acct.PrivateKey,
+			Signer:   acct.Signer,
 		})
 	if err != nil {
 		return fmt.Errorf("create: %s\n", err)

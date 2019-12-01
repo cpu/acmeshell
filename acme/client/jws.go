@@ -1,7 +1,9 @@
 package client
 
 import (
+	"crypto"
 	"crypto/ecdsa"
+	"crypto/rsa"
 	"errors"
 	"fmt"
 
@@ -19,10 +21,9 @@ type SigningOptions struct {
 	// account. If empty the Account's ID field will be used. Providing a KeyID is
 	// mutually exclusive with setting EmbedKey to true.
 	KeyID string
-	// If not-nil, a PrivateKey to use to sign the JWS. The associated public key
-	// will be computed and used for the embedded JWK if EmbedKey is true. If nil
-	// the PrivateKey is assumed to be the Account's key.
-	Key *ecdsa.PrivateKey
+	// A Signer to use to sign the JWS. The associated public key
+	// will be computed and used for the embedded JWK if EmbedKey is true.
+	Signer crypto.Signer
 	// NonceSource is a jose.NonceSource implementation that provides the
 	// Replay-Nonce header value for the produced JWS. Often this will be a Client
 	// instance.
@@ -30,9 +31,9 @@ type SigningOptions struct {
 }
 
 // validate checks that the SigningOptions are sensible. This enforces the mutually
-// exclusive KeyID and EmbedKey options and ensures that the NonceSource and Key
-// are not nil. Because it checks that the Key field is not nil it must only be
-// called after populating a default (like an Account's key).
+// exclusive KeyID and EmbedKey options and ensures that the NonceSource and Signer
+// are not nil. Because it checks that the Signer field is not nil it must only be
+// called after populating a default (like an Account's signer).
 func (opts *SigningOptions) validate() error {
 	if opts.KeyID != "" && opts.EmbedKey {
 		return fmt.Errorf("SigningOptions validate: cannot specify both KeyID and EmbedKey")
@@ -43,8 +44,8 @@ func (opts *SigningOptions) validate() error {
 	if opts.NonceSource == nil {
 		return fmt.Errorf("SigningOptions validate: you must specify a NonceSource")
 	}
-	if opts.Key == nil {
-		return fmt.Errorf("SigningOptions validate: you must specify a private key")
+	if opts.Signer == nil {
+		return fmt.Errorf("SigningOptions validate: you must specify a signer")
 	}
 	return nil
 }
@@ -62,8 +63,8 @@ type SignResult struct {
 }
 
 // Sign produces a SignResult by Signing the provided data (with a protected URL
-// header) according to the SigningOptions provided. If no Key is specified in
-// the SigningOptions then the ActiveAccount's key is used. If the
+// header) according to the SigningOptions provided. If no Signer is specified in
+// the SigningOptions then the ActiveAccount's Signer is used. If the
 // SigningOptions specify not to embed a JWK but do not specify a Key ID to use
 // then the ActiveAccount's ID is used as the JWS Key ID. If the SigningOptions
 // do not specify an explicit NonceSource the Client is used as the NonceSource.
@@ -71,13 +72,13 @@ func (c *Client) Sign(url string, data []byte, opts *SigningOptions) (*SignResul
 	if opts == nil {
 		opts = &SigningOptions{}
 	}
-	// If there is no Key and no ActiveAccount we can't proceed
-	if opts.Key == nil && c.ActiveAccount == nil {
+	// If there is no Signer and no ActiveAccount we can't proceed
+	if opts.Signer == nil && c.ActiveAccount == nil {
 		return nil, errors.New(
-			"ActiveAccount is nil and no Key was specified in SigningOptions")
-	} else if opts.Key == nil && c.ActiveAccount != nil {
-		// If there is no specified Key, use the ActiveAccount's key
-		opts.Key = c.ActiveAccount.PrivateKey
+			"ActiveAccount is nil and no Signer was specified in SigningOptions")
+	} else if opts.Signer == nil && c.ActiveAccount != nil {
+		// If there is no specified Signer, use the ActiveAccount's signer
+		opts.Signer = c.ActiveAccount.Signer
 	}
 
 	// If there is no EmbedKey specified and there is no KeyID specified, and
@@ -93,10 +94,6 @@ func (c *Client) Sign(url string, data []byte, opts *SigningOptions) (*SignResul
 	// If there is no explicit NonceSource specified, use the client.
 	if opts.NonceSource == nil {
 		opts.NonceSource = c
-	}
-
-	if opts.Key == nil {
-		return nil, errors.New("SigningOptions had a nil Key")
 	}
 
 	// If there is no request to embed a JWK in the options and there is no
@@ -129,15 +126,35 @@ func (c *Client) Sign(url string, data []byte, opts *SigningOptions) (*SignResul
 	return signResult, err
 }
 
+func SigAlgForKey(signer crypto.Signer) jose.SignatureAlgorithm {
+	switch signer.(type) {
+	case *ecdsa.PrivateKey:
+		return jose.ES256
+	case *rsa.PrivateKey:
+		return jose.RS256
+	}
+	return "unknown"
+}
+
+func AlgForKey(signer crypto.Signer) string {
+	switch signer.(type) {
+	case *ecdsa.PrivateKey:
+		return "ECDSA"
+	case *rsa.PrivateKey:
+		return "RSA"
+	}
+	return "unknown"
+}
+
 func signEmbedded(url string, data []byte, opts SigningOptions) (*SignResult, error) {
-	privKey := opts.Key
+	privKey := opts.Signer
 	if privKey == nil {
-		return nil, fmt.Errorf("signEmbedded: account has a nil privateKey")
+		return nil, fmt.Errorf("signEmbedded: account has a nil Signer")
 	}
 
 	signingKey := jose.SigningKey{
 		Key:       privKey,
-		Algorithm: jose.ES256,
+		Algorithm: SigAlgForKey(privKey),
 	}
 
 	signer, err := jose.NewSigner(signingKey, &jose.SignerOptions{
@@ -155,20 +172,20 @@ func signEmbedded(url string, data []byte, opts SigningOptions) (*SignResult, er
 }
 
 func signKeyID(url string, data []byte, opts SigningOptions) (*SignResult, error) {
-	privKey := opts.Key
+	privKey := opts.Signer
 	if opts.KeyID == "" {
 		return nil, fmt.Errorf("sign: empty KeyID")
 	}
 
 	jwk := &jose.JSONWebKey{
 		Key:       privKey,
-		Algorithm: "ECDSA",
+		Algorithm: AlgForKey(privKey),
 		KeyID:     opts.KeyID,
 	}
 
 	signerKey := jose.SigningKey{
 		Key:       jwk,
-		Algorithm: jose.ES256,
+		Algorithm: SigAlgForKey(privKey),
 	}
 
 	joseOpts := &jose.SignerOptions{

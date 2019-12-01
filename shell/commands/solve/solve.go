@@ -110,7 +110,7 @@ func solveHandler(c *ishell.Context) {
 	}
 
 	jwk := jose.JSONWebKey{
-		Key: client.ActiveAccount.PrivateKey.Public(),
+		Key: client.ActiveAccount.Signer.Public(),
 	}
 	thumbprint, err := jwk.Thumbprint(crypto.SHA256)
 	if err != nil {

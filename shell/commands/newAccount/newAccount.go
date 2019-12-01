@@ -1,10 +1,9 @@
 package newAccount
 
 import (
+	"crypto"
 	"flag"
 	"strings"
-
-	"crypto/ecdsa"
 
 	"github.com/abiosoft/ishell"
 	"github.com/cpu/acmeshell/acme/resources"
@@ -58,7 +57,7 @@ func newAccountHandler(c *ishell.Context) {
 
 	client := commands.GetClient(c)
 
-	var acctKey *ecdsa.PrivateKey
+	var acctKey crypto.Signer
 	if opts.keyID != "" {
 		if key, found := client.Keys[opts.keyID]; found {
 			acctKey = key
@@ -82,7 +81,7 @@ func newAccountHandler(c *ishell.Context) {
 	// if opts.keyID was empty then resources.NewAccount got a nil key argument and
 	// generated a new key on the fly. We need to save that key
 	if opts.keyID == "" {
-		client.Keys[acct.ID] = acct.PrivateKey
+		client.Keys[acct.ID] = acct.Signer
 		c.Printf("Created private key for ID %q\n", acct.ID)
 	}
 

@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"crypto"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -134,7 +135,7 @@ func (ctx TemplateCtx) account() (*resources.Account, error) {
 	return ctx.Acct, nil
 }
 
-func (ctx TemplateCtx) key(keyID string) (*ecdsa.PrivateKey, error) {
+func (ctx TemplateCtx) key(keyID string) (crypto.Signer, error) {
 	if len(ctx.Client.Keys) == 0 {
 		return nil, fmt.Errorf("no private keys in shell")
 	}

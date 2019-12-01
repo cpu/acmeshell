@@ -1,6 +1,7 @@
 package client
 
 import (
+	"crypto"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -39,7 +40,7 @@ func (c *Client) CSR(commonName string, names []string, keyID string) (B64CSR, P
 		DNSNames: names,
 	}
 
-	var privateKey *ecdsa.PrivateKey
+	var privateKey crypto.Signer
 	if keyID != "" {
 		if key, found := c.Keys[keyID]; found {
 			privateKey = key

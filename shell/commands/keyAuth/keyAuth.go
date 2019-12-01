@@ -2,12 +2,12 @@ package keyAuth
 
 import (
 	"crypto"
-	"crypto/ecdsa"
 	"encoding/base64"
 	"flag"
 	"fmt"
 
 	"github.com/abiosoft/ishell"
+	acmeclient "github.com/cpu/acmeshell/acme/client"
 	"github.com/cpu/acmeshell/acme/resources"
 	"github.com/cpu/acmeshell/shell/commands"
 	jose "gopkg.in/square/go-jose.v2"
@@ -86,7 +86,7 @@ func keyAuthHandler(c *ishell.Context) {
 		c.Printf("keyAuth: selected challenge token was empty\n")
 	}
 
-	var k *ecdsa.PrivateKey
+	var k crypto.Signer
 	var kID string
 	if opts.keyID != "" {
 		if key, found := client.Keys[opts.keyID]; found {
@@ -102,12 +102,12 @@ func keyAuthHandler(c *ishell.Context) {
 			c.Printf("keyAuth: no active account and no -keyID provided\n")
 			return
 		}
-		k = client.ActiveAccount.PrivateKey
+		k = client.ActiveAccount.Signer
 	}
 
 	jwk := jose.JSONWebKey{
 		Key:       k.Public(),
-		Algorithm: "ECDSA",
+		Algorithm: acmeclient.AlgForKey(k),
 	}
 	thumbprintBytes, err := jwk.Thumbprint(crypto.SHA256)
 	if err != nil {

@@ -1,7 +1,7 @@
 package rollover
 
 import (
-	"crypto/ecdsa"
+	"crypto"
 	"encoding/json"
 	"flag"
 	"net/http"
@@ -62,7 +62,7 @@ func rolloverHandler(c *ishell.Context) {
 
 	targetURL, _ := client.GetEndpointURL("keyChange")
 
-	var newKey *ecdsa.PrivateKey
+	var newKey crypto.Signer
 	if opts.keyID == "" {
 		var keysList []string
 		for k := range client.Keys {
@@ -91,8 +91,8 @@ func rolloverHandler(c *ishell.Context) {
 	// and the CreateAccount function).
 
 	oldKey := jose.JSONWebKey{
-		Key:       account.PrivateKey.Public(),
-		Algorithm: "ECDSA",
+		Key:       account.Signer.Public(),
+		Algorithm: acmeclient.AlgForKey(account.Signer),
 	}
 
 	rolloverRequest := struct {
@@ -110,7 +110,7 @@ func rolloverHandler(c *ishell.Context) {
 	}
 
 	innerSignOpts := &acmeclient.SigningOptions{
-		Key:      newKey,
+		Signer:   newKey,
 		EmbedKey: true,
 	}
 
@@ -141,6 +141,6 @@ func rolloverHandler(c *ishell.Context) {
 	}
 
 	client.Keys[account.ID] = newKey
-	account.PrivateKey = newKey
+	account.Signer = newKey
 	c.Printf("keyRollover for account %q completed\n", account.ID)
 }
