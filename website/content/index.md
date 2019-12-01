@@ -327,6 +327,8 @@ Usage of newKey:
     	Path to write PEM private key to
   -pem
     	Print PEM output
+  -type string
+    	Type of key to generate rsa or ecdsa (default "ecdsa")
 ```
 
 #### Viewing a key
@@ -337,14 +339,16 @@ key out of ACMEShell to a PEM file on disk using the `-path` argument.
 
 ```
 Usage of viewKey:
+  -b64thumbprint
+    	Display JWK public key thumbprint in base64url encoded form (default true)
+  -hexthumbprint
+    	Display JWK public key thumbprint in hex encoded form
   -jwk
     	Display public key in JWK format (default true)
   -path string
     	Path to write PEM private key to
   -pem
     	Display private key in PEM format
-  -thumbprint
-    	Display hex JWK public key thumbprint (default true)
 ```
 
 #### Load keys
@@ -497,7 +501,6 @@ ACMEShell supports some handy tricks that may be useful to you:
 
 ## TODO
 
-* Support RSA account keys (lol).
 * `revoke` high level command for revocation.
 * RFC 8555 subproblem support
 * support for exiting on a command failure (e.g. for integration tests).
