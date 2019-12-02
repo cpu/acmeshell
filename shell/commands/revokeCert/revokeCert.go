@@ -59,7 +59,7 @@ func revokeCertHandler(c *ishell.Context) {
 		return
 	}
 
-	var certBytes []byte
+	var pemBytes []byte
 	// TODO(@cpu): There should be a higher level GetCertificate function on the
 	// client that this and the getCert command can share.
 	if opts.certPEM == "" {
@@ -105,16 +105,17 @@ func revokeCertHandler(c *ishell.Context) {
 			return
 		}
 
-		pemBlock, _ := pem.Decode(resp.RespBody)
-		certBytes = pemBlock.Bytes
+		pemBytes = resp.RespBody
 	} else {
-		pemBytes, err := ioutil.ReadFile(opts.certPEM)
+		fileBytes, err := ioutil.ReadFile(opts.certPEM)
 		if err != nil {
 			c.Printf("revokeCert: error reading -certPEM argument: %q\n", err)
 			return
 		}
-		certBytes = pemBytes
+		pemBytes = fileBytes
 	}
+	pemBlock, _ := pem.Decode(pemBytes)
+	certBytes := pemBlock.Bytes
 
 	revokeRequest := struct {
 		Certificate string
