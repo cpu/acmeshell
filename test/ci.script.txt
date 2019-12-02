@@ -26,7 +26,7 @@ newAccount
 echo
 echo See the JWK for the autoregistered account
 echo
-viewKey -thumbprint=false {{ account }}
+viewKey -b64thumbprint=false {{ account }}
 
 echo
 echo Add a new key we can use for order CSR\'s
@@ -36,7 +36,7 @@ newKey -id=example.server.key
 echo
 echo View the private key\'s PEM encoding
 echo
-viewKey -jwk=false -thumbprint=false -pem example.server.key
+viewKey -jwk=false -b64thumbprint=false -pem example.server.key
 
 #
 # TODO(@cpu): Fix account key rollover
@@ -137,7 +137,7 @@ getCert -path=/tmp/example.com.pem -order 1
 echo
 echo Save the certificate\'s key to /tmp/example.com.key.pem
 echo
-viewKey -path=/tmp/example.com.key.pem -jwk=false -pem=false -thumbprint=false example.server.key
+viewKey -path=/tmp/example.com.key.pem -jwk=false -pem=false -b64thumbprint=false example.server.key
 
 echo
 echo Create another key
