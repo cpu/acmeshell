@@ -59,7 +59,7 @@ func loadAccountHandler(c *ishell.Context) {
 	}
 
 	c.Printf("Restored private key %q\n", acct.ID)
-	client.Keys[acct.ID] = acct.PrivateKey
+	client.Keys[acct.ID] = acct.Signer
 
 	c.Printf("Restored account with ID %q (Contact %s)\n",
 		acct.ID, acct.Contact)

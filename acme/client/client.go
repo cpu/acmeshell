@@ -2,7 +2,7 @@
 package client
 
 import (
-	"crypto/ecdsa"
+	"crypto"
 	"fmt"
 	"log"
 	"net/mail"
@@ -34,12 +34,12 @@ import (
 // performing complex multi-user tests (e.g. verifying access control
 // restrictions on resources) with an ACME server.
 //
-// The Client's Keys field is a map of private keys that can be used for signing
+// The Client's Keys field is a map of crypto.Signer's that can be used for signing
 // operations that should not use the ActiveAccount's keypair. One example of
 // this being helpful is for certificate signing requests (CSRs) used during
 // order finalization which SHOULD NOT be the account keypair (see
 // https://ietf-wg-acme.github.io/acme/draft-ietf-acme-acme.html#rfc.section.11.1).
-// Each private key is indexed in the Keys map by a string key identifier
+// Each signer is indexed in the Keys map by a string key identifier
 // which will often be a human readable name (e.g. "example-key",
 // "cpu-throwaway"). The key identifier for the Keys entry has no relation to
 // ACME JWS key identifiers.
@@ -53,9 +53,9 @@ type Client struct {
 	// A pointer to the Account object that is considered currently active for
 	// signing JWS for ACME requests.
 	ActiveAccount *resources.Account
-	// A map of key identifiers to private keys. These keys are used for signing
+	// A map of key identifiers to Signers. These keys are used for signing
 	// operations that shouldn't use an Account's associated key.
-	Keys map[string]*ecdsa.PrivateKey
+	Keys map[string]crypto.Signer
 	// A slice of Account object pointers. The ActiveAccount is selected from this
 	// list of available accounts.
 	Accounts []*resources.Account
@@ -200,7 +200,7 @@ func NewClient(config ClientConfig) (*Client, error) {
 	client := &Client{
 		DirectoryURL: dirURL,
 		PostAsGet:    config.POSTAsGET,
-		Keys:         map[string]*ecdsa.PrivateKey{},
+		Keys:         map[string]crypto.Signer{},
 		Output:       config.InitialOutput,
 		net:          net,
 	}
@@ -224,7 +224,7 @@ func NewClient(config ClientConfig) (*Client, error) {
 
 		// If there was no error, populate the active account
 		if err == nil {
-			client.Keys[acct.ID] = acct.PrivateKey
+			client.Keys[acct.ID] = acct.Signer
 			log.Printf("Restored private key for ID %q\n", acct.ID)
 			client.Accounts = append(client.Accounts, acct)
 			client.ActiveAccount = acct
@@ -253,8 +253,8 @@ func NewClient(config ClientConfig) (*Client, error) {
 			return nil, err
 		}
 		// store the account key
-		client.Keys[acct.ID] = acct.PrivateKey
-		log.Printf("Created private key for ID %q\n", acct.ID)
+		client.Keys[acct.ID] = acct.Signer
+		log.Printf("Stored private key for ID %q\n", acct.ID)
 
 		// if there is an account path configured, save the account we just made to
 		// that path

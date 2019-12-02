@@ -26,7 +26,7 @@ newAccount
 echo
 echo See the JWK for the autoregistered account
 echo
-viewKey -thumbprint=false {{ account }}
+viewKey -b64thumbprint=false {{ account }}
 
 echo
 echo Add a new key we can use for order CSR\'s
@@ -36,15 +36,15 @@ newKey -id=example.server.key
 echo
 echo View the private key\'s PEM encoding
 echo
-viewKey -jwk=false -thumbprint=false -pem example.server.key
+viewKey -jwk=false -b64thumbprint=false -pem example.server.key
 
 #
 # TODO(@cpu): Fix account key rollover
 #
 echo
-echo Create a new key to use as an updated ACME account key
+echo Create a new RSA key to use as an updated ACME account key
 echo
-newKey -id=replacement.account.key
+newKey -id=replacement.account.key -type=rsa
 
 echo
 echo Rollover to the new ACME account key
@@ -137,7 +137,7 @@ getCert -path=/tmp/example.com.pem -order 1
 echo
 echo Save the certificate\'s key to /tmp/example.com.key.pem
 echo
-viewKey -path=/tmp/example.com.key.pem -jwk=false -pem=false -thumbprint=false example.server.key
+viewKey -path=/tmp/example.com.key.pem -jwk=false -pem=false -b64thumbprint=false example.server.key
 
 echo
 echo Create another key
@@ -200,7 +200,7 @@ echo
 poll -sleep=1 -maxTries=10 -order=0
 
 echo
-echo Deactivate the \'www.whatever.dude\' authorization
+echo Deactivate the \'www.whatever.dude\' authorization. It would be easier to use deactivateAuthz.
 echo
 post -body='{"status":"deactivated"}' {{ (authz (order 0) \"www.whatever.dude\") }}
 
@@ -215,9 +215,9 @@ echo
 poll -sleep=1 -maxTries=10 -status=deactivated -order=0
 
 echo
-echo Deactivate the account
+echo Deactivate the account the easy way with deactivateAccount
 echo
-post -body='{"status":"deactivated"}' {{ account }}
+deactivateAccount
 
 echo
 echo Switch back to the other account
@@ -230,7 +230,7 @@ echo
 sign -data="this is my last farewell before deactivation" -embedKey=true https://some.url.for.the.header
 
 echo
-echo Deactivate the account
+echo Deactivate the account the hard way with a low-level post
 echo
 post -body='{"status":"deactivated"}' {{ account }}
 

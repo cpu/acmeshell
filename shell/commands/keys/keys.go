@@ -2,11 +2,6 @@ package keys
 
 import (
 	"crypto"
-	"crypto/ecdsa"
-	"crypto/x509"
-	"encoding/base64"
-	"encoding/json"
-	"encoding/pem"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -15,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/abiosoft/ishell"
+	"github.com/cpu/acmeshell/acme/keys"
 	"github.com/cpu/acmeshell/shell/commands"
-	jose "gopkg.in/square/go-jose.v2"
 )
 
 func init() {
@@ -60,7 +55,7 @@ func keysHandler(c *ishell.Context) {
 		return
 	}
 
-	var key *ecdsa.PrivateKey
+	var key crypto.Signer
 	if len(leftovers) == 0 {
 		var keysList []string
 		for k := range client.Keys {
@@ -96,26 +91,18 @@ func keysHandler(c *ishell.Context) {
 		}
 	}
 
-	keyBytes, err := x509.MarshalECPrivateKey(key)
+	pemContent, err := keys.SignerToPEM(key)
 	if err != nil {
-		c.Printf("viewKey: failed to marshal EC key bytes: %s\n", err.Error())
+		c.Printf("viewKey: failed to marshal key bytes: %s\n", err.Error())
 		return
-	}
-	pemBytes := pem.EncodeToMemory(&pem.Block{
-		Type:  "EC PRIVATE KEY",
-		Bytes: keyBytes,
-	})
-	jwk := jose.JSONWebKey{
-		Key:       key.Public(),
-		Algorithm: "ECDSA",
 	}
 
 	if opts.pem {
-		c.Printf("PEM:\n%s\n", string(pemBytes))
+		c.Printf("PEM:\n%s\n", pemContent)
 	}
 
 	if opts.pemPath != "" {
-		err := ioutil.WriteFile(opts.pemPath, pemBytes, os.ModePerm)
+		err := ioutil.WriteFile(opts.pemPath, []byte(pemContent), os.ModePerm)
 		if err != nil {
 			c.Printf("viewKey: error writing pem to %q: %s\n", opts.pemPath, err.Error())
 			return
@@ -124,27 +111,18 @@ func keysHandler(c *ishell.Context) {
 	}
 
 	if opts.jwk {
-		jwkJSON, err := json.Marshal(&jwk)
-		if err != nil {
-			c.Printf("viewKey: failed to marshal JWK: %s\n", err.Error())
-			return
-		}
-		c.Printf("JWK:\n%s\n", string(jwkJSON))
+		c.Printf("JWK:\n%s\n", keys.JWKJSON(key))
 	}
 
 	if opts.hexthumbprint || opts.b64thumbprint {
-		thumbBytes, err := jwk.Thumbprint(crypto.SHA256)
-		if err != nil {
-			c.Printf("INVALID-THUMBPRINT")
-		}
+		thumbBytes := keys.JWKThumbprintBytes(key)
+		thumbprint := keys.JWKThumbprint(key)
 
 		if opts.hexthumbprint {
 			c.Printf("Hex Thumbprint:\n%#x\n", thumbBytes)
 		}
 		if opts.b64thumbprint {
-			thumbprint := base64.RawURLEncoding.EncodeToString(thumbBytes)
 			c.Printf("b64url Thumbprint:\n%s\n", thumbprint)
-
 		}
 	}
 }

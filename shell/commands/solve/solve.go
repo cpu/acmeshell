@@ -1,16 +1,12 @@
 package solve
 
 import (
-	"crypto"
-	"encoding/base64"
 	"flag"
-	"fmt"
 	"net/http"
 	"strings"
 
-	jose "gopkg.in/square/go-jose.v2"
-
 	"github.com/abiosoft/ishell"
+	"github.com/cpu/acmeshell/acme/keys"
 	"github.com/cpu/acmeshell/acme/resources"
 	"github.com/cpu/acmeshell/shell/commands"
 )
@@ -109,16 +105,7 @@ func solveHandler(c *ishell.Context) {
 		c.Printf("challenge token:\n%s\n", token)
 	}
 
-	jwk := jose.JSONWebKey{
-		Key: client.ActiveAccount.PrivateKey.Public(),
-	}
-	thumbprint, err := jwk.Thumbprint(crypto.SHA256)
-	if err != nil {
-		c.Printf("solve: error computing account JWK thumbprint: %s", err.Error())
-		return
-	}
-	encodedThumbprint := base64.RawURLEncoding.EncodeToString(thumbprint)
-	keyAuth := fmt.Sprintf("%s.%s", token, encodedThumbprint)
+	keyAuth := keys.KeyAuth(client.ActiveAccount.Signer, token)
 	if opts.printKeyAuthorization {
 		c.Printf("key authorization:\n%s\n", keyAuth)
 	}

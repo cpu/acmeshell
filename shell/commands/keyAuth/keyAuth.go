@@ -2,15 +2,13 @@ package keyAuth
 
 import (
 	"crypto"
-	"crypto/ecdsa"
-	"encoding/base64"
 	"flag"
 	"fmt"
 
 	"github.com/abiosoft/ishell"
+	"github.com/cpu/acmeshell/acme/keys"
 	"github.com/cpu/acmeshell/acme/resources"
 	"github.com/cpu/acmeshell/shell/commands"
-	jose "gopkg.in/square/go-jose.v2"
 )
 
 func init() {
@@ -86,35 +84,22 @@ func keyAuthHandler(c *ishell.Context) {
 		c.Printf("keyAuth: selected challenge token was empty\n")
 	}
 
-	var k *ecdsa.PrivateKey
-	var kID string
+	var k crypto.Signer
 	if opts.keyID != "" {
 		if key, found := client.Keys[opts.keyID]; found {
 			k = key
-			kID = opts.keyID
 		} else {
 			c.Printf("keyAuth: no key with ID %q exists in shell\n", opts.keyID)
 			return
 		}
 	} else {
-		kID = client.ActiveAccountID()
+		kID := client.ActiveAccountID()
 		if kID == "" {
 			c.Printf("keyAuth: no active account and no -keyID provided\n")
 			return
 		}
-		k = client.ActiveAccount.PrivateKey
+		k = client.ActiveAccount.Signer
 	}
 
-	jwk := jose.JSONWebKey{
-		Key:       k.Public(),
-		Algorithm: "ECDSA",
-	}
-	thumbprintBytes, err := jwk.Thumbprint(crypto.SHA256)
-	if err != nil {
-		c.Printf("keyAuth: failed to compute Thumbprint for key %q: %v\n", kID, err)
-		return
-	}
-
-	thumbprint := base64.RawURLEncoding.EncodeToString(thumbprintBytes)
-	fmt.Printf("%s.%s\n", token, thumbprint)
+	fmt.Println(keys.KeyAuth(k, token))
 }

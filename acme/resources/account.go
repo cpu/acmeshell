@@ -3,14 +3,13 @@
 package resources
 
 import (
-	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/rand"
-	"crypto/x509"
+	"crypto"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
+
+	"github.com/cpu/acmeshell/acme/keys"
 )
 
 // Account holds information related to a single ACME Account resource. If the
@@ -24,7 +23,7 @@ import (
 // The Contact field is either nil or a slice of one or more email addresses
 // to be used as the ACME Account's "mailto://" Contact addresses.
 //
-// The PrivateKey field is a pointer to a private key used for the ACME
+// The Signer field is a pointer to a private key used for the ACME
 // account's keypair. The public component is computed from this private key
 // automatically.
 //
@@ -41,12 +40,9 @@ type Account struct {
 	// If not nil, a slice of one or more email addresses to be used as the ACME
 	// Account's "mailto://" Contact addresses.
 	Contact []string
-	// A pointer to a private key used for the ACME account's
-	// keypair.
-	//
-	// TODO(@cpu): This should be using the right interface instead of restricting
-	// usage to ECDSA instances.
-	PrivateKey *ecdsa.PrivateKey
+	// A signer to use to sign protocol messages and to access the ACME account's
+	// public key
+	Signer crypto.Signer
 	// If not nil, a slice of URLs for Order resources the Account created with
 	// the ACME server.
 	Orders []string
@@ -84,11 +80,11 @@ func (a *Account) OrderURL(i int) (string, error) {
 // the emails argument is a slice of zero or more email addresses that should be
 // used as the Account's Contact information.
 //
-// the privKey argument is a pointer to a private key that should be used for
+// the privKey argument is a crypto.Signer to that should be used for
 // the Account keypair. It will be used to create JWS for requests when the
 // Account is a Client's ActiveAccount. If the privKey argument is nil a new
-// randomly generated private key will be used for the Account key.
-func NewAccount(emails []string, privKey *ecdsa.PrivateKey) (*Account, error) {
+// randomly generated ECDSA private key will be used for the Account key.
+func NewAccount(emails []string, privKey crypto.Signer) (*Account, error) {
 	var contacts []string
 	if len(emails) > 0 {
 		for _, e := range emails {
@@ -100,7 +96,7 @@ func NewAccount(emails []string, privKey *ecdsa.PrivateKey) (*Account, error) {
 	}
 
 	if privKey == nil {
-		randKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+		randKey, err := keys.NewSigner("ecdsa")
 		if err != nil {
 			return nil, err
 		}
@@ -108,8 +104,8 @@ func NewAccount(emails []string, privKey *ecdsa.PrivateKey) (*Account, error) {
 	}
 
 	return &Account{
-		Contact:    contacts,
-		PrivateKey: privKey,
+		Contact: contacts,
+		Signer:  privKey,
 	}, nil
 }
 
@@ -135,13 +131,12 @@ type rawAccount struct {
 	ID         string
 	Contact    []string
 	Orders     []string
+	KeyType    string
 	PrivateKey []byte
 }
 
 func (a *Account) save() ([]byte, error) {
-	// TODO(@cpu): This will need to be updated when the private key is a generic
-	// interface.
-	k, err := x509.MarshalECPrivateKey(a.PrivateKey)
+	keyBytes, keyType, err := keys.MarshalSigner(a.Signer)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +145,8 @@ func (a *Account) save() ([]byte, error) {
 		ID:         a.ID,
 		Contact:    a.Contact,
 		Orders:     a.Orders,
-		PrivateKey: k,
+		KeyType:    keyType,
+		PrivateKey: keyBytes,
 	}
 	frozenAcct, err := json.MarshalIndent(rawAcct, "", "  ")
 	if err != nil {
@@ -179,14 +175,11 @@ func RestoreAccount(path string) (*Account, error) {
 func (a *Account) restore(frozenAcct []byte) error {
 	var rawAcct rawAccount
 
-	err := json.Unmarshal(frozenAcct, &rawAcct)
-	if err != nil {
+	if err := json.Unmarshal(frozenAcct, &rawAcct); err != nil {
 		return err
 	}
 
-	// TODO(@cpu): This will need to be updated when the private key is a more
-	// generic interface.
-	privKey, err := x509.ParseECPrivateKey(rawAcct.PrivateKey)
+	privKey, err := keys.UnmarshalSigner(rawAcct.PrivateKey, rawAcct.KeyType)
 	if err != nil {
 		return err
 	}
@@ -194,6 +187,6 @@ func (a *Account) restore(frozenAcct []byte) error {
 	a.ID = rawAcct.ID
 	a.Contact = rawAcct.Contact
 	a.Orders = rawAcct.Orders
-	a.PrivateKey = privKey
+	a.Signer = privKey
 	return nil
 }

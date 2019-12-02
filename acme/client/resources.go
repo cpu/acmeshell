@@ -1,6 +1,7 @@
 package client
 
 import (
+	"crypto"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -8,8 +9,11 @@ import (
 	"net/http"
 
 	"github.com/cpu/acmeshell/acme"
+	"github.com/cpu/acmeshell/acme/keys"
 	"github.com/cpu/acmeshell/acme/resources"
 	"github.com/cpu/acmeshell/net"
+
+	jose "gopkg.in/square/go-jose.v2"
 )
 
 // CreateAccount creates the given Account resource with the ACME server.
@@ -60,7 +64,7 @@ func (c *Client) CreateAccount(acct *resources.Account) error {
 		reqBody,
 		&SigningOptions{
 			EmbedKey: true,
-			Key:      acct.PrivateKey,
+			Signer:   acct.Signer,
 		})
 	if err != nil {
 		return fmt.Errorf("create: %s\n", err)
@@ -87,6 +91,65 @@ func (c *Client) CreateAccount(acct *resources.Account) error {
 	// Store the Location header as the Account's ID
 	acct.ID = locHeader
 	log.Printf("Created account with ID %q\n", acct.ID)
+	return nil
+}
+
+func (c *Client) Rollover(newKey crypto.Signer) error {
+	acctID := c.ActiveAccountID()
+	if c.ActiveAccountID() == "" {
+		return fmt.Errorf("active account is nil or has not been created")
+	}
+
+	account := c.ActiveAccount
+	oldKey := keys.JWKForSigner(account.Signer)
+
+	rolloverRequest := struct {
+		Account string
+		OldKey  jose.JSONWebKey
+	}{
+		Account: account.ID,
+		OldKey:  oldKey,
+	}
+
+	rolloverRequestJSON, err := json.Marshal(&rolloverRequest)
+	if err != nil {
+		return fmt.Errorf("failed to marshal rollover request to JSON: %v", err)
+	}
+
+	innerSignOpts := &SigningOptions{
+		Signer:   newKey,
+		EmbedKey: true,
+	}
+
+	targetURL, ok := c.GetEndpointURL("keyChange")
+	if !ok {
+		return fmt.Errorf("no keyChange endpoint in server's directory response")
+	}
+
+	innerSignResult, err := c.Sign(targetURL, rolloverRequestJSON, innerSignOpts)
+	if err != nil {
+		return fmt.Errorf("error signing inner JWS: %v", err)
+	}
+
+	outerSignResult, err := c.Sign(targetURL, innerSignResult.SerializedJWS, nil)
+	if err != nil {
+		return fmt.Errorf("error signing outer JWS: %v", err)
+	}
+
+	log.Printf("Rolling over account %q to use new key\n", acctID)
+	resp, err := c.PostURL(targetURL, outerSignResult.SerializedJWS)
+	if err != nil {
+		return fmt.Errorf("rollover POST request failed: %v", err)
+	}
+
+	respOb := resp.Response
+	if respOb.StatusCode != http.StatusOK {
+		return fmt.Errorf("rollover POST request failed. Status code: %d", respOb.StatusCode)
+	}
+
+	c.Keys[account.ID] = newKey
+	c.ActiveAccount.Signer = newKey
+	log.Printf("Rollover for %q completed\n", acctID)
 	return nil
 }
 

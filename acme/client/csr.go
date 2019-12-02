@@ -1,8 +1,7 @@
 package client
 
 import (
-	"crypto/ecdsa"
-	"crypto/elliptic"
+	"crypto"
 	"crypto/rand"
 	"crypto/x509"
 	"crypto/x509/pkix"
@@ -10,6 +9,8 @@ import (
 	"encoding/pem"
 	"fmt"
 	"strings"
+
+	"github.com/cpu/acmeshell/acme/keys"
 )
 
 // PEMCSR is the PEM encoding of an x509 Certificate Signing Request (CSR)
@@ -39,7 +40,7 @@ func (c *Client) CSR(commonName string, names []string, keyID string) (B64CSR, P
 		DNSNames: names,
 	}
 
-	var privateKey *ecdsa.PrivateKey
+	var privateKey crypto.Signer
 	if keyID != "" {
 		if key, found := c.Keys[keyID]; found {
 			privateKey = key
@@ -49,7 +50,7 @@ func (c *Client) CSR(commonName string, names []string, keyID string) (B64CSR, P
 		}
 	} else {
 		// save a new random key for the names
-		privateKey, _ = ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+		privateKey, _ = keys.NewSigner("ecdsa")
 		c.Keys[strings.Join(names, ",")] = privateKey
 	}
 
