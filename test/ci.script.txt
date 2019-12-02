@@ -192,8 +192,9 @@ newAccount -switch=true
 echo
 echo Revoke the order 1 certificate made by the other ACME account.
 echo The revocation request needs to be authorized using the certificate\'s key.
+echo Use revocation reason code 9
 echo
-revokeCert -keyID="example.server.key" -certPEM="/tmp/example.com.pem"
+revokeCert -keyID="example.server.key" -certPEM="/tmp/example.com.pem" -reason 9
 
 echo
 echo Create an order

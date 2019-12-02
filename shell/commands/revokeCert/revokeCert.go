@@ -31,6 +31,7 @@ type revokeOptions struct {
 	orderIndex int
 	keyID      string
 	certPEM    string
+	reason     int
 }
 
 func revokeCertHandler(c *ishell.Context) {
@@ -39,7 +40,9 @@ func revokeCertHandler(c *ishell.Context) {
 	revokeFlags.IntVar(&opts.orderIndex, "order", -1, "index of order to revoke")
 	revokeFlags.StringVar(&opts.keyID, "keyID", "", "Key ID to use for embedded JWK revocation")
 	revokeFlags.StringVar(&opts.certPEM, "certPEM", "", "Path to PEM Certificate file to revoke")
-	// TODO(@cpu): Add reason flag
+	// TODO(@cpu): Consider parsing string names for codes from
+	// https://tools.ietf.org/html/rfc5280#section-5.3.1
+	revokeFlags.IntVar(&opts.reason, "reason", 1, "Revocation reason code, see https://tools.ietf.org/html/rfc5280#section-5.3.1")
 
 	leftovers, err := commands.ParseFlagSetArgs(c.Args, revokeFlags)
 	if err != nil {
@@ -122,7 +125,7 @@ func revokeCertHandler(c *ishell.Context) {
 		Reason      int
 	}{
 		Certificate: base64.RawURLEncoding.EncodeToString(certBytes),
-		Reason:      1,
+		Reason:      opts.reason,
 	}
 	revokeRequestJSON, _ := json.Marshal(&revokeRequest)
 
