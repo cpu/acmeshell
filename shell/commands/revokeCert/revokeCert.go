@@ -145,6 +145,10 @@ func revokeCertHandler(c *ishell.Context) {
 	}
 
 	signResult, err := client.Sign(revokeURL, revokeRequestJSON, signOpts)
+	if err != nil {
+		c.Printf("revokeCert: failed to sign revocation request: %v\n", err)
+		return
+	}
 
 	c.Printf("POSTing %q to revoke certificate\n", revokeURL)
 	resp, err := client.PostURL(revokeURL, signResult.SerializedJWS)
