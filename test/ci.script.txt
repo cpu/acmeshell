@@ -200,7 +200,7 @@ echo
 poll -sleep=1 -maxTries=10 -order=0
 
 echo
-echo Deactivate the \'www.whatever.dude\' authorization
+echo Deactivate the \'www.whatever.dude\' authorization. It would be easier to use deactivateAuthz.
 echo
 post -body='{"status":"deactivated"}' {{ (authz (order 0) \"www.whatever.dude\") }}
 
@@ -215,9 +215,9 @@ echo
 poll -sleep=1 -maxTries=10 -status=deactivated -order=0
 
 echo
-echo Deactivate the account
+echo Deactivate the account the easy way with deactivateAccount
 echo
-post -body='{"status":"deactivated"}' {{ account }}
+deactivateAccount
 
 echo
 echo Switch back to the other account
@@ -230,7 +230,7 @@ echo
 sign -data="this is my last farewell before deactivation" -embedKey=true https://some.url.for.the.header
 
 echo
-echo Deactivate the account
+echo Deactivate the account the hard way with a low-level post
 echo
 post -body='{"status":"deactivated"}' {{ account }}
 
