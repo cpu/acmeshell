@@ -402,6 +402,7 @@ While not a complete list (see "help") the most common high-level commands are:
 * **poll** - poll a resource until it's in a specific state.
 * **finalize** - finalize an order by POSTing a CSR.
 * **getCert** - get an order's certificate resource.
+* **revokeCert** - revoke a certificate resource.
 * **deactivateAuthz** - deactivate an authorization.
 * **deactivateAccount** - deactivate an account.
 
@@ -417,6 +418,7 @@ an order issuance:
        finalize -order=0
        poll -order=0 -status=valid
        getCert -order=0
+       revokeCert -order=0
 
 Note that while the high level commands to fetch resource information have "get"
 in their names POST-as-GET requests will be used internally unless ACMEShell was
@@ -501,7 +503,6 @@ ACMEShell supports some handy tricks that may be useful to you:
 
 ## TODO
 
-* `revoke` high level command for revocation.
 * RFC 8555 subproblem support
 * support for exiting on a command failure (e.g. for integration tests).
 * so much cleanup...

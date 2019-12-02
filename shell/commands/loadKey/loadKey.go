@@ -1,13 +1,13 @@
 package loadKey
 
 import (
-	"crypto/x509"
 	"encoding/pem"
 	"flag"
 	"io/ioutil"
 	"strings"
 
 	"github.com/abiosoft/ishell"
+	"github.com/cpu/acmeshell/acme/keys"
 	"github.com/cpu/acmeshell/shell/commands"
 )
 
@@ -61,12 +61,24 @@ func loadKeyHandler(c *ishell.Context) {
 	}
 
 	block, _ := pem.Decode(pemBytes)
-	privKey, err := x509.ParseECPrivateKey(block.Bytes)
-	if err != nil {
-		c.Printf("loadKey: error decoding EC private key from PEM bytes in %q: %s", argument, err.Error())
+
+	var keyType string
+	switch t := strings.ToUpper(block.Type); t {
+	case "EC PRIVATE KEY":
+		keyType = "ecdsa"
+	case "RSA PRIVATE KEY":
+		keyType = "rsa"
+	default:
+		c.Printf("loadKey: unknown PEM block type %q\n", t)
 		return
 	}
 
-	client.Keys[opts.id] = privKey
+	signer, err := keys.UnmarshalSigner(block.Bytes, keyType)
+	if err != nil {
+		c.Printf("loadKey: error loading private key from PEM bytes in %q: %v", argument, err)
+		return
+	}
+
+	client.Keys[opts.id] = signer
 	c.Printf("loadKey: restored key from %q to ID %q\n", argument, opts.id)
 }

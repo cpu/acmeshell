@@ -43,6 +43,7 @@ import (
 	_ "github.com/cpu/acmeshell/shell/commands/orders"
 	_ "github.com/cpu/acmeshell/shell/commands/poll"
 	_ "github.com/cpu/acmeshell/shell/commands/post"
+	_ "github.com/cpu/acmeshell/shell/commands/revokeCert"
 	_ "github.com/cpu/acmeshell/shell/commands/rollover"
 	_ "github.com/cpu/acmeshell/shell/commands/saveAccount"
 	_ "github.com/cpu/acmeshell/shell/commands/sign"
