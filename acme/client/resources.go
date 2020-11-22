@@ -154,8 +154,8 @@ func (c *Client) Rollover(newKey crypto.Signer) error {
 }
 
 // CreateOrder creates the given Order resource with the ACME server. If the
-// operation is successful the Order's ID field is populated with the value of
-// the server's reply's Location header. Otherwise a non-nil error is returned.
+// operation is successful, the order is mutated in place with the response
+// from the server's reply. Otherwise a non-nil error is returned.
 //
 // For more information on Order creation see "Applying for Certificate
 // Issuance" in RFC 8555:

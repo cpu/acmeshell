@@ -82,4 +82,11 @@ func createOrder(c *ishell.Context, fqdns []string) {
 		c.Printf("newOrder: error creating new order with ACME server: %s\n", err)
 		return
 	}
+
+	orderStr, err := commands.PrintJSON(order)
+	if err != nil {
+		c.Printf("getOrder: error serializing order: %v\n", err)
+		return
+	}
+	c.Printf("%s\n", orderStr)
 }

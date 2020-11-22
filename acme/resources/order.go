@@ -13,8 +13,14 @@ type Order struct {
 	ID string
 	// The Status of the Order.
 	Status string
+	// The timestamp after which the server will consider this order invalid.
+	Expires string
 	// The Error associated with an invalid order
 	Error *Problem `json:",omitempty"`
+	// NotBefore and NotAfter are the requested values of the notBefore and
+	// notAfter fields of the resulting certificate. Ignored by Boulder.
+	NotBefore string
+	NotAfter  string
 	// The Identifiers the Order wishes to finalize a Certificate for once the
 	// Order is ready.
 	Identifiers []Identifier
