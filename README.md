@@ -6,8 +6,6 @@ ACMEShell Supports both interactive and non-interactive usage.
 
 ---
 
-[![Build Status](https://travis-ci.com/cpu/acmeshell.svg?branch=master)](https://travis-ci.com/cpu/acmeshell)
-[![GolangCI](https://golangci.com/badges/github.com/cpu/acmeshell.svg)](https://golangci.com/r/github.com/cpu/acmeshell)
 [![Go Report Card](https://goreportcard.com/badge/github.com/cpu/acmeshell)](https://goreportcard.com/report/github.com/cpu/acmeshell)
 
 ---
