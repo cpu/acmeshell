@@ -5,26 +5,20 @@ builds:
     env:
       - CGO_ENABLED=0
     goos:
-      - freebsd
       - linux
       - darwin
     goarch:
-      - 386
       - amd64
       - arm
       - arm64
     goarm:
       - 6
       - 7
-    ignore:
-      - goos: darwin
-        goarch: 386
 archives:
   -
     wrap_in_directory: true
     replacements:
       linux: Linux
-      386: i386
       amd64: x86_64
     files:
       - LICENSE
