@@ -1,0 +1,29 @@
+name: integration-test
+on: [push, pull_request]
+jobs:
+
+  test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    services:
+      pebble:
+        image: letsencrypt/pebble
+        ports:
+          - 14000:14000 # ACME API
+          - 15000:15000 # Management API
+    steps:
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ^1.15
+      id: go
+
+    - name: Check out code
+      uses: actions/checkout@v2
+
+    - name: Install
+      run: go install -mod=vendor -v ./...
+
+    - name: Run ci.script.txt
+      run:  acmeshell -pebble -autoregister=false -account="" -in test/ci.script.txt
