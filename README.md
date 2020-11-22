@@ -45,7 +45,7 @@ progress on my real task (likely debugging [Boulder][boulder]).
 1. Pick an [ACMEShell release][releases] and download the `.tar.gz` archive for
    your architecture (for example `Linux_x86_64.tar.gz`):
 
-       wget https://github.com/cpu/acmeshell/releases/download/v0.0.1/acmeshell_0.0.1_Linux_x86_64.tar.gz
+       wget https://github.com/cpu/acmeshell/releases/download/v0.0.2/acmeshell_0.0.2_Linux_x86_64.tar.gz
 
 1. Extract the archive and change into the extracted directory:
 
