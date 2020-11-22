@@ -19,7 +19,7 @@ builds:
     ignore:
       - goos: darwin
         goarch: 386
-archive:
+archives:
   wrap_in_directory: true
   replacements:
     linux: Linux
