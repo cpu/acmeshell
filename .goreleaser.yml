@@ -20,14 +20,15 @@ builds:
       - goos: darwin
         goarch: 386
 archives:
-  wrap_in_directory: true
-  replacements:
-    linux: Linux
-    386: i386
-    amd64: x86_64
-  files:
-    - LICENSE
-    - README.md
+  -
+    wrap_in_directory: true
+    replacements:
+      linux: Linux
+      386: i386
+      amd64: x86_64
+    files:
+      - LICENSE
+      - README.md
 checksum:
   name_template: 'checksums.txt'
 snapshot:
