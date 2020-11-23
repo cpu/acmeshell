@@ -10,6 +10,8 @@ ACMEShell Supports both interactive and non-interactive usage.
 
 ---
 
+[![CI Status](https://github.com/cpu/acmeshell/workflows/Go/badge.svg)](https://github.com/cpu/acmeshell/actions?query=workflow%3AGo)
+[![Lint Status](https://github.com/cpu/acmeshell/workflows/golangci-lint/badge.svg)](https://github.com/cpu/acmeshell/actions?query=workflow%3Agolangci-lint)
 [![Go Report Card](https://goreportcard.com/badge/github.com/cpu/acmeshell)](https://goreportcard.com/report/github.com/cpu/acmeshell)
 
 ---
