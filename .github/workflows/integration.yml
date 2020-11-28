@@ -23,7 +23,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Install
-      run: go install -mod=vendor -v ./...
+      run: go install -v ./...
 
     - name: Run ci.script.txt
       run:  acmeshell -pebble -autoregister=false -account="" -in test/ci.script.txt
