@@ -4,6 +4,10 @@ An interactive shell designed for [RFC 8555][acme] ACME client/server
 developers to use for tests, day to day tasks, and exploring the protocol.
 ACMEShell Supports both interactive and non-interactive usage.
 
+> [!IMPORTANT]  
+> This repository is _very_ lightly maintained. If you're using this code,
+> consider offering to help maintain it.
+
 ---
 
 [![CI Status](https://github.com/cpu/acmeshell/workflows/Go/badge.svg)](https://github.com/cpu/acmeshell/actions?query=workflow%3AGo)
