@@ -31,3 +31,6 @@ website/public
 
 # Default -account file for acmeshell
 acmeshell.account.json
+
+# Goland/Jetbrains IDE
+/.idea

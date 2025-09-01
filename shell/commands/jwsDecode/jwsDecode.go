@@ -94,10 +94,7 @@ func decode(data string, hex bool) (string, error) {
 
 	if hex {
 		var buff strings.Builder
-		for {
-			if len(result) == 0 {
-				break
-			}
+		for len(result) > 0 {
 			b := result[0]
 			fmt.Fprintf(&buff, "0x%X ", b)
 			result = result[1:]

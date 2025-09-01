@@ -5,7 +5,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	acmeclient "github.com/cpu/acmeshell/acme/client"
@@ -139,9 +138,9 @@ func main() {
 	flag.Parse()
 
 	if *pebble {
-		tmpFile, err := ioutil.TempFile("", "pebble.ca.*.pem")
+		tmpFile, err := os.CreateTemp("", "pebble.ca.*.pem")
 		acmecmd.FailOnError(err, fmt.Sprintf("Error opening pebble CA temp file: %v", err))
-		defer os.Remove(tmpFile.Name())
+		defer func() { _ = os.Remove(tmpFile.Name()) }()
 
 		_, err = tmpFile.Write([]byte(PEBBLE_CA_DEFAULT))
 		acmecmd.FailOnError(err, fmt.Sprintf("Error writing pebble CA temp file: %v", err))
@@ -162,7 +161,7 @@ func main() {
 		f, err := os.Open(*commandFile)
 		acmecmd.FailOnError(err, fmt.Sprintf(
 			"Error opening -in file %q: %v", *commandFile, err))
-		defer f.Close()
+		defer func() { _ = f.Close() }()
 		err = redirectStdin(int(f.Fd()))
 		acmecmd.FailOnError(err, fmt.Sprintf(
 			"Error redirecting stdin fd: %v", err))

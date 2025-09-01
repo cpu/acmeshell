@@ -4,7 +4,6 @@ import (
 	"crypto"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"sort"
 	"strings"
@@ -102,7 +101,7 @@ func keysHandler(c *ishell.Context) {
 	}
 
 	if opts.pemPath != "" {
-		err := ioutil.WriteFile(opts.pemPath, []byte(pemContent), os.ModePerm)
+		err := os.WriteFile(opts.pemPath, []byte(pemContent), os.ModePerm)
 		if err != nil {
 			c.Printf("viewKey: error writing pem to %q: %s\n", opts.pemPath, err.Error())
 			return

@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"github.com/cpu/acmeshell/acme/keys"
 )
@@ -36,16 +36,16 @@ import (
 type Account struct {
 	// The server assigned Account ID. This is used for the JWS KeyID when
 	// authenticating ACME requests using the Account's registered keypair.
-	ID string
+	ID string `json:"id"`
 	// If not nil, a slice of one or more email addresses to be used as the ACME
 	// Account's "mailto://" Contact addresses.
-	Contact []string
+	Contact []string `json:"contact"`
 	// A signer to use to sign protocol messages and to access the ACME account's
 	// public key
 	Signer crypto.Signer
 	// If not nil, a slice of URLs for Order resources the Account created with
 	// the ACME server.
-	Orders []string
+	Orders []string `json:"orders"`
 	// The JSON path backing the account (if any)
 	jsonPath string
 }
@@ -124,7 +124,7 @@ func SaveAccount(path string, account *Account) error {
 	account.jsonPath = path
 	// write the serialized data to the provided filepath using a mode that only
 	// allows access to the current user. This file contains a private key!
-	return ioutil.WriteFile(path, frozenBytes, 0600)
+	return os.WriteFile(path, frozenBytes, 0600)
 }
 
 type rawAccount struct {
@@ -162,7 +162,7 @@ func (a *Account) save() ([]byte, error) {
 // returned.
 func RestoreAccount(path string) (*Account, error) {
 	acct := &Account{}
-	frozenBytes, err := ioutil.ReadFile(path)
+	frozenBytes, err := os.ReadFile(path)
 	if err != nil {
 		return acct, err
 	}

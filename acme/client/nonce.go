@@ -30,7 +30,7 @@ func (c *Client) RefreshNonce() error {
 	nonceURL, ok := c.GetEndpointURL(acme.NEW_NONCE_ENDPOINT)
 	if !ok {
 		return fmt.Errorf(
-			"Missing %q entry in ACME server directory", acme.NEW_NONCE_ENDPOINT)
+			"missing %q entry in ACME server directory", acme.NEW_NONCE_ENDPOINT)
 	}
 
 	if c.Output.PrintNonceUpdates {
@@ -43,7 +43,7 @@ func (c *Client) RefreshNonce() error {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("%q returned HTTP status %d, expected %d\n",
+		return fmt.Errorf("%q returned HTTP status %d, expected %d",
 			acme.NEW_NONCE_ENDPOINT, resp.StatusCode, http.StatusOK)
 	}
 

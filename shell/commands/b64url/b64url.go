@@ -22,7 +22,7 @@ func (opts b64urlOptions) validate() error {
 		return errors.New("both -encode and -decode can not be provided at once")
 	}
 	if !opts.encode && !opts.decode {
-		return errors.New("One of -encode or -decode must be provided")
+		return errors.New("one of -encode or -decode must be provided")
 	}
 	return nil
 }
@@ -78,10 +78,7 @@ func b64urlHandler(c *ishell.Context) {
 
 	if opts.hex {
 		c.Printf("Result:\n")
-		for {
-			if len(output) == 0 {
-				break
-			}
+		for len(output) > 0 {
 			b := output[0]
 			c.Printf("0x%X ", b)
 			output = output[1:]

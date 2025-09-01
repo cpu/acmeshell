@@ -5,7 +5,7 @@ import (
 	"log"
 )
 
-func (c *Client) getDirectory() (map[string]interface{}, error) {
+func (c *Client) getDirectory() (map[string]any, error) {
 	url := c.DirectoryURL.String()
 
 	resp, err := c.net.GetURL(url)
@@ -13,7 +13,7 @@ func (c *Client) getDirectory() (map[string]interface{}, error) {
 		return nil, err
 	}
 
-	var directory map[string]interface{}
+	var directory map[string]any
 	err = json.Unmarshal(resp.RespBody, &directory)
 	if err != nil {
 		return nil, err
@@ -26,7 +26,7 @@ func (c *Client) getDirectory() (map[string]interface{}, error) {
 // returns it deserialized as a map.
 //
 // See https://tools.ietf.org/html/rfc8555#section-7.1.1
-func (c *Client) Directory() (map[string]interface{}, error) {
+func (c *Client) Directory() (map[string]any, error) {
 	if c.directory == nil {
 		if err := c.UpdateDirectory(); err != nil {
 			return nil, err

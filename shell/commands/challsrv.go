@@ -59,7 +59,7 @@ func (srv remoteChallengeServer) url(path string) string {
 	return fmt.Sprintf("%s/%s", srv.address, path)
 }
 
-func mustMarshal(ob interface{}) []byte {
+func mustMarshal(ob any) []byte {
 	result, _ := json.Marshal(ob)
 	return result
 }

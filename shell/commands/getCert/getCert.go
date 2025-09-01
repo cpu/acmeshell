@@ -2,7 +2,6 @@ package getCert
 
 import (
 	"flag"
-	"io/ioutil"
 	"net/http"
 	"os"
 
@@ -96,7 +95,7 @@ func getCertHandler(c *ishell.Context) {
 	}
 
 	if opts.pemPath != "" {
-		err := ioutil.WriteFile(opts.pemPath, resp.RespBody, os.ModePerm)
+		err := os.WriteFile(opts.pemPath, resp.RespBody, os.ModePerm)
 		if err != nil {
 			c.Printf("getCert: error writing pem to %q: %s\n", opts.pemPath, err.Error())
 			return

@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"flag"
-	"io/ioutil"
 	"net/http"
+	"os"
 
 	"github.com/abiosoft/ishell"
 	acmeclient "github.com/cpu/acmeshell/acme/client"
@@ -110,7 +110,7 @@ func revokeCertHandler(c *ishell.Context) {
 
 		pemBytes = resp.RespBody
 	} else {
-		fileBytes, err := ioutil.ReadFile(opts.certPEM)
+		fileBytes, err := os.ReadFile(opts.certPEM)
 		if err != nil {
 			c.Printf("revokeCert: error reading -certPEM argument: %q\n", err)
 			return

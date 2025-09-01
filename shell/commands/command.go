@@ -39,7 +39,7 @@ func OkURL(urlStr string) bool {
 // shellContext is a common interface that can be used to retrieve objects from
 // a ishell.Shell or an ishell.Context.
 type shellContext interface {
-	Get(string) interface{}
+	Get(string) any
 }
 
 // GetClient reads a *acmeclient.Client from the shellContext or panics.
@@ -84,7 +84,7 @@ func ReadJSON(c *ishell.Context) string {
 	return strings.TrimSuffix(c.ReadMultiLines(terminator), terminator)
 }
 
-func PrintJSON(ob interface{}) (string, error) {
+func PrintJSON(ob any) (string, error) {
 	bytes, err := json.MarshalIndent(ob, "", "  ")
 	if err != nil {
 		return "", err
@@ -184,7 +184,7 @@ func FindOrderURL(ctx *ishell.Context, leftovers []string, orderIndex int) (stri
 	}
 	// If there's no URL (shouldn't happen!) then return an error
 	if targetURL == "" {
-		return "", errors.New("Couldn't find a order URL with provided args")
+		return "", errors.New("couldn't find a order URL with provided args")
 	}
 	return targetURL, nil
 }

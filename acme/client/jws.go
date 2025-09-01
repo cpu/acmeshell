@@ -7,7 +7,7 @@ import (
 
 	"github.com/cpu/acmeshell/acme/keys"
 
-	jose "gopkg.in/square/go-jose.v2"
+	jose "github.com/go-jose/go-jose/v4"
 )
 
 // SigningOptions allows specifying signature related options when calling an
@@ -137,7 +137,7 @@ func signEmbedded(url string, data []byte, opts SigningOptions) (*SignResult, er
 	signer, err := jose.NewSigner(signingKey, &jose.SignerOptions{
 		NonceSource: opts.NonceSource,
 		EmbedJWK:    true,
-		ExtraHeaders: map[jose.HeaderKey]interface{}{
+		ExtraHeaders: map[jose.HeaderKey]any{
 			"url": url,
 		},
 	})
@@ -158,7 +158,7 @@ func signKeyID(url string, data []byte, opts SigningOptions) (*SignResult, error
 
 	joseOpts := &jose.SignerOptions{
 		NonceSource: opts.NonceSource,
-		ExtraHeaders: map[jose.HeaderKey]interface{}{
+		ExtraHeaders: map[jose.HeaderKey]any{
 			"url": url,
 		},
 	}
@@ -181,7 +181,7 @@ func sign(signer jose.Signer, url string, data []byte, opts SigningOptions) (*Si
 
 	// Reparse the serialized body to get a fully populated JWS object to log
 	var parsedJWS *jose.JSONWebSignature
-	parsedJWS, err = jose.ParseSigned(string(serialized))
+	parsedJWS, err = jose.ParseSigned(string(serialized), goodJWSSignatureAlgorithms)
 	if err != nil {
 		return nil, err
 	}
@@ -192,4 +192,10 @@ func sign(signer jose.Signer, url string, data []byte, opts SigningOptions) (*Si
 		JWS:           parsedJWS,
 		SerializedJWS: serialized,
 	}, nil
+}
+
+// Matched to Pebble. Could reasonably be expanded if there was demand.
+// https://github.com/letsencrypt/pebble/blob/38069cc4cf29acb188c01f6df9d658d8ace3427a/wfe/jose.go#L18
+var goodJWSSignatureAlgorithms = []jose.SignatureAlgorithm{
+	jose.RS256, jose.ES256, jose.ES384, jose.ES512,
 }
