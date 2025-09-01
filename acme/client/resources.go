@@ -36,7 +36,7 @@ func (c *Client) CreateAccount(acct *resources.Account) error {
 	}
 	if acct.ID != "" {
 		return fmt.Errorf(
-			"create: account already exists under ID %q\n", acct.ID)
+			"create: account already exists under ID %q", acct.ID)
 	}
 
 	newAcctReq := struct {
@@ -67,7 +67,7 @@ func (c *Client) CreateAccount(acct *resources.Account) error {
 			Signer:   acct.Signer,
 		})
 	if err != nil {
-		return fmt.Errorf("create: %s\n", err)
+		return fmt.Errorf("create: %s", err)
 	}
 
 	log.Printf("Sending %q request (contact: %s) to %q",
@@ -191,7 +191,7 @@ func (c *Client) CreateOrder(order *resources.Order) error {
 	// Sign the new order request with the active account
 	signResult, err := c.Sign(newOrderURL, reqBody, nil)
 	if err != nil {
-		return fmt.Errorf("createOrder: %s\n", err)
+		return fmt.Errorf("createOrder: %s", err)
 	}
 
 	resp, err := c.PostURL(newOrderURL, signResult.SerializedJWS)

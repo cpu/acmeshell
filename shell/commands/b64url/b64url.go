@@ -22,7 +22,7 @@ func (opts b64urlOptions) validate() error {
 		return errors.New("both -encode and -decode can not be provided at once")
 	}
 	if !opts.encode && !opts.decode {
-		return errors.New("One of -encode or -decode must be provided")
+		return errors.New("one of -encode or -decode must be provided")
 	}
 	return nil
 }

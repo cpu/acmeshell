@@ -184,7 +184,7 @@ func FindOrderURL(ctx *ishell.Context, leftovers []string, orderIndex int) (stri
 	}
 	// If there's no URL (shouldn't happen!) then return an error
 	if targetURL == "" {
-		return "", errors.New("Couldn't find a order URL with provided args")
+		return "", errors.New("couldn't find a order URL with provided args")
 	}
 	return targetURL, nil
 }
