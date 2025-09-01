@@ -6,9 +6,10 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httputil"
+	"os"
 	"runtime"
 )
 
@@ -25,7 +26,7 @@ type ACMENet struct {
 func New(customCABundle string) (*ACMENet, error) {
 	var caBundle *x509.CertPool
 	if customCABundle != "" {
-		pemBundle, err := ioutil.ReadFile(customCABundle)
+		pemBundle, err := os.ReadFile(customCABundle)
 		if err != nil {
 			return nil, err
 		}
@@ -87,7 +88,7 @@ func (c *ACMENet) httpRequest(req *http.Request) (*NetResponse, error) {
 		return nil, err
 	}
 
-	respBody, err := ioutil.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

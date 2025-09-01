@@ -3,7 +3,7 @@ package loadKey
 import (
 	"encoding/pem"
 	"flag"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"github.com/abiosoft/ishell"
@@ -54,7 +54,7 @@ func loadKeyHandler(c *ishell.Context) {
 		return
 	}
 
-	pemBytes, err := ioutil.ReadFile(argument)
+	pemBytes, err := os.ReadFile(argument)
 	if err != nil {
 		c.Printf("loadKey: error reading key PEM from file %q: %s", argument, err.Error())
 		return

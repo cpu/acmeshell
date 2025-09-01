@@ -5,7 +5,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	acmeclient "github.com/cpu/acmeshell/acme/client"
@@ -139,7 +138,7 @@ func main() {
 	flag.Parse()
 
 	if *pebble {
-		tmpFile, err := ioutil.TempFile("", "pebble.ca.*.pem")
+		tmpFile, err := os.CreateTemp("", "pebble.ca.*.pem")
 		acmecmd.FailOnError(err, fmt.Sprintf("Error opening pebble CA temp file: %v", err))
 		defer func() { _ = os.Remove(tmpFile.Name()) }()
 

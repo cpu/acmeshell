@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"github.com/cpu/acmeshell/acme/keys"
 )
@@ -124,7 +124,7 @@ func SaveAccount(path string, account *Account) error {
 	account.jsonPath = path
 	// write the serialized data to the provided filepath using a mode that only
 	// allows access to the current user. This file contains a private key!
-	return ioutil.WriteFile(path, frozenBytes, 0600)
+	return os.WriteFile(path, frozenBytes, 0600)
 }
 
 type rawAccount struct {
@@ -162,7 +162,7 @@ func (a *Account) save() ([]byte, error) {
 // returned.
 func RestoreAccount(path string) (*Account, error) {
 	acct := &Account{}
-	frozenBytes, err := ioutil.ReadFile(path)
+	frozenBytes, err := os.ReadFile(path)
 	if err != nil {
 		return acct, err
 	}

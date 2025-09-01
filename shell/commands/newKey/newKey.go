@@ -2,7 +2,6 @@ package newKey
 
 import (
 	"flag"
-	"io/ioutil"
 	"os"
 
 	"github.com/abiosoft/ishell"
@@ -80,7 +79,7 @@ func newKeyHandler(c *ishell.Context) {
 	}
 
 	if opts.pemPath != "" {
-		err := ioutil.WriteFile(opts.pemPath, []byte(keyPem), os.ModePerm)
+		err := os.WriteFile(opts.pemPath, []byte(keyPem), os.ModePerm)
 		if err != nil {
 			c.Printf("newKey: error writing pem to %q: %s\n", opts.pemPath, err.Error())
 			return
