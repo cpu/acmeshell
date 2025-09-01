@@ -3,8 +3,8 @@ module github.com/cpu/acmeshell
 require (
 	github.com/abiosoft/ishell v2.0.0+incompatible
 	github.com/abiosoft/readline v0.0.0-20180607040430-155bce2042db
+	github.com/go-jose/go-jose/v4 v4.1.2
 	github.com/letsencrypt/challtestsrv v1.3.3
-	gopkg.in/square/go-jose.v2 v2.6.0
 )
 
 require (

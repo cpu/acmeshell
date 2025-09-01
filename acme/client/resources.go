@@ -13,7 +13,7 @@ import (
 	"github.com/cpu/acmeshell/acme/resources"
 	"github.com/cpu/acmeshell/net"
 
-	jose "gopkg.in/square/go-jose.v2"
+	jose "github.com/go-jose/go-jose/v4"
 )
 
 // CreateAccount creates the given Account resource with the ACME server.
