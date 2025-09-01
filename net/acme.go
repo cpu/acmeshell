@@ -80,7 +80,7 @@ func (c *ACMENet) httpRequest(req *http.Request) (*NetResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	respDump, err := httputil.DumpResponse(resp, true)
 	if err != nil {
