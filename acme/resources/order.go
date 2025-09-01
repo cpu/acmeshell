@@ -7,7 +7,6 @@ package resources
 //
 // To understand the Status changes specified by RFC 8555 for the Order resource
 // see https://tools.ietf.org/html/rfc8555#section-7.1.6
-//
 type Order struct {
 	// The server-assigned ID (a URL) identifying the Order.
 	ID string
