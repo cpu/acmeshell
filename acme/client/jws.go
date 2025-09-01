@@ -137,7 +137,7 @@ func signEmbedded(url string, data []byte, opts SigningOptions) (*SignResult, er
 	signer, err := jose.NewSigner(signingKey, &jose.SignerOptions{
 		NonceSource: opts.NonceSource,
 		EmbedJWK:    true,
-		ExtraHeaders: map[jose.HeaderKey]interface{}{
+		ExtraHeaders: map[jose.HeaderKey]any{
 			"url": url,
 		},
 	})
@@ -158,7 +158,7 @@ func signKeyID(url string, data []byte, opts SigningOptions) (*SignResult, error
 
 	joseOpts := &jose.SignerOptions{
 		NonceSource: opts.NonceSource,
-		ExtraHeaders: map[jose.HeaderKey]interface{}{
+		ExtraHeaders: map[jose.HeaderKey]any{
 			"url": url,
 		},
 	}

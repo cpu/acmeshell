@@ -68,7 +68,7 @@ type Client struct {
 	net *acmenet.ACMENet
 	// directory is an in-memory representation of the ACME server's directory
 	// object.
-	directory map[string]interface{}
+	directory map[string]any
 	// nonce is the value of the last-seen ReplayNonce header from the ACME
 	// server's HTTP responses. It will be used for the next signing operation.
 	nonce string
@@ -296,7 +296,7 @@ func NewClient(config ClientConfig) (*Client, error) {
 }
 
 // TODO(@cpu): This is stupid
-func (c *Client) Printf(format string, vals ...interface{}) {
+func (c *Client) Printf(format string, vals ...any) {
 	log.Printf(format, vals...)
 }
 
