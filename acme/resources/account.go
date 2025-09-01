@@ -36,16 +36,16 @@ import (
 type Account struct {
 	// The server assigned Account ID. This is used for the JWS KeyID when
 	// authenticating ACME requests using the Account's registered keypair.
-	ID string
+	ID string `json:"id"`
 	// If not nil, a slice of one or more email addresses to be used as the ACME
 	// Account's "mailto://" Contact addresses.
-	Contact []string
+	Contact []string `json:"contact"`
 	// A signer to use to sign protocol messages and to access the ACME account's
 	// public key
 	Signer crypto.Signer
 	// If not nil, a slice of URLs for Order resources the Account created with
 	// the ACME server.
-	Orders []string
+	Orders []string `json:"orders"`
 	// The JSON path backing the account (if any)
 	jsonPath string
 }

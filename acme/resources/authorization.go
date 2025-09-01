@@ -17,9 +17,9 @@ package resources
 // the identifier value represented without the "*." prefix.
 type Identifier struct {
 	// The Type of the Identifier value.
-	Type string
+	Type string `json:"type"`
 	// The Identifier value.
-	Value string
+	Value string `json:"value"`
 }
 
 // The ACME Authorization resource represents an Account's authorization to
@@ -34,27 +34,27 @@ type Identifier struct {
 // https://tools.ietf.org/html/rfc8555#section-7.1.6
 type Authorization struct {
 	// The server-assigned ID (typically a URL) identifying the Authorization.
-	ID string
+	ID string `json:"id"`
 	// The status of this authorization. Possible values are: “pending”, “valid”,
 	// “invalid”, “deactivated”, “expired”, and “revoked”.
 	// See:
 	// https://tools.ietf.org/html/rfc8555#section-7.1.6
-	Status string
+	Status string `json:"status"`
 	// The identifier that the account holding this Authorization is authorized to
 	// represent
-	Identifier Identifier
+	Identifier Identifier `json:"identifier"`
 	// For pending authorizations, the challenges that the client can fulfill in
 	// order to prove possession of the identifier. For valid authorizations, the
 	// challenge that was validated. For invalid authorizations, the challenge
 	// that was attempted and failed.
-	Challenges []Challenge
+	Challenges []Challenge `json:"challenges"`
 	// A string representing a RFC 3339 date at which time the Authorization is
 	// considered expired by the server.
-	Expires string
+	Expires string `json:"expires"`
 	// For authorizations created as a result of a newOrder request containing
 	// a DNS identifier with a value that contained a wildcard prefix this field
 	// MUST be present, and true
-	Wildcard bool
+	Wildcard bool `json:"wildcard"`
 }
 
 // String returns the Authorization's server-assigned ID.

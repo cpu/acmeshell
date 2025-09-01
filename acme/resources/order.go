@@ -9,30 +9,30 @@ package resources
 // see https://tools.ietf.org/html/rfc8555#section-7.1.6
 type Order struct {
 	// The server-assigned ID (a URL) identifying the Order.
-	ID string
+	ID string `json:"id"`
 	// The Status of the Order.
-	Status string
+	Status string `json:"status"`
 	// The timestamp after which the server will consider this order invalid.
-	Expires string
+	Expires string `json:"expires"`
 	// The Error associated with an invalid order
-	Error *Problem `json:",omitempty"`
+	Error *Problem `json:"error,omitempty"`
 	// NotBefore and NotAfter are the requested values of the notBefore and
 	// notAfter fields of the resulting certificate. Ignored by Boulder.
-	NotBefore string
-	NotAfter  string
+	NotBefore string `json:"notBefore,omitempty"`
+	NotAfter  string `json:"notAfter,omitempty"`
 	// The Identifiers the Order wishes to finalize a Certificate for once the
 	// Order is ready.
-	Identifiers []Identifier
+	Identifiers []Identifier `json:"identifiers"`
 	// A list of URLs for Authorization resources the server specifies for the
 	// Order Identifiers.
-	Authorizations []string
+	Authorizations []string `json:"authorizations"`
 	// A URL used to Finalize the Order with a CSR once the Order has a status of
 	// "ready".
-	Finalize string
+	Finalize string `json:"finalize"`
 	// A URL used to fetch the Certificate issued by the server for the Order
 	// after being Finalized. The Certificate field should be present and
 	// not-empty when the Order has a status of "valid".
-	Certificate string `json:",omitempty"`
+	Certificate string `json:"certificate,omitempty"`
 }
 
 // String returns the Order's ID URL.

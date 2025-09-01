@@ -14,19 +14,19 @@ package resources
 // https://tools.ietf.org/html/rfc8555#section-7.1.6
 type Challenge struct {
 	// The Type of the challenge (expected values include "http-01", "dns-01", "tls-alpn-01")
-	Type string
+	Type string `json:"type"`
 	// The URL/ID of the challenge (provided by the server in the associated
 	// Authorization)
 	//
 	// TODO(@cpu): This should be renamed to ID for consistency with
 	// Authorization, Order and Account.
-	URL string
+	URL string `json:"url"`
 	// The Token used for constructing the challenge response for this challenge.
-	Token string
+	Token string `json:"token"`
 	// The Status of the challenge.
-	Status string
+	Status string `json:"status"`
 	// The Error associated with an invalid challenge
-	Error *Problem `json:",omitempty"`
+	Error *Problem `json:"error,omitempty"`
 }
 
 // String returns the URL of the Challenge.
