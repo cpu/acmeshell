@@ -78,10 +78,7 @@ func b64urlHandler(c *ishell.Context) {
 
 	if opts.hex {
 		c.Printf("Result:\n")
-		for {
-			if len(output) == 0 {
-				break
-			}
+		for len(output) > 0 {
 			b := output[0]
 			c.Printf("0x%X ", b)
 			output = output[1:]
