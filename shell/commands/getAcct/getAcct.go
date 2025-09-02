@@ -26,7 +26,7 @@ func getAccountHandler(c *ishell.Context) {
 	client := commands.GetClient(c)
 
 	getAcctReq := struct {
-		OnlyReturnExisting bool
+		OnlyReturnExisting bool `json:"onlyReturnExisting"`
 	}{
 		OnlyReturnExisting: true,
 	}

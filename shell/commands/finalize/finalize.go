@@ -90,7 +90,7 @@ func finalizeHandler(c *ishell.Context) {
 	}
 
 	finalizeRequest := struct {
-		CSR string
+		CSR string `json:"csr"`
 	}{
 		CSR: b64csr,
 	}

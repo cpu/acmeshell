@@ -104,8 +104,8 @@ func (c *Client) Rollover(newKey crypto.Signer) error {
 	oldKey := keys.JWKForSigner(account.Signer)
 
 	rolloverRequest := struct {
-		Account string
-		OldKey  jose.JSONWebKey
+		Account string          `json:"account"`
+		OldKey  jose.JSONWebKey `json:"oldKey"`
 	}{
 		Account: account.ID,
 		OldKey:  oldKey,
@@ -171,7 +171,7 @@ func (c *Client) CreateOrder(order *resources.Order) error {
 	}
 
 	req := struct {
-		Identifiers []resources.Identifier
+		Identifiers []resources.Identifier `json:"identifiers"`
 	}{
 		Identifiers: order.Identifiers,
 	}

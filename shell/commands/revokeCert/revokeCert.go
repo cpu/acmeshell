@@ -121,8 +121,8 @@ func revokeCertHandler(c *ishell.Context) {
 	certBytes := pemBlock.Bytes
 
 	revokeRequest := struct {
-		Certificate string
-		Reason      int
+		Certificate string `json:"certificate"`
+		Reason      int    `json:"reason"`
 	}{
 		Certificate: base64.RawURLEncoding.EncodeToString(certBytes),
 		Reason:      opts.reason,
